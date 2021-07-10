@@ -55,7 +55,7 @@ ATOK の仕様です。
 
 Autohotkey の書き方に準じます。
 
-(http://ahkwiki.net/Send) の特殊キー名一覧もご覧ください。
+http://ahkwiki.net/Send の特殊キー名一覧もご覧ください。
 
 そのまま入力	0〜9 A〜Z -^@[]./ 全角文字
 
