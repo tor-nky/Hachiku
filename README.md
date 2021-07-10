@@ -83,7 +83,7 @@ http://ahkwiki.net/Send の特殊キー名一覧もご覧ください。
 
 2021年6月19日までの分は https://github.com/tor-nky/KeyLayout/tree/master/Naginata/Win をご覧ください。
 
-* Enterキーをシフトキーに設定可能にした。
+* Enterキーをシフトを兼ねられるようにした。
 * デスクトップアイコンを右クリックして設定画面が出せるようにした。
 
 (ここまで2021年7月10日追加)
