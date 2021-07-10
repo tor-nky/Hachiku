@@ -2,11 +2,11 @@
 
 [薙刀式v13完成版](http://oookaworks.seesaa.net/article/479173898.html#gsc.tab=0) 2020年12月25日版を Autohotkey に実装しました。
 
-### Naginata.ahk
+### Hachiku.ahk
 
 ディレクトリ source の下にあるファイルをすべて保存します。
 
-Autohotkey をインストールし、ディレクトリ source にある Naginata.ahk のスクリプトを実行してください。
+Autohotkey をインストールし、ディレクトリ source にある Hachiku.ahk のスクリプトを実行してください。
 
 Ahk2Exe.exe でコンパイルする場合は、Unicode版で出力してください。
 
