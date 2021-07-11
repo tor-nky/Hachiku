@@ -34,6 +34,7 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
 IniFilePath := Path_QuoteSpaces(Path_RemoveExtension(A_ScriptFullPath) . ".ini")
 
+; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
 IniRead, Vertical, %IniFilePath%, general, Vertical, 1
 	; Vertical		0: 横書き用, 1: 縦書き用
 IniRead, Slow, %IniFilePath%, general, Slow, 0
@@ -333,6 +334,7 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 	while (i < n)
 	{
 		; 定義の重複があったら、古いのを消す
+		; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
 		if (DefsKey[i] = KeyComb && DefsKanaMode[i] = KanaMode)
 		{
 			DefsKey.RemoveAt(i)
