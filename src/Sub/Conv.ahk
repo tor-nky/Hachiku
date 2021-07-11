@@ -141,7 +141,6 @@ return
 ; ----------------------------------------------------------------------
 
 PSTimer:	; 後置シフトの判定期限タイマー
-	SetTimer, PSTimer, Off	; タイマー停止
 	; 入力バッファが空の時、保存
 	InBufsKey[InBufWritePos] := "PSTimer", InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
 		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
@@ -150,7 +149,6 @@ PSTimer:	; 後置シフトの判定期限タイマー
 	return
 
 CombTimer:	; 同時押しの判定期限タイマー
-	SetTimer, CombTimer, Off	; タイマー停止
 	; 入力バッファが空の時、保存
 	InBufsKey[InBufWritePos] := "CombTimer", InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
 		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
@@ -395,15 +393,15 @@ Convert()
 ;		, i			; カウンタ
 ;		, nkeys		; 今回は何キー同時押しか
 
+	SetTimer, PSTimer, Off		; 後置シフトの判定期限タイマー停止
+	SetTimer, CombTimer, Off	; 同時押しの判定期限タイマー停止
+
 	if ConvRest > 0
 		return	; 多重起動防止で戻る
 
 	; 入力バッファが空になるまで
 	while (ConvRest := 15 - InBufRest)
 	{
-		SetTimer, PSTimer, Off		; 後置シフトの判定期限タイマー停止
-		SetTimer, CombTimer, Off	; 同時押しの判定期限タイマー停止
-
 		; 入力バッファから読み出し
 		Str1 := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
 		; 左右シフト処理
@@ -512,21 +510,16 @@ Convert()
 			continue
 		}
 
-		if (sft = 0 || SideShift > 0)
-		{
-			; IME の状態を検出(失敗したら書き換えない)
-			Detect := IME_GET()
-			if Detect = 0 		; IME OFF の時
-				KanaMode := 0
-			else if Detect = 1	; IME ON の時
-			{
-				Detect := IME_GetConvMode()
-				if (Detect != "")
-					KanaMode := Detect & 1
-			}
-		}
-		else	; 左右シフト英数時
+		; IME の状態を検出(失敗したら書き換えない)
+		Detect := IME_GET()
+		if Detect = 0 		; IME OFF の時
 			KanaMode := 0
+		else if Detect = 1	; IME ON の時
+		{
+			Detect := IME_GetConvMode()
+			if (Detect != "")
+				KanaMode := Detect & 1
+		}
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
 		StringRight, Term, Str1, 3	; Term に入力末尾の3文字を入れる
