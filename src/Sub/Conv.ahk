@@ -425,6 +425,8 @@ Convert()
 		{
 			if (spc = 0 && ent = 0)
 				Str1 := "sc39 up"	; シフト押し上げ
+			else
+				IncInBuf()	; 入力バッファの読み出し位置を進める
 			sft := 0
 		}
 		; スペースキー処理
@@ -857,7 +859,7 @@ sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
 ; キー入力部(左右シフトかな)
-#If (SideShift = 1)
+#If (SideShift > 0)
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -908,7 +910,7 @@ sc39::	; Space
 +sc73::	; (JIS)_
 #If
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift = 1)
+#If (EnterShift > 0)
 Enter::
 #If
 ; SandS 用
@@ -982,7 +984,7 @@ sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
 ; キー押上げ(左右シフトかな)
-#If (SideShift = 1)
+#If (SideShift > 0)
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1033,7 +1035,7 @@ sc39 up::	; Space
 +sc73 up::	; (JIS)_
 #If
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift = 1)
+#If (EnterShift > 0)
 Enter up::
 #If
 ; 入力バッファへ保存
