@@ -495,18 +495,13 @@ Convert()
 		; 後置シフトの判定期限到来
 		if (Str1 == "PSTimer")
 		{
-			if LastSetted = 1
-				OutBuf()
+			OutBuf()
 			continue
 		}
 		; 同時押しの判定期限到来(シフト時のみ)
 		if (Str1 == "CombTimer")
 		{
-			if (RealKey & KC_SPC)
-			{
-				OutBuf()
-				Last2Keys := 0, LastKeys := 0
-			}
+			OutBuf(), Last2Keys := 0, LastKeys := 0
 			continue
 		}
 
