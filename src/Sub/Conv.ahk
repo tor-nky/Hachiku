@@ -29,7 +29,7 @@ InBufReadPos := 0	; 読み出し位置
 InBufWritePos := 0	; 書き込み位置
 InBufRest := 15
 ; 仮出力バッファ
-OutStr := []
+OutStrs := []
 _usc := 0			; 保存されている文字数
 
 ; ----------------------------------------------------------------------
@@ -63,7 +63,7 @@ menu, tray, NoStandard			; タスクトレイメニューの標準メニュー�
 menu, tray, add, 縦書きモード	; “縦書きモード”を追加
 if (Vertical)
 	menu, tray, Check, 縦書きモード	; “縦書きモード”にチェックを付ける
-menu, tray, add, 設定			; “設定”を追加
+menu, tray, add, 設定...		; “設定”を追加
 menu, tray, add					; セパレーター
 menu, tray, Standard			; 標準メニュー項目を追加
 
@@ -95,7 +95,7 @@ menu, tray, ToggleCheck, 縦書きモード
 	IniWrite, %Vertical%, %IniFilePath%, general, Vertical
 return
 
-設定:
+設定...:
 	Gui, Add, Text, , 設定
 
 	Gui, Add, Checkbox, xm y+10 vSlow, ATOK対応
@@ -292,12 +292,12 @@ SendNeo(Str1, Delay:=0)
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
 {
-	global _usc, OutStr
+	global _usc, OutStrs
 ;	local Str1, StrBegin
 
 	while (i > 0 && _usc > 0)
 	{
-		Str1 := OutStr[1]
+		Str1 := OutStrs[1]
 		StrBegin := SubStr(Str1, 1, 4)
 		if (StrBegin == "{記号}" || StrBegin == "{直接}")
 		{
@@ -316,7 +316,7 @@ OutBuf(i:=2)
 		else
 			SendNeo(Str1)
 
-		OutStr[1] := OutStr[2]
+		OutStrs[1] := OutStrs[2]
 		_usc--
 		i--
 	}
@@ -326,7 +326,7 @@ OutBuf(i:=2)
 ; 仮出力バッファを最後から nBack 回分を削除して、Str1 を保存
 StoreBuf(nBack, Str1)
 {
-	global _usc, OutStr
+	global _usc, OutStrs
 
 	if nBack > 0
 	{
@@ -339,7 +339,7 @@ StoreBuf(nBack, Str1)
 	else if _usc = 2	; バッファがいっぱいなので、1文字出力
 		OutBuf(1)
 	_usc++
-	OutStr[_usc] := Str1
+	OutStrs[_usc] := Str1
 
 	return
 }
@@ -355,14 +355,6 @@ SelectStr(i)
 	return Str1
 }
 
-; 入力バッファの読み出し位置を進める
-IncInBuf()
-{
-	global InBufReadPos, InBufRest
-
-	InBufReadPos := ++InBufReadPos & 15, InBufRest++
-}
-
 Convert()
 {
 	global KanaMode
@@ -372,6 +364,7 @@ Convert()
 		, _usc
 		, ShiftDelay, CombDelay, SideShift
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
+		, NextStr	:= ""
 		, RealKey	:= 0	; 今押している全部のキービットの集合
 		, LastKeys	:= 0	; 前回のキービット
 		, Last2Keys	:= 0	; 前々回のキービット
@@ -393,44 +386,43 @@ Convert()
 ;		, i			; カウンタ
 ;		, nkeys		; 今回は何キー同時押しか
 
-	SetTimer, PSTimer, Off		; 後置シフトの判定期限タイマー停止
-	SetTimer, CombTimer, Off	; 同時押しの判定期限タイマー停止
-
-	if ConvRest > 0
+	if (ConvRest > 0 || NextStr != "")
 		return	; 多重起動防止で戻る
 
 	; 入力バッファが空になるまで
-	while (ConvRest := 15 - InBufRest)
+	while (ConvRest := 15 - InBufRest || NextStr != "")
 	{
-		; 入力バッファから読み出し
-		Str1 := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
+		SetTimer, PSTimer, Off		; 後置シフトの判定期限タイマー停止
+		SetTimer, CombTimer, Off	; 同時押しの判定期限タイマー停止
+
+		if (NextStr == "")
+			; 入力バッファから読み出し
+			Str1 := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
+				, InBufReadPos := ++InBufReadPos & 15, InBufRest++
+		else
+			; 前回の残りを読み出し
+			Str1 := NextStr, NextStr := ""
 		; 左右シフト処理
 		if (Asc(Str1) = 43)		; "+" から始まる
 		{
 			if sft = 0			; 左右シフトなし→あり
 			{
 				OutBuf()
-				Str1 := "sc39"	; シフト
+				NextStr := Str1, Str1 := "sc39"	; シフト
 				sft := 1
 			}
 			else
-			{
-				IncInBuf()		; 入力バッファの読み出し位置を進める
 				StringTrimLeft, Str1, Str1, 1	; 先頭の1文字を消去
-			}
 		}
 		else if sft > 0				; 左右シフトあり→なし
 		{
 			if (spc = 0 && ent = 0)
-				Str1 := "sc39 up"	; シフト押し上げ
-			else
-				IncInBuf()	; 入力バッファの読み出し位置を進める
+				NextStr := Str1, Str1 := "sc39 up"	; シフト押し上げ
 			sft := 0
 		}
 		; スペースキー処理
 		else if (Str1 == "sc39")
 		{
-			IncInBuf()	; 入力バッファの読み出し位置を進める
 			if spc = 0
 				spc := 1
 ;			if ent = 1
@@ -440,7 +432,6 @@ Convert()
 		{
 			if (sft > 0 || ent > 0)
 			{
-				IncInBuf()	; 入力バッファの読み出し位置を進める
 				if spc = 1
 					Str1 := "space "
 				else
@@ -452,15 +443,12 @@ Convert()
 				}
 			}
 			else if spc = 1
-				InBufsKey[InBufReadPos] := "space "	; スペースキー単独押し
-			else
-				IncInBuf()	; 入力バッファの読み出し位置を進める
+				NextStr := "space "	; スペースキー単独押し
 			spc := 0
 		}
 		; エンターキー処理
 		else if (Str1 == "Enter")
 		{
-			IncInBuf()		; 入力バッファの読み出し位置を進める
 			Str1 := "sc39"	; シフト
 			if ent = 0
 				ent := 1
@@ -472,7 +460,6 @@ Convert()
 			Str1 := "sc39 up"	; シフト押上げ
 			if (sft > 0 || spc > 0)
 			{
-				IncInBuf()	; 入力バッファの読み出し位置を進める
 				if ent = 1
 					Str1 := "enter "
 				else
@@ -484,22 +471,18 @@ Convert()
 				}
 			}
 			else if ent = 1
-				InBufsKey[InBufReadPos] := "enter "	; エンターキー単独押し ※"Enter"としないこと
-			else
-				IncInBuf()		; 入力バッファの読み出し位置を進める
+				NextStr := "enter "	; エンターキー単独押し ※"Enter"としないこと
 			ent := 0
 		}
-		else
-			IncInBuf()	; 入力バッファの読み出し位置を進める
 
 		; 後置シフトの判定期限到来
-		if (Str1 == "PSTimer")
+		if (Str1 == "PSTimer" && LastKeyTime + ShiftDelay <= KeyTime)
 		{
 			OutBuf()
 			continue
 		}
 		; 同時押しの判定期限到来(シフト時のみ)
-		if (Str1 == "CombTimer")
+		if (Str1 == "CombTimer" && (RealKey & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
 		{
 			OutBuf(), Last2Keys := 0, LastKeys := 0
 			continue
@@ -762,7 +745,7 @@ Convert()
 			; 出力確定文字か？
 			if (!RecentKey || LastSetted > (ShiftDelay > 0 ? 1 : 0))
 				OutBuf()	; 出力確定
-			else if (ConvRest = 1)
+			else if (InBufRest = 15 && NextStr == "")
 			{
 				; 後置シフトの判定期限タイマー起動
 				if LastSetted = 1

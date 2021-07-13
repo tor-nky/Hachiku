@@ -22,7 +22,7 @@ ListLines, Off				; スクリプトの実行履歴を取らない
 ;SetKeyDelay, 10, 0			; キーストローク間のディレイを変更
 #MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
 #UseHook					; ホットキーはすべてフックを使用する
-Thread, interrupt, 15, 8	; スレッド開始から15ミリ秒ないし8行以内の割り込みを、絶対禁止
+Thread, interrupt, 15, 4	; スレッド開始から15ミリ秒ないし4行以内の割り込みを、絶対禁止
 SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
 
 ;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
