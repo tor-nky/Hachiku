@@ -168,8 +168,7 @@ SendNeo(Str1, Delay:=0)
 ;		, i, c, bracket
 ;		, IMECheck, IMEConvMode		; IME入力モードの保存、復元に関するフラグと変数
 ;		, PreDelay, PostDelay		; 出力前後のディレイの値
-;		, LastDelay					; 前回のディレイの値
-;		, NowTickCount
+;		, LastDelay					; 前回出力時のディレイの値
 ;		, SlowCopied
 
 	SlowCopied := Slow
@@ -179,11 +178,7 @@ SendNeo(Str1, Delay:=0)
 		SlowCopied := (SlowCopied = 1 ? 0x11 : SlowCopied)
 	SetKeyDelay, -1, -1
 
-	NowTickCount := QPC()
-	if (NowTickCount <= LastTickCount)
-		LastDelay := NowTickCount - LastTickCount
-	else
-		LastDelay := 0x100000000 + NowTickCount - LastTickCount	; タイマーの周回遅れ対策
+	LastDelay := QPC() - LastTickCount
 
 	; 文字列を細切れにして出力
 	PreDelay := 0, PostDelay := Delay	; ディレイの初期値
