@@ -35,18 +35,16 @@ _usc := 0			; 保存されている文字数
 ; ----------------------------------------------------------------------
 ; タイマー関数、設定
 ; ----------------------------------------------------------------------
-; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=4667
-WinAPI_timeGetTime()	; http://msdn.microsoft.com/en-us/library/dd757629.aspx
-{
-	return DllCall("Winmm.dll\timeGetTime", "UInt")
+; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
+QPCInit() {
+	DllCall("QueryPerformanceFrequency", "Int64P", Freq)
+	return Freq
 }
-WinAPI_timeBeginPeriod(uPeriod)	; http://msdn.microsoft.com/en-us/library/dd757624.aspx
-{
-	return DllCall("Winmm.dll\timeBeginPeriod", "UInt", uPeriod, "UInt")
+QPC() {	; ミリ秒単位
+	static Freq := QPCInit() / 1000.0
+	DllCall("QueryPerformanceCounter", "Int64P", Count)
+	Return, Count / Freq
 }
-
-; タイマーの精度を調整
-	WinAPI_timeBeginPeriod(1)
 
 ; ----------------------------------------------------------------------
 ; メニューで使う変数
@@ -142,7 +140,7 @@ return
 
 PSTimer:	; 後置シフトの判定期限タイマー
 	; 入力バッファが空の時、保存
-	InBufsKey[InBufWritePos] := "PSTimer", InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
+	InBufsKey[InBufWritePos] := "PSTimer", InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest = 15 ? InBufRest-- : )
 	Convert()				; 変換ルーチン
@@ -150,7 +148,7 @@ PSTimer:	; 後置シフトの判定期限タイマー
 
 CombTimer:	; 同時押しの判定期限タイマー
 	; 入力バッファが空の時、保存
-	InBufsKey[InBufWritePos] := "CombTimer", InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
+	InBufsKey[InBufWritePos] := "CombTimer", InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest = 15 ? InBufRest-- : )
 	Convert()				; 変換ルーチン
@@ -164,7 +162,7 @@ CombTimer:	; 同時押しの判定期限タイマー
 SendNeo(Str1, Delay:=0)
 {
 	global Slow
-	static LastTickCount := WinAPI_timeGetTime()
+	static LastTickCount := QPC()
 ;	local len						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
@@ -181,7 +179,7 @@ SendNeo(Str1, Delay:=0)
 		SlowCopied := (SlowCopied = 1 ? 0x11 : SlowCopied)
 	SetKeyDelay, -1, -1
 
-	NowTickCount := WinAPI_timeGetTime()
+	NowTickCount := QPC()
 	if (NowTickCount <= LastTickCount)
 		LastDelay := NowTickCount - LastTickCount
 	else
@@ -221,7 +219,8 @@ SendNeo(Str1, Delay:=0)
 						i++
 					}
 					; 出力直後のディレイ
-					Sleep, PostDelay
+					if PostDelay > 0
+						Sleep, PostDelay
 				}
 				break
 			}
@@ -251,7 +250,8 @@ SendNeo(Str1, Delay:=0)
 			{
 				Send, % StrChopped
 				; 出力直後のディレイ
-				Sleep, PostDelay
+				if PostDelay > 0
+					Sleep, PostDelay
 				LastDelay := PostDelay				; 今回のディレイの値を保存
 				PreDelay := 0, PostDelay := Delay	; ディレイの初期値
 			}
@@ -274,7 +274,8 @@ SendNeo(Str1, Delay:=0)
 		; キー出力
 		Send, {vkF3}	; 半角/全角
 		; 出力直後のディレイ
-		Sleep, PostDelay
+		if PostDelay > 0
+			Sleep, PostDelay
 		; IME入力モードを回復する
 		if IMEConvMode > 0
 		{
@@ -283,7 +284,7 @@ SendNeo(Str1, Delay:=0)
 		}
 	}
 
-	LastTickCount := WinAPI_timeGetTime()	; 最後に出力した時間を記録
+	LastTickCount := QPC()	; 最後に出力した時間を記録
 
 	return
 }
@@ -476,15 +477,17 @@ Convert()
 		}
 
 		; 後置シフトの判定期限到来
-		if (Str1 == "PSTimer" && LastKeyTime + ShiftDelay <= KeyTime)
+		if (Str1 == "PSTimer")
 		{
-			OutBuf()
+			if (LastKeyTime + ShiftDelay <= KeyTime)
+				OutBuf()
 			continue
 		}
 		; 同時押しの判定期限到来(シフト時のみ)
-		if (Str1 == "CombTimer" && (RealKey & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
+		if (Str1 == "CombTimer")
 		{
-			OutBuf(), Last2Keys := 0, LastKeys := 0
+			if ((RealKey & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
+				OutBuf(), Last2Keys := 0, LastKeys := 0
 			continue
 		}
 
@@ -895,7 +898,7 @@ PgUp::
 PgDn::
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
-	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
+	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest > 6 ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest > 6 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
@@ -1010,7 +1013,7 @@ sc39 up::	; Space
 Enter up::
 #If
 ; 入力バッファへ保存
-	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := WinAPI_timeGetTime()
+	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest ? InBufRest-- : )
 	Convert()	; 変換ルーチン
