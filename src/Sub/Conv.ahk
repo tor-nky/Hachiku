@@ -21,7 +21,6 @@
 ; 本ファイルのみで使う変数
 ; ----------------------------------------------------------------------
 ; グローバル変数
-KanaMode := 0		; 0: 英数入力, 1: かな入力
 ; 入力バッファ
 InBufsKey := []
 InBufsTime := []	; 入力の時間
@@ -77,10 +76,17 @@ ButtonOK:
 	EnterShift := (EnterShift1 = 1 ? 0 : 1)
 	; 設定ファイル書き込み
 	IniWrite, %Slow%, %IniFilePath%, general, Slow
+	IniWrite, %USLike%, %IniFilePath%, general, USLike
 	IniWrite, %SideShift%, %IniFilePath%, general, SideShift
 	IniWrite, %EnterShift%, %IniFilePath%, general, EnterShift
 	IniWrite, %ShiftDelay%, %IniFilePath%, general, ShiftDelay
 	IniWrite, %CombDelay%, %IniFilePath%, general, CombDelay
+	if USLike > 0
+		Gosub, toUSLike
+	else
+		Gosub, toJIS
+	KanaSetting()	; 出力確定するかな定義に印をつける
+	EisuSetting()	; 出力確定する英数定義に印をつける
 ButtonCancel:
 GuiClose:
 	Gui, Destroy
@@ -99,6 +105,12 @@ return
 	Gui, Add, Checkbox, xm y+10 vSlow, ATOK対応
 	if Slow = 1
 		GuiControl, , Slow, 1
+
+	Gui, Add, Checkbox, xm y+10 vUSLike, USキーボード風配列
+	if USLike = 1
+		GuiControl, , USLike, 1
+	Gui, Add, Text, X30 y+1, ※ 日本語キーボードの時のみ有効です
+	Gui, Add, Text, X30 y+1, ※ 左右シフトかなに設定してください
 
 	Gui, Add, Text, xm y+10, 左右シフト
 	Gui, Add, Radio, X80 yp+0 Group vSideShift1, 英数
@@ -353,12 +365,11 @@ SelectStr(i)
 
 Convert()
 {
-	global KanaMode
-		, InBufsKey, InBufReadPos, InBufsTime, InBufRest
+	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsSetted, DefsRepeat, DefBegin, DefEnd
 		, _usc
-		, ShiftDelay, CombDelay, SideShift
+		, ShiftDelay, CombDelay
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, NextStr	:= ""
 		, RealKey	:= 0	; 今押している全部のキービットの集合
@@ -373,7 +384,8 @@ Convert()
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左右シフト
 		, ent		:= 0	; エンター
-;	local Detect
+;	local KanaMode			; 0: 英数入力, 1: かな入力
+;		, Detect
 ;		, Str1
 ;		, Term		; 入力の末端2文字
 ;		, RecentKey	; 今回のキービット
@@ -408,7 +420,7 @@ Convert()
 				sft := 1
 			}
 			else
-				StringTrimLeft, Str1, Str1, 1	; 先頭の1文字を消去
+				StringTrimLeft, Str1, Str1, 1	; 先頭の "+" を消去
 		}
 		else if sft > 0				; 左右シフトあり→なし
 		{
@@ -488,7 +500,7 @@ Convert()
 
 		; IME の状態を検出(失敗したら書き換えない)
 		Detect := IME_GET()
-		if Detect = 0 		; IME OFF の時
+		if Detect = 0		; IME OFF の時
 			KanaMode := 0
 		else if Detect = 1	; IME ON の時
 		{
@@ -498,9 +510,9 @@ Convert()
 		}
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
-		StringRight, Term, Str1, 3	; Term に入力末尾の3文字を入れる
+		StringRight, Term, Str1, 2	; Term に入力末尾の2文字を入れる
 		; キーが離れた時
-		if (Term == " up")
+		if (Term == "up")
 			RecentKey := "0x" . SubStr(Str1, StrLen(Str1) - 4, 2)
 		; sc○○ で入力
 		else if (SubStr(Str1, 1, 2) == "sc")
@@ -526,7 +538,7 @@ Convert()
 			RecentKey := 1 << RecentKey
 
 		; キーリリース時
-		if (Term == " up")
+		if (Term == "up")
 		{
 			OutBuf()
 			RealKey &= RecentKey ^ (-1)	; RealKey &= ~RecentKey では
@@ -777,7 +789,7 @@ Convert()
 ; キー入力部
 #If (KeyDriver == "kbd101.dll")	; 設定がUSキーボードの場合
 sc29::	; (JIS)半角/全角	(US)`
-#If
+#If		; End #If (KeyDriver == "kbd101.dll")
 sc02::	; 1
 sc03::	; 2
 sc04::	; 3
@@ -877,13 +889,13 @@ sc39::	; Space
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-#If
+#If		; End #If (SideShift > 0)
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift > 0)
 Enter::
-#If
+#If		; End #If (EnterShift > 0)
 ; SandS 用
-Up::
+Up::	; ※小文字にしてはいけない
 Left::
 Right::
 Down::
@@ -902,7 +914,7 @@ PgDn::
 ; キー押上げ
 #If (KeyDriver == "kbd101.dll")	; 設定がUSキーボードの場合
 sc29 up::	; (JIS)半角/全角	(US)`
-#If
+#If		; End #If (KeyDriver == "kbd101.dll")
 sc02 up::	; 1
 sc03 up::	; 2
 sc04 up::	; 3
@@ -1002,11 +1014,11 @@ sc39 up::	; Space
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
-#If
+#If		; End #If (SideShift > 0)
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift > 0)
 Enter up::
-#If
+#If		; End #If (EnterShift > 0)
 ; 入力バッファへ保存
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest ? ++InBufWritePos & 15 : InBufWritePos)

@@ -39,6 +39,8 @@ IniRead, Vertical, %IniFilePath%, general, Vertical, 1
 	; Vertical		0: 横書き用, 1: 縦書き用
 IniRead, Slow, %IniFilePath%, general, Slow, 0
 	; Slow			0: MS-IME専用, 1: ATOK可
+IniRead, USLike, %IniFilePath%, general, USLike, 0
+	; USLike 0: 英数表記通り, 1: USキーボード風配列
 IniRead, SideShift, %IniFilePath%, general, SideShift, 0
 	; SideShift		0: 左右シフト英数, 1: 左右シフトかな
 IniRead, EnterShift, %IniFilePath%, general, EnterShift, 0
@@ -330,7 +332,7 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 	; 登録
 	nkeys := CountBit(KeyComb)	; 何キー同時押しか
 	i := DefBegin[nkeys]		; 始まり
-	n := DefEnd[nkeys]		; 終わり
+	n := DefEnd[nkeys]			; 終わり
 	while (i < n)
 	{
 		; 定義の重複があったら、古いのを消す
