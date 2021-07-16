@@ -229,7 +229,7 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_COMM	,"nn"		)		; ん
 	SetKana( KC_DOT 	,"ra"		)		; ら
 	SetKana( KC_SLSH	,"re"		)		; れ
-	SetKana( KC_INT1	,"\"		)		; ￥
+	SetKana( KC_INT1	,"\"		)		; ￥(PC-9800キーボード対策)
 
 	SetKana( KC_W | KC_SPC		,"ne"		)		; ね
 	SetKana( KC_E | KC_SPC		,"ri"		)		; り
@@ -502,16 +502,18 @@ Group := 0	; 0 はグループAll
 ; ----------------------------------------------------------------------
 if (KeyDriver == "kbd101.dll")
 {
-	SetKana( KC_NUHS | KC_SPC	,""		)	; ｜(デフォルトに戻す)
+	SetKana( KC_INT1			,"?"	)	; ？
+	SetKana( KC_NUHS | KC_SPC	,"|"	)	; ｜
 	SetKana( KC_LBRC | KC_SPC	,"『"	)	; 『
 	SetKana( KC_RBRC | KC_SPC	,"』"	)	; 』
-	SetKana( KC_INT1			,"?"	)	; ？
 	SetKana( KC_INT1 | KC_SPC	,"{!}"	)	; ！
+
 ; おまけ
+	SetEisu( JP_YEN				,"\"	)	; ￥
+	SetEisu( KC_INT1			,"\"	)	; ￥
+	SetEisu( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
+	SetEisu( KC_INT1 | KC_SPC	,"_"	)	; ＿	スペース押しながら
+
 	SetKana( JP_YEN				,"\"	)	; ￥
 	SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
-	SetEisu( JP_YEN				,"\"	)	; ￥
-	SetEisu( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
-	SetEisu( KC_INT1			,"\"	)	; ￥
-	SetEisu( KC_INT1 | KC_SPC	,"_"	)	; ＿	スペース押しながら
 }

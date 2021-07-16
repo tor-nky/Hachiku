@@ -39,7 +39,7 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_0		,"{sc0B}"	)
 	SetEisu( KC_MINS	,"{sc0C}"	)
 	SetEisu( KC_EQL		,"{sc0D}"	)
-	SetEisu( JP_YEN		,"\"		)
+	SetEisu( JP_YEN		,"{sc7D}"	)
 
 	SetEisu( KC_Q		,"{sc10}"	)
 	SetEisu( KC_W		,"{sc11}"	)
@@ -80,7 +80,7 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_COMM	,"{sc33}"	)
 	SetEisu( KC_DOT 	,"{sc34}"	)
 	SetEisu( KC_SLSH	,"{sc35}"	)
-	SetEisu( KC_INT1	,"\"		)
+	SetEisu( KC_INT1	,"{sc73}"	)
 
 	SetEisu( KC_1 | KC_SPC		,"+{sc02}"	)
 	SetEisu( KC_2 | KC_SPC		,"+{sc03}"	)
@@ -95,7 +95,7 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_0 | KC_SPC		,"+{sc0B}"	)
 	SetEisu( KC_MINS | KC_SPC	,"+{sc0C}"	)
 	SetEisu( KC_EQL | KC_SPC	,"+{sc0D}"	)
-	SetEisu( JP_YEN | KC_SPC	,"|"		)
+	SetEisu( JP_YEN | KC_SPC	,"+{sc7D}"	)
 
 	SetEisu( KC_Q | KC_SPC		,"+{sc10}"	)
 	SetEisu( KC_W | KC_SPC		,"+{sc11}"	)
@@ -136,7 +136,7 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_COMM | KC_SPC	,"+{sc33}"	)
 	SetEisu( KC_DOT | KC_SPC	,"+{sc34}"	)
 	SetEisu( KC_SLSH | KC_SPC	,"+{sc35}"	)
-	SetEisu( KC_INT1 | KC_SPC	,"_"		)
+	SetEisu( KC_INT1 | KC_SPC	,"+{sc73}"	)
 
 
 	SetKana( KC_1		,"{sc02}"	)
@@ -152,7 +152,7 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_0		,"{sc0B}"	)
 	SetKana( KC_MINS	,"{sc0C}"	)
 	SetKana( KC_EQL		,"{sc0D}"	)
-	SetKana( JP_YEN		,"\"		)
+	SetKana( JP_YEN		,"{sc7D}"	)
 
 	SetKana( KC_Q		,"{sc10}"	)
 	SetKana( KC_W		,"{sc11}"	)
@@ -193,7 +193,7 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_COMM	,"{sc33}"	)
 	SetKana( KC_DOT 	,"{sc34}"	)
 	SetKana( KC_SLSH	,"{sc35}"	)
-	SetKana( KC_INT1	,"\"		)
+	SetKana( KC_INT1	,"{sc73}"	)
 
 	SetKana( KC_1 | KC_SPC		,"+{sc02}"	)
 	SetKana( KC_2 | KC_SPC		,"+{sc03}"	)
@@ -208,7 +208,7 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_0 | KC_SPC		,"+{sc0B}"	)
 	SetKana( KC_MINS | KC_SPC	,"+{sc0C}"	)
 	SetKana( KC_EQL | KC_SPC	,"+{sc0D}"	)
-	SetKana( JP_YEN | KC_SPC	,"|"		)
+	SetKana( JP_YEN | KC_SPC	,"+{sc7D}"	)
 
 	SetKana( KC_Q | KC_SPC		,"+{sc10}"	)
 	SetKana( KC_W | KC_SPC		,"+{sc11}"	)
@@ -249,7 +249,7 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_COMM | KC_SPC	,"+{sc33}"	)
 	SetKana( KC_DOT | KC_SPC	,"+{sc34}"	)
 	SetKana( KC_SLSH | KC_SPC	,"+{sc35}"	)
-	SetKana( KC_INT1 | KC_SPC	,"_"		)
+	SetKana( KC_INT1 | KC_SPC	,"+{sc73}"	)
 
 ; スペースキーの定義は不要
 
@@ -261,7 +261,15 @@ if (KeyDriver == "kbd101.dll")
 {
 	SetEisu( KC_GRV				,"{sc29}"	)
 	SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)
-
 	SetKana( KC_GRV				,"{sc29}"	)
 	SetKana( KC_GRV | KC_SPC	,"+{sc29}"	)
+
+	SetEisu( JP_YEN				,"\"		)
+	SetEisu( JP_YEN | KC_SPC	,"|"		)
+	SetKana( JP_YEN				,"\"		)
+	SetKana( JP_YEN | KC_SPC	,"|"		)
+	SetEisu( KC_INT1			,"\"		)
+	SetEisu( KC_INT1 | KC_SPC	,"_"		)
+	SetKana( KC_INT1			,"\"		)
+	SetKana( KC_INT1 | KC_SPC	,"_"		)
 }
