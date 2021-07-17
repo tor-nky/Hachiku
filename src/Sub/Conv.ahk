@@ -32,20 +32,6 @@ OutStrs := []
 _usc := 0			; 保存されている文字数
 
 ; ----------------------------------------------------------------------
-; タイマー関数、設定
-; ----------------------------------------------------------------------
-; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
-QPCInit() {
-	DllCall("QueryPerformanceFrequency", "Int64P", Freq)
-	return Freq
-}
-QPC() {	; ミリ秒単位
-	static Freq := QPCInit() / 1000.0
-	DllCall("QueryPerformanceCounter", "Int64P", Count)
-	Return, Count / Freq
-}
-
-; ----------------------------------------------------------------------
 ; メニューで使う変数
 ; ----------------------------------------------------------------------
 SideShift1 := (SideShift = 0 ? 1 : 0)
@@ -60,7 +46,8 @@ menu, tray, NoStandard			; タスクトレイメニューの標準メニュー�
 menu, tray, add, 縦書きモード	; “縦書きモード”を追加
 if (Vertical)
 	menu, tray, Check, 縦書きモード	; “縦書きモード”にチェックを付ける
-menu, tray, add, 設定...		; “設定”を追加
+menu, tray, add, 固有名詞		; “固有名詞”を追加
+menu, tray, add, 設定...		; “設定...”を追加
 menu, tray, add					; セパレーター
 menu, tray, Standard			; 標準メニュー項目を追加
 
@@ -140,7 +127,7 @@ return
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, X30 y+1, ※ 0 は無制限
 
-	Gui, Add, Button, W60 xm+45 y+10 Default , OK
+	Gui, Add, Button, W60 xm+45 y+10 Default, OK
 	Gui, Add, Button, W60 x+0, Cancel
 	Gui, Show
 
@@ -170,6 +157,18 @@ CombTimer:	; 同時押しの判定期限タイマー
 ; ----------------------------------------------------------------------
 ; 関数
 ; ----------------------------------------------------------------------
+
+; タイマー関数
+; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
+QPCInit() {
+	DllCall("QueryPerformanceFrequency", "Int64P", Freq)
+	return Freq
+}
+QPC() {	; ミリ秒単位
+	static Freq := QPCInit() / 1000.0
+	DllCall("QueryPerformanceCounter", "Int64P", Count)
+	Return, Count / Freq
+}
 
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendNeo(Str1, Delay:=0)
@@ -364,6 +363,7 @@ SelectStr(i)
 	return Str1
 }
 
+; 変換、出力
 Convert()
 {
 	global InBufsKey, InBufReadPos, InBufsTime, InBufRest

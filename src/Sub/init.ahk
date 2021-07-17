@@ -32,7 +32,7 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ; ----------------------------------------------------------------------
 
 ; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
-IniFilePath := Path_QuoteSpaces(Path_RemoveExtension(A_ScriptFullPath) . ".ini")
+IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
 ; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
 IniRead, Vertical, %IniFilePath%, general, Vertical, 1
@@ -157,6 +157,7 @@ KOYU_K		:= KC_E | KC_R | KC_K
 KOYU_L		:= KC_E | KC_R | KC_L
 KOYU_SCLN	:= KC_E | KC_R | KC_SCLN
 KOYU_QUOT	:= KC_E | KC_R | KC_QUOT
+KOYU_GRV	:= KC_E | KC_R | KC_GRV
 KOYU_NUHS	:= KC_E | KC_R | KC_NUHS
 KOYU_BSLS	:= KC_E | KC_R | KC_BSLS
 
