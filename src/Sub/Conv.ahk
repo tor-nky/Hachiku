@@ -90,11 +90,11 @@ return
 	Gui, Destroy
 	Gui, Add, Text, , 設定
 
-	Gui, Add, Checkbox, xm y+10 vSlow, ATOK対応
+	Gui, Add, Checkbox, xm vSlow, ATOK対応
 	if Slow = 1
 		GuiControl, , Slow, 1
 
-	Gui, Add, Checkbox, xm y+10 vUSLike, USキーボード風配列
+	Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
 	if USLike = 1
 		GuiControl, , USLike, 1
 	Gui, Add, Text, X30 y+1, ※ 日本語キーボードの時のみ有効です
