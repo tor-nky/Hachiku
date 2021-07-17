@@ -100,6 +100,7 @@ menu, tray, ToggleCheck, 縦書きモード
 return
 
 設定...:
+	Gui, Destroy
 	Gui, Add, Text, , 設定
 
 	Gui, Add, Checkbox, xm y+10 vSlow, ATOK対応
