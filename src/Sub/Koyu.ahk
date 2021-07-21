@@ -141,8 +141,7 @@ KoyuRegist:
 		SetKana(KOYU_GRV	,"{固有}" . C12)
 	}
 
-	KanaSetting()	; 出力確定するかな定義に印をつける
-	EisuSetting()	; 出力確定する英数定義に印をつける
+	Setting()	; 出力確定する定義に印をつける
 
 	return
 

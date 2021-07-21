@@ -21,6 +21,7 @@
 ; 本ファイルのみで使う変数
 ; ----------------------------------------------------------------------
 ; グローバル変数
+KeyTime := 0		; キーを押した時間
 ; 入力バッファ
 InBufsKey := []
 InBufsTime := []	; 入力の時間
@@ -72,8 +73,7 @@ ButtonOK:
 		Gosub, toUSLike
 	else
 		Gosub, toJIS
-	KanaSetting()	; 出力確定するかな定義に印をつける
-	EisuSetting()	; 出力確定する英数定義に印をつける
+	Setting()	; 出力確定する定義に印をつける
 ButtonCancel:
 GuiClose:
 	Gui, Destroy
@@ -152,6 +152,10 @@ CombTimer:	; 同時押しの判定期限タイマー
 		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest = 15 ? InBufRest-- : )
 	Convert()				; 変換ルーチン
+	return
+RemoveToolTip:
+	SetTimer, RemoveToolTip, Off
+	ToolTip
 	return
 
 ; ----------------------------------------------------------------------
@@ -300,7 +304,7 @@ SendNeo(Str1, Delay:=0)
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
 {
-	global _usc, OutStrs
+	global _usc, OutStrs, SideShift, Slow, KeyTime
 ;	local Str1, StrBegin
 
 	while (i > 0 && _usc > 0)
@@ -319,7 +323,10 @@ OutBuf(i:=2)
 				else
 					Str1 := ":{確定}{BS}{IMEOff}" . Str1
 			}
-			SendNeo(Str1, 10)
+			if (SideShift = 1 || Slow = 1)
+				SendNeo(Str1, 10)
+			else
+				SendNeo(Str1, 30)	; 左右シフト英数モードの旧MS-IMEにはゆっくりと出力
 		}
 		else
 			SendNeo(Str1)
@@ -327,6 +334,11 @@ OutBuf(i:=2)
 		OutStrs[1] := OutStrs[2]
 		_usc--
 		i--
+
+		; 直前のキー変化からの時間を表示
+;		OutputTime := Round(QPC() - KeyTime, 1)
+;		ToolTip, %OutputTime% ms
+;		SetTimer, RemoveToolTip, 1000
 	}
 	return
 }
@@ -366,11 +378,11 @@ SelectStr(i)
 ; 変換、出力
 Convert()
 {
-	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
+	global InBufsKey, InBufReadPos, InBufsTime, InBufRest, KeyTime
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsSetted, DefsRepeat, DefBegin, DefEnd
 		, _usc
-		, ShiftDelay, CombDelay
+		, EnterShift, ShiftDelay, CombDelay
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, NextStr	:= ""
 		, RealKey	:= 0	; 今押している全部のキービットの集合
@@ -390,9 +402,9 @@ Convert()
 ;		, Str1
 ;		, Term		; 入力の末端2文字
 ;		, RecentKey	; 今回のキービット
-;		, KeyTime	; キーを押した時間
 ;		, KeyComb	; いま検索しようとしているキーの集合
-;		, i			; カウンタ
+;		, i, imax, j, jmax
+;					; カウンタ用
 ;		, nkeys		; 今回は何キー同時押しか
 
 	if (ConvRest > 0 || NextStr != "")
@@ -456,7 +468,7 @@ Convert()
 			spc := 0
 		}
 		; エンターキー処理
-		else if (Str1 == "Enter")
+		else if (Str1 == "Enter" && EnterShift > 0)
 		{
 			Str1 := "sc39"	; シフト
 			if ent = 0
@@ -488,14 +500,21 @@ Convert()
 		if (Str1 == "PSTimer")
 		{
 			if (LastKeyTime + ShiftDelay <= KeyTime)
+			{
+				KeyTime := LastKeyTime	; 直前のキー変化の時間
 				OutBuf()
+			}
 			continue
 		}
 		; 同時押しの判定期限到来(シフト時のみ)
 		if (Str1 == "CombTimer")
 		{
 			if ((RealKey & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
-				OutBuf(), Last2Keys := 0, LastKeys := 0
+			{
+				KeyTime := LastKeyTime	; 直前のキー変化の時間
+				OutBuf()
+				Last2Keys := 0, LastKeys := 0
+			}
 			continue
 		}
 
@@ -516,18 +535,23 @@ Convert()
 		if (Term == "up")
 			RecentKey := "0x" . SubStr(Str1, StrLen(Str1) - 4, 2)
 		; sc○○ で入力
-		else if (SubStr(Str1, 1, 2) == "sc")
-		{
-			RecentKey := "0x" . Term
-			Str1 := "{sc" . Term . "}"
-		}	; ここで RecentKey に sc○○ から 0x○○ に変換されたものが入っているが、
-			; Autohotkey は十六進数の数値としてそのまま扱える
-		; sc○○ 以外で入力
 		else
 		{
-			RecentKey := 0
-			Str1 := "{" . Str1 . "}"
-			nkeys := -1	; 後の検索は不要なため
+			if (SubStr(Str1, 1, 2) == "sc")
+			{
+				RecentKey := "0x" . Term
+				Str1 := "{sc" . Term . "}"
+			}	; ここで RecentKey に sc○○ から 0x○○ に変換されたものが入っているが、
+				; Autohotkey は十六進数の数値としてそのまま扱える
+			; sc○○ 以外で入力
+			else
+			{
+				RecentKey := 0
+				Str1 := "{" . Str1 . "}"
+				nkeys := -1	; 後の検索は不要なため
+			}
+			if (RealKey & KC_SPC)	; スペースキーが押されていたら、シフトを加える(SandSの実装)
+				Str1 := "+" . Str1
 		}
 
 		; ビットに変換
@@ -575,9 +599,9 @@ Convert()
 			; グループありの3キー入力を検索
 			if (LastGroup != 0 && nkeys = 0)
 			{
-				i := DefBegin[3]	; 検索開始場所の設定
+				i := DefBegin[3], imax := DefEnd[3]	; 検索場所の設定
 				KeyComb := (RealKey & KC_SPC) | RecentKey | LastKeys | Last2Keys
-				while (i < DefEnd[3])
+				while (i < imax)
 				{
 					if (DefsGroup[i] = LastGroup
 						&& (DefsKey[i] & RecentKey) 			; 今回のキーを含み
@@ -586,7 +610,8 @@ Convert()
 						&& DefsKanaMode[i] = KanaMode)			; 英数用、かな用の種別が一致していること
 					{
 						if (_lks = 3 && CombDelay > 0 && (RealKey & KC_SPC) && RecentKey != KC_SPC)
-						{
+						{	; シフト中の同時打鍵判定期限があり、
+							; 前回もシフト付き3キー入力だったら、シフト残りを消去して3キー入力の検索を終了
 							LastKeys := 0
 							break
 						}
@@ -605,9 +630,9 @@ Convert()
 			; グループありの2キー入力を検索
 			if (LastGroup != 0 && nkeys = 0)
 			{
-				i := DefBegin[2]	; 検索開始場所の設定
+				i := DefBegin[2], imax := DefEnd[2]	; 検索場所の設定
 				KeyComb := (RealKey & KC_SPC) | RecentKey | LastKeys
-				while (i < DefEnd[2])
+				while (i < imax)
 				{
 					if (DefsGroup[i] = LastGroup
 						&& (DefsKey[i] & RecentKey)
@@ -616,7 +641,8 @@ Convert()
 						&& DefsKanaMode[i] = KanaMode)
 					{
 						if (_lks = 2 && CombDelay > 0 && (RealKey & KC_SPC) && RecentKey != KC_SPC)
-						{
+						{	; シフト中の同時打鍵判定期限があり、
+							; 前回もシフト付き2キー入力だったら、シフト残りを消去して2キー入力の検索を終了
 							LastKeys := 0
 							break
 						}
@@ -632,18 +658,20 @@ Convert()
 			; グループありの1キー入力を検索
 			if (LastGroup != 0 && nkeys = 0)
 			{
-				i := DefBegin[1]	; 検索開始場所の設定
+				i := DefBegin[1], imax := DefEnd[1]	; 検索場所の設定
 				if (RecentKey = KC_SPC)
 					KeyComb := KC_SPC | LastKeys
 				else
 					KeyComb := (RealKey & KC_SPC) | RecentKey
-				while (i < DefEnd[1])
+				while (i < imax)
 				{
 					if (DefsGroup[i] = LastGroup
 						&& DefsKey[i] = KeyComb
 						&& DefsKanaMode[i] = KanaMode)
 					{
-						if (RecentKey = KC_SPC)
+						if _lks >= 2
+							OutBuf()	; 前回が2キー、3キー同時押しだったら、仮出力バッファを全て出力
+						else if (RecentKey = KC_SPC)
 							nBack := 1
 						nkeys := 1
 						break
@@ -654,9 +682,9 @@ Convert()
 			; 3キー入力を検索
 			if nkeys = 0
 			{
-				i := DefBegin[3]	; 検索開始場所の設定
+				i := DefBegin[3], imax := DefEnd[3]	; 検索場所の設定
 				KeyComb := (RealKey & KC_SPC) | RecentKey | LastKeys | Last2Keys
-				while (i < DefEnd[3])
+				while (i < imax)
 				{
 					if ((DefsKey[i] & RecentKey)				; 今回のキーを含み
 						&& (DefsKey[i] & KeyComb) = DefsKey[i]	; 検索中のキー集合が、いま調べている定義内にあり
@@ -664,7 +692,8 @@ Convert()
 						&& DefsKanaMode[i] = KanaMode)			; 英数用、かな用の種別が一致していること
 					{
 						if (_lks = 3 && CombDelay > 0 && (RealKey & KC_SPC) && RecentKey != KC_SPC)
-						{
+						{	; シフト中の同時打鍵判定期限があり、
+							; 前回もシフト付き3キー入力だったら、シフト残りを消去して3キー入力の検索を終了
 							LastKeys := 0
 							break
 						}
@@ -683,9 +712,9 @@ Convert()
 			; 2キー入力を検索
 			if nkeys = 0
 			{
-				i := DefBegin[2]	; 検索開始場所の設定
+				i := DefBegin[2], imax := DefEnd[2]	; 検索場所の設定
 				KeyComb := (RealKey & KC_SPC) | RecentKey | LastKeys
-				while (i < DefEnd[2])
+				while (i < imax)
 				{
 					if ((DefsKey[i] & RecentKey)
 						&& (DefsKey[i] & KeyComb) = DefsKey[i]
@@ -693,7 +722,8 @@ Convert()
 						&& DefsKanaMode[i] = KanaMode)
 					{
 						if (_lks = 2 && CombDelay > 0 && (RealKey & KC_SPC) && RecentKey != KC_SPC)
-						{
+						{	; シフト中の同時打鍵判定期限があり、
+							; 前回もシフト付き2キー入力だったら、シフト残りを消去して2キー入力の検索を終了
 							LastKeys := 0
 							break
 						}
@@ -709,17 +739,19 @@ Convert()
 			; 1キー入力を検索
 			if nkeys = 0
 			{
-				i := DefBegin[1]	; 検索開始場所の設定
+				i := DefBegin[1], imax := DefEnd[1]	; 検索場所の設定
 				if (RecentKey = KC_SPC)
 					KeyComb := KC_SPC | LastKeys
 				else
 					KeyComb := (RealKey & KC_SPC) | RecentKey
- 				while (i < DefEnd[1])
+ 				while (i < imax)
 				{
 					if (DefsKey[i] = KeyComb
 						&& DefsKanaMode[i] = KanaMode)
 					{
-						if (RecentKey = KC_SPC)
+						if _lks >= 2
+							OutBuf()	; 前回が2キー、3キー同時押しだったら、仮出力バッファを全て出力
+						else if (RecentKey = KC_SPC)
 							nBack := 1
 						nkeys := 1
 						break
@@ -744,35 +776,52 @@ Convert()
 				Str1 := SelectStr(i)			; 出力する文字列
 				LastSetted := DefsSetted[i]		; 出力確定するか検索
 			}
-			else	; 見つからなかった時
+			else if nkeys = 0	; 定義が見つけられなかった時
 			{
-				if (RealKey & KC_SPC)	; スペースキーが押されていたら、シフトを加える(SandSの実装)
-					Str1 := "+" . Str1
-				LastSetted := 0	; 出力確定はしない
+				; 出力確定するか検索
+				KeyComb := DefsKey[i]
+				LastSetted := 2	; 初期値は出力確定する
+				j := DefBegin[3]
+				jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
+ 				while (j < jmax)
+				{
+					; KeyComb は DefsKey[j] に内包されているか
+					if (DefsKey[j] != KeyComb && DefsKanaMode[j] = KanaMode && (DefsKey[j] & KeyComb) = KeyComb)
+					{
+						if ((DefsKey[j] & KC_SPC) = (KeyComb & KC_SPC))
+						{	; シフトも一致
+							LastSetted := 0	; 出力確定はしない
+							break
+						}
+						else
+							LastSetted := 1	; 後置シフトは出力確定しない
+					}
+					j++
+				}
 			}
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, Str1)
 			; 出力確定文字か？
-			if (!RecentKey || LastSetted > (ShiftDelay > 0 ? 1 : 0))
+			if (nkeys < 0 || LastSetted > (ShiftDelay > 0 ? 1 : 0))
 				OutBuf()	; 出力確定
 			else if (InBufRest = 15 && NextStr == "")
 			{
 				; 後置シフトの判定期限タイマー起動
 				if LastSetted = 1
-					SetTimer, PSTimer, % ShiftDelay + 10
+					SetTimer, PSTimer, % ShiftDelay + 13
 				; 同時押しの判定期限タイマー起動(シフト時のみ)
 				if (CombDelay > 0 && (RealKey & KC_SPC))
-					SetTimer, CombTimer, % CombDelay + 10
+					SetTimer, CombTimer, % CombDelay + 13
 			}
 
 			; 次回に向けて変数を更新
-			Last2Keys := (nkeys >= 2 ? 0 : LastKeys)			; 2、3キー入力のときは、この前のキービットを保存しない
-			LastKeys := (nkeys >= 1 ? DefsKey[i] : RecentKey)	; 今回のキービットを保存
 			LastKeyTime := KeyTime		; 有効なキーを押した時間を保存
 			_lks := nkeys				; 何キー同時押しだったかを保存
-			LastGroup := DefsGroup[i]	; 何グループだったか保存
-			if (DefsRepeat[i] & R)
+			Last2Keys := (nkeys >= 2 ? 0 : LastKeys)			; 2、3キー入力のときは、この前のキービットを保存しない
+			LastKeys := (nkeys >= 1 ? DefsKey[i] : RecentKey)	; 今回のキービットを保存
+			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)		; 何グループだったか保存
+			if (nkeys >= 1 && DefsRepeat[i] & R)
 				RepeatKey := RecentKey	; キーリピートできる
 		}
 	}
@@ -841,6 +890,9 @@ sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
 ; キー入力部(左右シフトかな)
+#If (KeyDriver == "kbd101.dll" && SideShift > 0)	; 設定がUSキーボードの場合
++sc29::	; (JIS)半角/全角	(US)`
+#If		; End #If (KeyDriver == "kbd101.dll" && SideShift > 0)
 #If (SideShift > 0)
 +sc02::	; 1
 +sc03::	; 2
@@ -891,11 +943,8 @@ sc39::	; Space
 +sc35::	; /
 +sc73::	; (JIS)_
 #If		; End #If (SideShift > 0)
-; エンター同時押しをシフトとして扱う場合
-#If (EnterShift > 0)
-Enter::
-#If		; End #If (EnterShift > 0)
 ; SandS 用
+Enter::
 Up::	; ※小文字にしてはいけない
 Left::
 Right::
@@ -966,6 +1015,9 @@ sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
 ; キー押上げ(左右シフトかな)
+#If (KeyDriver == "kbd101.dll" && SideShift > 0)	; 設定がUSキーボードの場合
++sc29 up::	; (JIS)半角/全角	(US)`
+#If		; End #If (KeyDriver == "kbd101.dll" && SideShift > 0)
 #If (SideShift > 0)
 +sc02 up::	; 1
 +sc03 up::	; 2
@@ -1016,8 +1068,7 @@ sc39 up::	; Space
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
 #If		; End #If (SideShift > 0)
-; エンター同時押しをシフトとして扱う場合
-#If (EnterShift > 0)
+#If (EnterShift > 0)	; エンター同時押しをシフトとして扱う場合
 Enter up::
 #If		; End #If (EnterShift > 0)
 ; 入力バッファへ保存
