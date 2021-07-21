@@ -504,6 +504,8 @@ Convert()
 				KeyTime := LastKeyTime	; 直前のキー変化の時間
 				OutBuf()
 			}
+			else
+				SetTimer, PSTimer, -10
 			continue
 		}
 		; 同時押しの判定期限到来(シフト時のみ)
@@ -515,6 +517,8 @@ Convert()
 				OutBuf()
 				Last2Keys := 0, LastKeys := 0
 			}
+			else
+				SetTimer, CombTimer, -10
 			continue
 		}
 
@@ -802,19 +806,6 @@ Convert()
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, Str1)
-			; 出力確定文字か？
-			if (nkeys < 0 || LastSetted > (ShiftDelay > 0 ? 1 : 0))
-				OutBuf()	; 出力確定
-			else if (InBufRest = 15 && NextStr == "")
-			{
-				; 後置シフトの判定期限タイマー起動
-				if LastSetted = 1
-					SetTimer, PSTimer, % ShiftDelay + 13
-				; 同時押しの判定期限タイマー起動(シフト時のみ)
-				if (CombDelay > 0 && (RealKey & KC_SPC))
-					SetTimer, CombTimer, % CombDelay + 13
-			}
-
 			; 次回に向けて変数を更新
 			LastKeyTime := KeyTime		; 有効なキーを押した時間を保存
 			_lks := nkeys				; 何キー同時押しだったかを保存
@@ -823,6 +814,19 @@ Convert()
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)		; 何グループだったか保存
 			if (nkeys >= 1 && DefsRepeat[i] & R)
 				RepeatKey := RecentKey	; キーリピートできる
+
+			; 出力確定文字か？
+			if (nkeys < 0 || LastSetted > (ShiftDelay > 0 ? 1 : 0))
+				OutBuf()	; 出力確定
+			else if (InBufRest = 15 && NextStr == "")
+			{
+				; 同時押しの判定期限タイマー起動(シフト時のみ)
+				if (CombDelay > 0 && (RealKey & KC_SPC))
+					SetTimer, CombTimer, % - CombDelay
+				; 後置シフトの判定期限タイマー起動
+				if LastSetted = 1
+					SetTimer, PSTimer, % - ShiftDelay
+			}
 		}
 	}
 
