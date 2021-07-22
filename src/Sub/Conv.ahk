@@ -118,12 +118,12 @@ return
 
 	Gui, Add, Text, xm y+15, 後置シフトの待ち時間
 	Gui, Add, Edit, X140 yp-3 W45
-	Gui, Add, UpDown, vShiftDelay Range0-120, %ShiftDelay%
+	Gui, Add, UpDown, vShiftDelay Range0-200, %ShiftDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 
 	Gui, Add, Text, xm y+15, シフト中の同時打鍵判定
 	Gui, Add, Edit, X140 yp-3 W45
-	Gui, Add, UpDown, vCombDelay Range0-120, %CombDelay%
+	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, X30 y+1, ※ 0 は無制限
 
