@@ -89,6 +89,7 @@ return
 設定...:
 	Gui, Destroy
 	Gui, Add, Text, , 設定
+	Gui, Add, Text, x+0 W180 Right, %Version%
 
 	Gui, Add, Checkbox, xm vSlow, ATOK対応
 	if Slow = 1
@@ -97,11 +98,11 @@ return
 	Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
 	if USLike = 1
 		GuiControl, , USLike, 1
-	Gui, Add, Text, X30 y+1, ※ 日本語キーボードの時のみ有効です
-	Gui, Add, Text, X30 y+1, ※ 左右シフトかなに設定してください
+	Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
+	Gui, Add, Text, xm+18 y+1, ※ 左右シフトかなに設定してください
 
 	Gui, Add, Text, xm y+10, 左右シフト
-	Gui, Add, Radio, X80 yp+0 Group vSideShift1, 英数
+	Gui, Add, Radio, xm+68 yp+0 Group vSideShift1, 英数
 	Gui, Add, Radio, x+0 vSideShift2, かな
 	if SideShift1 = 1
 		GuiControl, , SideShift1, 1
@@ -109,7 +110,7 @@ return
 		GuiControl, , SideShift2, 1
 
 	Gui, Add, Text, xm, エンター
-	Gui, Add, Radio, X80 yp+0 Group vEnterShift1, 通常
+	Gui, Add, Radio, xm+68 yp+0 Group vEnterShift1, 通常
 	Gui, Add, Radio, x+0 vEnterShift2, 同時押しシフト
 	if EnterShift1 = 1
 		GuiControl, , EnterShift1, 1
@@ -117,15 +118,15 @@ return
 		GuiControl, , EnterShift2, 1
 
 	Gui, Add, Text, xm y+15, 後置シフトの待ち時間
-	Gui, Add, Edit, X140 yp-3 W45
+	Gui, Add, Edit, xm+128 yp-3 W45
 	Gui, Add, UpDown, vShiftDelay Range0-200, %ShiftDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 
 	Gui, Add, Text, xm y+15, シフト中の同時打鍵判定
-	Gui, Add, Edit, X140 yp-3 W45
+	Gui, Add, Edit, xm+128 yp-3 W45
 	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
-	Gui, Add, Text, X30 y+1, ※ 0 は無制限
+	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
 
 	Gui, Add, Button, W60 xm+45 y+10 Default, OK
 	Gui, Add, Button, W60 x+0, Cancel
