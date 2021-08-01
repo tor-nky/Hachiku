@@ -36,14 +36,15 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
 ; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
+IniRead, INIVersion, %IniFilePath%, general, Version, ""
 IniRead, Vertical, %IniFilePath%, general, Vertical, 1
 	; Vertical		0: 横書き用, 1: 縦書き用
 IniRead, Slow, %IniFilePath%, general, Slow, 0
 	; Slow			0: MS-IME専用, 1: ATOK可
 IniRead, USLike, %IniFilePath%, general, USLike, 0
 	; USLike 0: 英数表記通り, 1: USキーボード風配列
-IniRead, SideShift, %IniFilePath%, general, SideShift, 1
-	; SideShift		0: 左右シフト英数, 1: 左右シフトかな
+IniRead, SideShift, %IniFilePath%, general, SideShift, 2
+	; SideShift		0-1: 左右シフト英数, 2: 左右シフトかな
 IniRead, EnterShift, %IniFilePath%, general, EnterShift, 0
 	; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
 IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
@@ -51,6 +52,10 @@ IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
 IniRead, CombDelay, %IniFilePath%, general, CombDelay, 60
 	; CombDelay		0以下: 同時押しは時間無制限
 	; 				1以上: シフト中の同時打鍵判定時間(ミリ秒)
+
+IniRead, TestMode, %IniFilePath%, test, TestMode, 0
+IniRead, DispTime, %IniFilePath%, test, DispTime, 0
+	; DispTime		0: なし, 1: 変換時間表示あり
 
 ; ----------------------------------------------------------------------
 ; 配列定義で使う変数
@@ -117,65 +122,6 @@ KC_INT1	:= 1 << 0x38	; sc73
 
 KC_SPC	:= 1 << 0x39
 
-; 固有名詞定義用
-KOYU_1		:= KC_U | KC_I | KC_1
-KOYU_2		:= KC_U | KC_I | KC_2
-KOYU_3		:= KC_U | KC_I | KC_3
-KOYU_4		:= KC_U | KC_I | KC_4
-KOYU_5		:= KC_U | KC_I | KC_5
-KOYU_6		:= KC_E | KC_R | KC_6
-KOYU_7		:= KC_E | KC_R | KC_7
-KOYU_8		:= KC_E | KC_R | KC_8
-KOYU_9		:= KC_E | KC_R | KC_9
-KOYU_0		:= KC_E | KC_R | KC_0
-KOYU_MINS	:= KC_E | KC_R | KC_MINS
-KOYU_EQL	:= KC_E | KC_R | KC_EQL
-KOYU_YEN	:= KC_E | KC_R | JP_YEN
-
-KOYU_Q		:= KC_U | KC_I | KC_Q
-KOYU_W		:= KC_U | KC_I | KC_W
-KOYU_E		:= KC_U | KC_I | KC_E
-KOYU_R		:= KC_U | KC_I | KC_R
-KOYU_T		:= KC_U | KC_I | KC_T
-
-KOYU_Y		:= KC_E | KC_R | KC_Y
-KOYU_U		:= KC_E | KC_R | KC_U
-KOYU_I		:= KC_E | KC_R | KC_I
-KOYU_O		:= KC_E | KC_R | KC_O
-KOYU_P		:= KC_E | KC_R | KC_P
-KOYU_LBRC	:= KC_E | KC_R | KC_LBRC
-KOYU_RBRC	:= KC_E | KC_R | KC_RBRC
-
-KOYU_A		:= KC_U | KC_I | KC_A
-KOYU_S		:= KC_U | KC_I | KC_S
-KOYU_D		:= KC_U | KC_I | KC_D
-KOYU_F		:= KC_U | KC_I | KC_F
-KOYU_G		:= KC_U | KC_I | KC_G
-
-KOYU_H		:= KC_E | KC_R | KC_H
-KOYU_J		:= KC_E | KC_R | KC_J
-KOYU_K		:= KC_E | KC_R | KC_K
-KOYU_L		:= KC_E | KC_R | KC_L
-KOYU_SCLN	:= KC_E | KC_R | KC_SCLN
-KOYU_QUOT	:= KC_E | KC_R | KC_QUOT
-KOYU_GRV	:= KC_E | KC_R | KC_GRV
-KOYU_NUHS	:= KC_E | KC_R | KC_NUHS
-KOYU_BSLS	:= KC_E | KC_R | KC_BSLS
-
-KOYU_Z		:= KC_U | KC_I | KC_Z
-KOYU_X		:= KC_U | KC_I | KC_X
-KOYU_C		:= KC_U | KC_I | KC_C
-KOYU_V		:= KC_U | KC_I | KC_V
-KOYU_B		:= KC_U | KC_I | KC_B
-
-KOYU_N		:= KC_E | KC_R | KC_N
-KOYU_M		:= KC_E | KC_R | KC_M
-KOYU_COMM	:= KC_E | KC_R | KC_COMM
-KOYU_DOT	:= KC_E | KC_R | KC_DOT
-KOYU_SLSH	:= KC_E | KC_R | KC_SLSH
-KOYU_INT1	:= KC_E | KC_R | KC_INT1
-
-
 ; リピート定義用
 R := 1
 
@@ -192,13 +138,14 @@ DefsYokoStr := []	; 横書き用定義
 DefsRepeat := []	; 1: リピートできる
 DefsSetted := []	; 0: 出力確定しない,
 					; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
-DefBegin	:= [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
-DefEnd	:= [1, 1, 1]		; 定義の終わり+1 1キー, 2キー同時, 3キー同時
+DefBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
+DefEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
 
 ; キーボードドライバを調べて KeyDriver に格納する
 ; 参考: https://ixsvr.dyndns.org/blog/764
 RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
-
+USKB := (KeyDriver = "kbd101.dll" ? True : False)
+USKBSideShift := (USKB = 1 && SideShift > 0 ? True : False)
 
 ; ----------------------------------------------------------------------
 ; 関数
@@ -275,6 +222,8 @@ StrReplace(Str1)
 	return Str1
 }
 
+; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
+; 先頭が"{記号}"または"{直接}"だったらそのまま
 Analysis(Str1)
 {
 ;	local StrBegin
@@ -282,7 +231,7 @@ Analysis(Str1)
 ;		, len, StrChopped, c, bracket
 
 	if (Str1 == "{記号}" || Str1 == "{直接}")
-		return ""
+		return ""	; 有効な文字列がないので空白を返す
 
 	StrBegin := SubStr(Str1, 1, 4)
 	if (StrBegin == "{記号}" || StrBegin == "{直接}")
@@ -290,7 +239,9 @@ Analysis(Str1)
 
 	; 1文字ずつ分析する
 	len := StrLen(Str1)
-	StrChopped := "", len2 := 0, bracket := 0
+	StrChopped := ""
+	len2 := 0
+	bracket := 0
 	i := 1
 	while (i <= len)
 	{
@@ -299,7 +250,8 @@ Analysis(Str1)
 			bracket := 0
 		else if (c == "{" || bracket > 0)
 			bracket++
-		StrChopped .= c, len2++
+		StrChopped .= c
+		len2++
 		if (i = len || !(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#"))
 		{
 			; ASCIIコードでない
@@ -307,7 +259,8 @@ Analysis(Str1)
 			 || SubStr(StrChopped, 1, 3) = "{U+"
 			 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127))
 				return "{記号}" . Str1	; 先頭に"記号"を書き足して終了
-			StrChopped := "", len2 := 0
+			StrChopped := ""
+			len2 := 0
 		}
 		i++
 	}
@@ -399,12 +352,13 @@ Setting()
 ;	local nkeys, i, imax, j, jmax	; カウンタ用
 
 	; 出力確定するか検索
-	i := DefBegin[3], imax := DefEnd[1]
+	i := DefBegin[3]
+	imax := DefEnd[1]
 	while (i < imax)
 	{
 		KanaMode := DefsKanaMode[i]
 		KeyComb := DefsKey[i]
-		DefsSetted[i] := 2	; 初期値は出力確定する
+		LastSetted := 2	; 初期値は出力確定する
 		nkeys := CountBit(KeyComb)	; 何キー同時押しか
 		j := DefBegin[3]
 		jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
@@ -415,14 +369,15 @@ Setting()
 			{
 				if ((DefsKey[j] & KC_SPC) = (KeyComb & KC_SPC))
 				{	; シフトも一致
-					DefsSetted[i] := 0	; 出力確定はしない
+					LastSetted := 0	; 出力確定はしない
 					break
 				}
 				else
-					DefsSetted[i] := 1	; 後置シフトは出力確定しない
+					LastSetted := 1	; 後置シフトは出力確定しない
 			}
 			j++
 		}
+		DefsSetted[i] := LastSetted
 		i++
 	}
 

@@ -32,7 +32,7 @@
 ; ----------------------------------------------------------------------
 toUSLike:
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (KeyDriver == "kbd101.dll")
+	if (KeyDriver = "kbd101.dll")
 		return
 
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
@@ -77,7 +77,7 @@ toUSLike:
 	SetKana( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
 
 	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (KeyDriver == "kbdnec.dll")
+	if (KeyDriver = "kbdnec.dll")
 	{
 		SetEisu( KC_NUHS			,"+{sc0D}"	)	; `
 		SetEisu( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
@@ -100,7 +100,7 @@ toUSLike:
 ; ----------------------------------------------------------------------
 toJIS:
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (KeyDriver == "kbd101.dll")
+	if (KeyDriver = "kbd101.dll")
 		return
 
 	SetEisu( KC_EQL		,"{sc0D}"	)
