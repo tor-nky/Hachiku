@@ -35,6 +35,8 @@ toUSLike:
 	if (KeyDriver = "kbd101.dll")
 		return
 
+	Group := 0	; 0 はグループAll
+
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
 	SetEisu( KC_LBRC			,"{sc1B}"	)	; [
 	SetEisu( KC_RBRC			,"{sc2B}"	)	; ]
@@ -102,6 +104,8 @@ toJIS:
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver = "kbd101.dll")
 		return
+
+	Group := 0	; 0 はグループAll
 
 	SetEisu( KC_EQL		,"{sc0D}"	)
 	SetEisu( KC_LBRC	,"{sc1A}"	)
