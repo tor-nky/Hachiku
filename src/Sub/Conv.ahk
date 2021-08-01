@@ -521,7 +521,7 @@ Convert()
 			else
 				StringTrimLeft, NowKey, NowKey, 1	; 先頭の "+" を消去
 		}
-		else if sft > 0			; 左右シフトあり→なし
+		else if sft > 0				; 左右シフトあり→なし
 		{
 			if (spc = 0 && ent = 0)
 			{
@@ -567,7 +567,7 @@ Convert()
 		}
 		else if (NowKey == "Enter up")
 		{
-			NowKey := "sc39 up"	; シフト押上げ
+			NowKey := "sc39 up"		; シフト押上げ
 			if (sft > 0 || spc > 0)
 			{
 				if ent = 1
@@ -778,7 +778,7 @@ Convert()
 				LastSetted := 2	; 初期値は出力確定する
 				j := DefBegin[3]
 				jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
- 				while (j < jmax)
+				while (j < jmax)
 				{
 					; SearchBit は DefsKey[j] に内包されているか
 					if (DefsKey[j] != SearchBit && DefsKanaMode[j] = KanaMode && (DefsKey[j] & SearchBit) = SearchBit)
@@ -884,7 +884,7 @@ sc34::	; .
 sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
-; キー入力部(左右シフトかな)
+; キー入力部(左右シフト)
 #If (USKBSideShift = True)	; USキーボードの場合
 +sc29::	; (JIS)半角/全角	(US)`
 #If		; End #If (USKBSideShift = True)
@@ -1009,7 +1009,7 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
-; キー押上げ(左右シフトかな)
+; キー押上げ(左右シフト)
 #If (USKBSideShift = True)	; USキーボードの場合
 +sc29 up::	; (JIS)半角/全角	(US)`
 #If		; End #If (USKBSideShift = True)
@@ -1063,7 +1063,8 @@ sc39 up::	; Space
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
 #If		; End #If (SideShift > 0)
-#If (EnterShift > 0)	; エンター同時押しをシフトとして扱う場合
+; エンター同時押しをシフトとして扱う場合
+#If (EnterShift > 0)
 Enter up::
 #If		; End #If (EnterShift > 0)
 ; 入力バッファへ保存
