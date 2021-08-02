@@ -22,8 +22,6 @@
 
 ; 固有名詞ショートカットの読み込み
 KoyuReadAll:
-	KoyuNumber := 1
-
 	E01 := KoyuIniRead(KoyuNumber, "E01")
 	E02 := KoyuIniRead(KoyuNumber, "E02")
 	E03 := KoyuIniRead(KoyuNumber, "E03")
@@ -83,73 +81,81 @@ KoyuReadAll:
 ; 固有名詞ショートカットの登録
 ; 出力確定する定義に印をつけることを含む
 KoyuRegist:
-	SetKana(KOYU_1		,"{固有}" . E01)
-	SetKana(KOYU_2		,"{固有}" . E02)
-	SetKana(KOYU_3		,"{固有}" . E03)
-	SetKana(KOYU_4		,"{固有}" . E04)
-	SetKana(KOYU_5		,"{固有}" . E05)
-	SetKana(KOYU_6		,"{固有}" . E06)
-	SetKana(KOYU_7		,"{固有}" . E07)
-	SetKana(KOYU_8		,"{固有}" . E08)
-	SetKana(KOYU_9		,"{固有}" . E09)
-	SetKana(KOYU_0		,"{固有}" . E10)
-	SetKana(KOYU_MINS	,"{固有}" . E11)
-	SetKana(KOYU_EQL	,"{固有}" . E12)
-	SetKana(KOYU_YEN	,"{固有}" . E13)
+	Group := 1	; 左手側
+		SetKana(KC_U | KC_I | KC_1		,"{固有}" . E01)
+		SetKana(KC_U | KC_I | KC_2		,"{固有}" . E02)
+		SetKana(KC_U | KC_I | KC_3		,"{固有}" . E03)
+		SetKana(KC_U | KC_I | KC_4		,"{固有}" . E04)
+		SetKana(KC_U | KC_I | KC_5		,"{固有}" . E05)
+	Group := 2	; 右手側
+		SetKana(KC_E | KC_R | KC_6		,"{固有}" . E06)
+		SetKana(KC_E | KC_R | KC_7		,"{固有}" . E07)
+		SetKana(KC_E | KC_R | KC_8		,"{固有}" . E08)
+		SetKana(KC_E | KC_R | KC_9		,"{固有}" . E09)
+		SetKana(KC_E | KC_R | KC_0		,"{固有}" . E10)
+		SetKana(KC_E | KC_R | KC_MINS	,"{固有}" . E11)
+		SetKana(KC_E | KC_R | KC_EQL	,"{固有}" . E12)
+		SetKana(KC_E | KC_R | JP_YEN	,"{固有}" . E13)
 
-	SetKana(KOYU_Q		,"{固有}" . D01)
-	SetKana(KOYU_W		,"{固有}" . D02)
-	SetKana(KOYU_E		,"{固有}" . D03)
-	SetKana(KOYU_R		,"{固有}" . D04)
-	SetKana(KOYU_T		,"{固有}" . D05)
-	SetKana(KOYU_Y		,"{固有}" . D06)
-	SetKana(KOYU_U		,"{固有}" . D07)
-	SetKana(KOYU_I		,"{固有}" . D08)
-	SetKana(KOYU_O		,"{固有}" . D09)
-	SetKana(KOYU_P		,"{固有}" . D10)
-	SetKana(KOYU_LBRC	,"{固有}" . D11)
-	SetKana(KOYU_RBRC	,"{固有}" . D12)
+	Group := 1	; 左手側
+		SetKana(KC_U | KC_I | KC_Q		,"{固有}" . D01)
+		SetKana(KC_U | KC_I | KC_W		,"{固有}" . D02)
+		SetKana(KC_U | KC_I | KC_E		,"{固有}" . D03)
+		SetKana(KC_U | KC_I | KC_R		,"{固有}" . D04)
+		SetKana(KC_U | KC_I | KC_T		,"{固有}" . D05)
+	Group := 2	; 右手側
+		SetKana(KC_E | KC_R | KC_Y		,"{固有}" . D06)
+		SetKana(KC_E | KC_R | KC_U		,"{固有}" . D07)
+		SetKana(KC_E | KC_R | KC_I		,"{固有}" . D08)
+		SetKana(KC_E | KC_R | KC_O		,"{固有}" . D09)
+		SetKana(KC_E | KC_R | KC_P		,"{固有}" . D10)
+		SetKana(KC_E | KC_R | KC_LBRC	,"{固有}" . D11)
+		SetKana(KC_E | KC_R | KC_RBRC	,"{固有}" . D12)
 
-	SetKana(KOYU_A		,"{固有}" . C01)
-	SetKana(KOYU_S		,"{固有}" . C02)
-	SetKana(KOYU_D		,"{固有}" . C03)
-	SetKana(KOYU_F		,"{固有}" . C04)
-	SetKana(KOYU_G		,"{固有}" . C05)
-	SetKana(KOYU_H		,"{固有}" . C06)
-	SetKana(KOYU_J		,"{固有}" . C07)
-	SetKana(KOYU_K		,"{固有}" . C08)
-	SetKana(KOYU_L		,"{固有}" . C09)
-	SetKana(KOYU_SCLN	,"{固有}" . C10)
-	SetKana(KOYU_QUOT	,"{固有}" . C11)
-	SetKana(KOYU_NUHS	,"{固有}" . C12)
+	Group := 1	; 左手側
+		SetKana(KC_U | KC_I | KC_A		,"{固有}" . C01)
+		SetKana(KC_U | KC_I | KC_S		,"{固有}" . C02)
+		SetKana(KC_U | KC_I | KC_D		,"{固有}" . C03)
+		SetKana(KC_U | KC_I | KC_F		,"{固有}" . C04)
+		SetKana(KC_U | KC_I | KC_G		,"{固有}" . C05)
+	Group := 2	; 右手側
+		SetKana(KC_E | KC_R | KC_H		,"{固有}" . C06)
+		SetKana(KC_E | KC_R | KC_J		,"{固有}" . C07)
+		SetKana(KC_E | KC_R | KC_K		,"{固有}" . C08)
+		SetKana(KC_E | KC_R | KC_L		,"{固有}" . C09)
+		SetKana(KC_E | KC_R | KC_SCLN	,"{固有}" . C10)
+		SetKana(KC_E | KC_R | KC_QUOT	,"{固有}" . C11)
+		SetKana(KC_E | KC_R | KC_NUHS	,"{固有}" . C12)
 
-	SetKana(KOYU_Z		,"{固有}" . B01)
-	SetKana(KOYU_X		,"{固有}" . B02)
-	SetKana(KOYU_C		,"{固有}" . B03)
-	SetKana(KOYU_V		,"{固有}" . B04)
-	SetKana(KOYU_B		,"{固有}" . B05)
-	SetKana(KOYU_N		,"{固有}" . B06)
-	SetKana(KOYU_M		,"{固有}" . B07)
-	SetKana(KOYU_COMM	,"{固有}" . B08)
-	SetKana(KOYU_DOT	,"{固有}" . B09)
-	SetKana(KOYU_SLSH	,"{固有}" . B10)
-	SetKana(KOYU_INT1	,"{固有}" . B11)
+	Group := 1	; 左手側
+		SetKana(KC_U | KC_I | KC_Z		,"{固有}" . B01)
+		SetKana(KC_U | KC_I | KC_X		,"{固有}" . B02)
+		SetKana(KC_U | KC_I | KC_C		,"{固有}" . B03)
+		SetKana(KC_U | KC_I | KC_V		,"{固有}" . B04)
+		SetKana(KC_U | KC_I | KC_B		,"{固有}" . B05)
+	Group := 2	; 右手側
+		SetKana(KC_E | KC_R | KC_N		,"{固有}" . B06)
+		SetKana(KC_E | KC_R | KC_M		,"{固有}" . B07)
+		SetKana(KC_E | KC_R | KC_COMM	,"{固有}" . B08)
+		SetKana(KC_E | KC_R | KC_DOT	,"{固有}" . B09)
+		SetKana(KC_E | KC_R | KC_SLSH	,"{固有}" . B10)
+		SetKana(KC_E | KC_R | KC_INT1	,"{固有}" . B11)
 
 	if (KeyDriver == "kbd101.dll")
 	{
-		SetKana(KOYU_BSLS	,"{固有}" . E13)
-		SetKana(KOYU_GRV	,"{固有}" . C12)
+		SetKana(KC_E | KC_R | KC_BSLS	,"{固有}" . E13)
+		SetKana(KC_E | KC_R | KC_GRV	,"{固有}" . C12)
 	}
 
 	Setting()	; 出力確定する定義に印をつける
 
 	return
 
-; 「固有名詞」OK
+; 「固有名詞」画面のOKボタン
 KoyuOK:
 	Gui, Submit
-	KoyuNumber := 1
 
+	; 固有名詞ショートカットの書き出し
 	KoyuIniWrite(KoyuNumber, "E01", E01)
 	KoyuIniWrite(KoyuNumber, "E02", E02)
 	KoyuIniWrite(KoyuNumber, "E03", E03)
@@ -207,8 +213,8 @@ KoyuCancel:
 	Gui, Destroy
 	return
 
-; 「固有名詞」画面
-固有名詞:
+; 「固有名詞」編集画面
+KoyuMenu:
 	Gui, Destroy
 	Gui, Add, Text, , 固有名詞ショートカット設定
 
@@ -340,7 +346,8 @@ KoyuIniRead(Number, KeyName)
 	; 設定ファイル読み込み
 	IniRead, InStr, %IniFilePath%, Koyu%Number%, %KeyName%, ""
 
-	OutStr := "", StrChopped := ""
+	OutStr := ""
+	StrChopped := ""
 	i := StrLen(InStr)
 	while i >= 1
 	{
