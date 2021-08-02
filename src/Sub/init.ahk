@@ -52,6 +52,7 @@ IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
 IniRead, CombDelay, %IniFilePath%, general, CombDelay, 60
 	; CombDelay		0以下: 同時押しは時間無制限
 	; 				1以上: シフト中の同時打鍵判定時間(ミリ秒)
+IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
 
 IniRead, TestMode, %IniFilePath%, test, TestMode, 0
 IniRead, DispTime, %IniFilePath%, test, DispTime, 0

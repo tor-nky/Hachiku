@@ -22,8 +22,6 @@
 
 ; 固有名詞ショートカットの読み込み
 KoyuReadAll:
-	KoyuNumber := 1
-
 	E01 := KoyuIniRead(KoyuNumber, "E01")
 	E02 := KoyuIniRead(KoyuNumber, "E02")
 	E03 := KoyuIniRead(KoyuNumber, "E03")
@@ -156,8 +154,8 @@ KoyuRegist:
 ; 「固有名詞」画面のOKボタン
 KoyuOK:
 	Gui, Submit
-	KoyuNumber := 1
 
+	; 固有名詞ショートカットの書き出し
 	KoyuIniWrite(KoyuNumber, "E01", E01)
 	KoyuIniWrite(KoyuNumber, "E02", E02)
 	KoyuIniWrite(KoyuNumber, "E03", E03)
