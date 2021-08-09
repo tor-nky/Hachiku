@@ -147,7 +147,7 @@ DefEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
 ; 参考: https://ixsvr.dyndns.org/blog/764
 RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
 USKB := (KeyDriver = "kbd101.dll" ? True : False)
-USKBSideShift := (USKB = 1 && SideShift > 0 ? True : False)
+USKBSideShift := (USKB == 1 && SideShift > 0 ? True : False)
 
 ; ----------------------------------------------------------------------
 ; 関数
@@ -254,7 +254,7 @@ Analysis(Str1)
 			bracket++
 		StrChopped .= c
 		len2++
-		if (i = len || !(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#"))
+		if (i == len || !(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#"))
 		{
 			; ASCIIコードでない
 			if (Asc(StrChopped) > 127
@@ -294,7 +294,7 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 	{
 		; 定義の重複があったら、古いのを消す
 		; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
-		if (DefsKey[i] = KeyComb && DefsKanaMode[i] = KanaMode)
+		if (DefsKey[i] == KeyComb && DefsKanaMode[i] == KanaMode)
 		{
 			DefsKey.RemoveAt(i)
 			DefsGroup.RemoveAt(i)
@@ -304,9 +304,9 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 			DefsRepeat.RemoveAt(i)
 
 			DefEnd[1]--
-			if nkeys > 1
+			if (nkeys > 1)
 				DefBegin[1]--, DefEnd[2]--
-			if nkeys > 2
+			if (nkeys > 2)
 				DefBegin[2]--, DefEnd[3]--
 			break
 		}
@@ -323,9 +323,9 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 		DefsRepeat.InsertAt(i, Repeat)
 
 		DefEnd[1]++
-		if nkeys > 1
+		if (nkeys > 1)
 			DefBegin[1]++, DefEnd[2]++
-		if nkeys > 2
+		if (nkeys > 2)
 			DefBegin[2]++, DefEnd[3]++
 	}
 
@@ -367,9 +367,9 @@ Setting()
 		while (j < jmax)
 		{
 			; KeyComb は DefsKey[j] に内包されているか
-			if (DefsKey[j] != KeyComb && DefsKanaMode[j] = KanaMode && (DefsKey[j] & KeyComb) = KeyComb)
+			if (DefsKey[j] != KeyComb && DefsKanaMode[j] == KanaMode && (DefsKey[j] & KeyComb) == KeyComb)
 			{
-				if ((DefsKey[j] & KC_SPC) = (KeyComb & KC_SPC))
+				if ((DefsKey[j] & KC_SPC) == (KeyComb & KC_SPC))
 				{	; シフトも一致
 					LastSetted := 0	; 出力確定はしない
 					break

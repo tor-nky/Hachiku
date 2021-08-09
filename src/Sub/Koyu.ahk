@@ -349,7 +349,7 @@ KoyuIniRead(Number, KeyName)
 	OutStr := ""
 	StrChopped := ""
 	i := StrLen(InStr)
-	while i >= 1
+	while (i >= 1)
 	{
 		c := SubStr(InStr, i, 1)
 		if (c == "#")
@@ -376,7 +376,7 @@ KoyuIniWrite(Number, KeyName, Str1:="")
 	while (i <= len)
 	{
 		c := Asc(SubStr(Str1, i, 2))
-		if c > 65535	; ユニコード拡張領域
+		if (c > 65535)	; ユニコード拡張領域
 			i += 2
 		else
 		{

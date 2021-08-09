@@ -35,11 +35,11 @@ _usc := 0			; 保存されている文字数
 ; ----------------------------------------------------------------------
 ; メニューで使う変数
 ; ----------------------------------------------------------------------
-SideShift0 := (SideShift = 0 ? 1 : 0)
-SideShift1 := (SideShift = 1 ? 1 : 0)
-SideShift2 := (SideShift = 2 ? 1 : 0)
-EnterShift0 := (EnterShift = 0 ? 1 : 0)
-EnterShift1 := (EnterShift = 1 ? 1 : 0)
+SideShift0 := (SideShift == 0 ? 1 : 0)
+SideShift1 := (SideShift == 1 ? 1 : 0)
+SideShift2 := (SideShift == 2 ? 1 : 0)
+EnterShift0 := (EnterShift == 0 ? 1 : 0)
+EnterShift1 := (EnterShift == 1 ? 1 : 0)
 
 ; ----------------------------------------------------------------------
 ; メニュー表示
@@ -75,14 +75,14 @@ exit	; 起動時はここまで実行
 ; 参考: https://rcmdnk.com/blog/2017/11/07/computer-windows-autohotkey/
 ButtonOK:
 	Gui, Submit
-	if SideShift0 = 1
+	if (SideShift0)
 		SideShift := 0
-	else if SideShift1 = 1
+	else if (SideShift1)
 		SideShift := 1
 	else
 		SideShift := 2
-	USKBSideShift := (USKB = 1 && SideShift > 0 ? 1 : 0)	; 更新
-	EnterShift := (EnterShift0 = 1 ? 0 : 1)
+	USKBSideShift := (USKB == 1 && SideShift > 0 ? 1 : 0)	; 更新
+	EnterShift := (EnterShift0 == 1 ? 0 : 1)
 	; 設定ファイル書き込み
 	IniWrite, %Version%, %IniFilePath%, general, Version
 	IniWrite, %Slow%, %IniFilePath%, general, Slow
@@ -91,9 +91,9 @@ ButtonOK:
 	IniWrite, %EnterShift%, %IniFilePath%, general, EnterShift
 	IniWrite, %ShiftDelay%, %IniFilePath%, general, ShiftDelay
 	IniWrite, %CombDelay%, %IniFilePath%, general, CombDelay
-	if TestMode > 0
+	if (TestMode)
 		IniWrite, %DispTime%, %IniFilePath%, test, DispTime
-	if USLike > 0
+	if (USLike)
 		Gosub, toUSLike
 	else
 		Gosub, toJIS
@@ -118,23 +118,23 @@ PrefMenu:
 	Gui, Add, Text, x+0 W180 Right, %Version%
 
 	Gui, Add, Checkbox, xm vSlow, ATOK対応
-	if Slow = 1
+	if (Slow)
 		GuiControl, , Slow, 1
 
 	Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
-	if USLike = 1
+	if (USLike)
 		GuiControl, , USLike, 1
 	Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
 	Gui, Add, Text, xm+18 y+1, ※ 左右シフトかなに設定してください
 
 	Gui, Add, Text, xm y+10, 左右シフト
 	Gui, Add, Radio, xm+68 yp+0 Group vSideShift0, 英数
-	if TestMode > 0
+	if (TestMode)
 		Gui, Add, Radio, x+0 vSideShift1, 英数2
 	Gui, Add, Radio, x+0 vSideShift2, かな
-	if SideShift0 = 1
+	if (SideShift0)
 		GuiControl, , SideShift0, 1
-	else if SideShift1 = 1
+	else if (SideShift1)
 		GuiControl, , SideShift1, 1
 	else
 		GuiControl, , SideShift2, 1
@@ -142,7 +142,7 @@ PrefMenu:
 	Gui, Add, Text, xm, エンター
 	Gui, Add, Radio, xm+68 yp+0 Group vEnterShift0, 通常
 	Gui, Add, Radio, x+0 vEnterShift1, 同時押しシフト
-	if EnterShift0 = 1
+	if (EnterShift0)
 		GuiControl, , EnterShift0, 1
 	else
 		GuiControl, , EnterShift1, 1
@@ -158,10 +158,10 @@ PrefMenu:
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
 
-	if TestMode > 0
+	if (TestMode)
 	{
 		Gui, Add, Checkbox, xm vDispTime, 変換時間表示
-		if DispTime = 1
+		if (DispTime)
 			GuiControl, , DispTime, 1
 	}
 
@@ -179,16 +179,16 @@ PrefMenu:
 PSTimer:	; 後置シフトの判定期限タイマー
 	; 入力バッファが空の時、保存
 	InBufsKey[InBufWritePos] := "PSTimer", InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
-		, (InBufRest = 15 ? InBufRest-- : )
+		, InBufWritePos := (InBufRest == 15 ? ++InBufWritePos & 15 : InBufWritePos)
+		, (InBufRest == 15 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
 
 CombTimer:	; 同時押しの判定期限タイマー
 	; 入力バッファが空の時、保存
 	InBufsKey[InBufWritePos] := "CombTimer", InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest = 15 ? ++InBufWritePos & 15 : InBufWritePos)
-		, (InBufRest = 15 ? InBufRest-- : )
+		, InBufWritePos := (InBufRest == 15 ? ++InBufWritePos & 15 : InBufWritePos)
+		, (InBufRest == 15 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
 
@@ -230,7 +230,7 @@ SendNeo(Str1, Delay:=0)
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
 	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
-		SlowCopied := (SlowCopied = 1 ? 0x11 : SlowCopied)
+		SlowCopied := (SlowCopied == 1 ? 0x11 : SlowCopied)
 	SetKeyDelay, -1, -1
 
 	LastDelay := QPC() - LastTickCount
@@ -254,7 +254,7 @@ SendNeo(Str1, Delay:=0)
 		StrChopped .= c
 		LenChopped++
 		if (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i = len )
+			|| i == len )
 		{
 			; SendRaw(直接入力モード)にする時
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
@@ -274,7 +274,7 @@ SendNeo(Str1, Delay:=0)
 						i++
 					}
 					; 出力直後のディレイ
-					if PostDelay > 0
+					if (PostDelay > 0)
 						Sleep, PostDelay
 				}
 				break
@@ -288,7 +288,7 @@ SendNeo(Str1, Delay:=0)
 				StrChopped := "{vkF3}"	; 半角/全角
 				PostDelay := 30
 			}
-			else if (SlowCopied = 0x11 && SubStr(StrChopped, 1, 6) = "{Enter")
+			else if (SlowCopied == 0x11 && SubStr(StrChopped, 1, 6) = "{Enter")
 			{
 				PreDelay := 80
 				PostDelay := 100	; 秀丸エディタ + ATOK 用
@@ -298,7 +298,7 @@ SendNeo(Str1, Delay:=0)
 			if (LastDelay < PreDelay)
 				Sleep, % PreDelay - LastDelay
 			; IME入力モードを保存する
-			if IMECheck = 1
+			if (IMECheck == 1)
 			{
 				IMEConvMode := IME_GetConvMode()
 				IMECheck := 2	; 後で IME入力モードを回復する
@@ -308,7 +308,7 @@ SendNeo(Str1, Delay:=0)
 			{
 				Send, % StrChopped
 				; 出力直後のディレイ
-				if PostDelay > 0
+				if (PostDelay > 0)
 					Sleep, PostDelay
 				LastDelay := PostDelay	; 今回のディレイの値を保存
 				PreDelay := 0
@@ -322,14 +322,14 @@ SendNeo(Str1, Delay:=0)
 	}
 
 	; IME ON
-	if IMECheck = 2
+	if (IMECheck == 2)
 	{
-		if SlowCopied = 0x11
+		if (SlowCopied == 0x11)
 		{
 			PreDelay := 70
 			PostDelay := 90	; 秀丸エディタ + ATOK 用
 		}
-		else if SlowCopied = 1
+		else if (SlowCopied == 1)
 		{
 			PreDelay := 50
 			PostDelay := 70	; ATOK 用
@@ -340,10 +340,10 @@ SendNeo(Str1, Delay:=0)
 		; キー出力
 		Send, {vkF3}	; 半角/全角
 		; 出力直後のディレイ
-		if PostDelay > 0
+		if (PostDelay > 0)
 			Sleep, PostDelay
 		; IME入力モードを回復する
-		if IMEConvMode > 0
+		if (IMEConvMode > 0)
 		{
 			IME_SetConvMode(IMEConvMode)
 			Sleep, Delay
@@ -371,14 +371,14 @@ OutBuf(i:=2)
 			StringTrimLeft, Str1, Str1, 4
 			if (StrBegin == "{直接}")
 				Str1 := "{Raw}" . Str1
-			if (IME_GET() = 1)		; IME ON の時
+			if (IME_GET() == 1)		; IME ON の時
 			{
-				if (IME_GetSentenceMode() = 0)
+				if (IME_GetSentenceMode() == 0)
 					Str1 := "{IMEOff}" . Str1
 				else
 					Str1 := ":{確定}{BS}{IMEOff}" . Str1
 			}
-			if (SideShift > 1 || Slow = 1 || IME_GetConvMode() & 1)
+			if (SideShift > 1 || Slow == 1 || IME_GetConvMode() & 1)
 				SendNeo(Str1, 10)
 			else
 				SendNeo(Str1, 30)	; 左右シフト英数モードの旧MS-IMEにはゆっくりと出力
@@ -391,7 +391,7 @@ OutBuf(i:=2)
 		i--
 
 		; 直前のキー変化からの時間を表示
-		if DispTime > 0
+		if (DispTime)
 		{
 			OutputTime := Round(QPC() - KeyTime, 1)
 			ToolTip, %OutputTime% ms
@@ -406,15 +406,15 @@ StoreBuf(nBack, Str1)
 {
 	global _usc, OutStrs
 
-	if nBack > 0
+	if (nBack > 0)
 	{
 		_usc -= nBack
-		if _usc <= 0
+		if (_usc <= 0)
 			_usc := 0	; バッファが空になる以上は削除しない
 		else
 			OutBuf(1)	; nBack の分だけ戻って、残ったバッファは出力する
 	}
-	else if _usc = 2	; バッファがいっぱいなので、1文字出力
+	else if (_usc == 2)	; バッファがいっぱいなので、1文字出力
 		OutBuf(1)
 	_usc++
 	OutStrs[_usc] := Str1
@@ -509,9 +509,9 @@ Convert()
 		}
 
 		; 左右シフト処理
-		if (Asc(NowKey) = 43)		; "+" から始まる
+		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
-			if sft = 0				; 左右シフトなし→あり
+			if (sft == 0)			; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -521,9 +521,9 @@ Convert()
 			else
 				StringTrimLeft, NowKey, NowKey, 1	; 先頭の "+" を消去
 		}
-		else if sft > 0				; 左右シフトあり→なし
+		else if (sft > 0)			; 左右シフトあり→なし
 		{
-			if (spc = 0 && ent = 0)
+			if (spc == 0 && ent == 0)
 			{
 				NextKey := NowKey
 				NowKey := "sc39 up"	; シフト押し上げ
@@ -533,26 +533,26 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if spc = 0
+			if (spc == 0)
 				spc := 1
-;			if ent = 1
+;			if (ent == 1)
 ;				ent := 2	; 単独エンターではない
 		}
 		else if (NowKey == "sc39 up")
 		{
 			if (sft > 0 || ent > 0)
 			{
-				if spc = 1
+				if (spc == 1)
 					NowKey := "space "
 				else
 				{
 					spc := 0
-;					if ent = 1
+;					if (ent == 1)
 ;						ent := 2	; 単独エンターではない
 					continue
 				}
 			}
-			else if spc = 1
+			else if (spc == 1)
 				NextKey := "space "	; スペースキー単独押し
 			spc := 0
 		}
@@ -560,9 +560,9 @@ Convert()
 		else if (NowKey == "Enter" && EnterShift > 0)
 		{
 			NowKey := "sc39"	; シフト
-			if ent = 0
+			if (ent == 0)
 				ent := 1
-;			if spc = 1
+;			if (spc == 1)
 ;				spc := 2		; 単独スペースではない
 		}
 		else if (NowKey == "Enter up")
@@ -570,32 +570,32 @@ Convert()
 			NowKey := "sc39 up"		; シフト押上げ
 			if (sft > 0 || spc > 0)
 			{
-				if ent = 1
+				if (ent == 1)
 					NowKey := "enter "
 				else
 				{
 					ent := 0
-;					if spc = 1
+;					if (spc == 1)
 ;						spc := 2	; 単独スペースではない
 					continue
 				}
 			}
-			else if ent = 1
+			else if (ent == 1)
 				NextKey := "enter "	; エンターキー単独押し ※"Enter"としないこと
 			ent := 0
 		}
 
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if (sft > 0 && SideShift = 1)
+		else if (sft > 0 && SideShift == 1)
 			KanaMode := 0
 		else
 		{
 			; IME の状態を検出(失敗したら書き換えない)
 			Detect := IME_GET()
-			if Detect = 0 			; IME OFF の時
+			if (Detect == 0)			; IME OFF の時
 				KanaMode := 0
-			else if Detect = 1		; IME ON の時
+			else if (Detect == 1)	; IME ON の時
 			{
 				Detect := IME_GetConvMode()
 				if (Detect != "")
@@ -629,11 +629,11 @@ Convert()
 		}
 
 		; ビットに変換
-		if NowBit = 0x7D		; (JIS)\
+		if (NowBit == 0x7D)		; (JIS)\
 			NowBit := JP_YEN
-		else if NowBit = 0x73	; (JIS)_
+		else if (NowBit == 0x73)	; (JIS)_
 			NowBit := KC_INT1
-		else if NowBit != 0
+		else if (NowBit != 0)
 			NowBit := 1 << NowBit
 
 		; キーリリース時
@@ -647,8 +647,8 @@ Convert()
 			RepeatBit := 0	; リピート解除
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
-		else if (NowBit = KC_SPC && !(RealBit & NowBit)
-			&& (_usc = 0 || LastKeyTime + ShiftDelay <= KeyTime))
+		else if (NowBit == KC_SPC && !(RealBit & NowBit)
+			&& (_usc == 0 || LastKeyTime + ShiftDelay <= KeyTime))
 		{
 			OutBuf()
 			RealBit |= KC_SPC
@@ -656,7 +656,7 @@ Convert()
 			RepeatBit := 0	; リピート解除
 		}
 		; 押されていなかったキー、sc○○でないキー、リピートできるキー
-		else if (!(RealBit & NowBit) || NowBit = RepeatBit)
+		else if (!(RealBit & NowBit) || NowBit == RepeatBit)
 		{
 			; 同時押しの判定期限到来(シフト時のみ)
 			if (CombDelay > 0 && (RealBit & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
@@ -667,7 +667,7 @@ Convert()
 
 			RealBit |= NowBit
 			nBack := 0
-			while (nkeys = 0)
+			while (nkeys == 0)
 			{
 				; 3キー入力を検索
 				if (_lks > 1 || Last2Bit != 0)
@@ -677,20 +677,20 @@ Convert()
 					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit
 					while (i < imax)
 					{
-						if ((LastGroup = 0 || DefsGroup[i] = LastGroup)
+						if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
 							&& (DefsKey[i] & NowBit) 				; 今回のキーを含み
-							&& (DefsKey[i] & SearchBit) = DefsKey[i]	; 検索中のキー集合が、いま調べている定義内にあり
+							&& (DefsKey[i] & SearchBit) == DefsKey[i]	; 検索中のキー集合が、いま調べている定義内にあり
 							&& !((DefsKey[i] ^ SearchBit) & KC_SPC)	; ただしシフトの相違はなく
-							&& DefsKanaMode[i] = KanaMode)			; 英数用、かな用の種別が一致していること
+							&& DefsKanaMode[i] == KanaMode)			; 英数用、かな用の種別が一致していること
 						{
-							if (_lks = 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き3キー入力だったら
 								Last2Bit := LastBit := 0	; 1キー入力の検索へ
 								break
 							}
-							if (_lks = 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
+							if (_lks == 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
 								OutBuf()
-							else if _lks >= 2
+							else if (_lks >= 2)
 								nBack := 1	; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
 							else
 								nBack := 2	; 前回が1キー入力だったら、2文字消して仮出力バッファへ
@@ -701,20 +701,20 @@ Convert()
 					}
 				}
 				; 2キー入力を検索
-				if LastBit != 0
+				if (LastBit != 0)
 				{
 					i := DefBegin[2]
 					imax := DefEnd[2]	; 検索場所の設定
 					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit
 					while (i < imax)
 					{
-						if ((LastGroup = 0 || DefsGroup[i] = LastGroup)
+						if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
 							&& (DefsKey[i] & NowBit)
-							&& (DefsKey[i] & SearchBit) = DefsKey[i]
+							&& (DefsKey[i] & SearchBit) == DefsKey[i]
 							&& !((DefsKey[i] ^ SearchBit) & KC_SPC)
-							&& DefsKanaMode[i] = KanaMode)
+							&& DefsKanaMode[i] == KanaMode)
 						{
-							if (_lks = 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き2キー入力だったら
 								Last2Bit := LastBit := 0	; 1キー入力の検索へ
 								break
@@ -731,47 +731,47 @@ Convert()
 				; 1キー入力を検索
 				i := DefBegin[1]
 				imax := DefEnd[1]	; 検索場所の設定
-				if (NowBit = KC_SPC)
+				if (NowBit == KC_SPC)
 					SearchBit := KC_SPC | LastBit
 				else
 					SearchBit := (RealBit & KC_SPC) | NowBit
 				while (i < imax)
 				{
-					if ((LastGroup = 0 || DefsGroup[i] = LastGroup)
-						&& DefsKey[i] = SearchBit
-						&& DefsKanaMode[i] = KanaMode)
+					if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
+						&& DefsKey[i] == SearchBit
+						&& DefsKanaMode[i] == KanaMode)
 					{
-						if _lks >= 2
+						if (_lks >= 2)
 							OutBuf()	; 前回が2キー、3キー同時押しだったら、仮出力バッファを全て出力
-						else if (NowBit = KC_SPC)
+						else if (NowBit == KC_SPC)
 							nBack := 1
 						nkeys := 1
 						break, 2
 					}
 					i++
 				}
-				if LastGroup = 0
+				if (LastGroup == 0)
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
 			}
 			; スペースを押したが、定義がなかった時
-			if (NowBit = KC_SPC && nkeys = 0)
+			if (NowBit == KC_SPC && nkeys == 0)
 			{
 				RepeatBit := 0
 				continue	; 次の入力へ
 			}
-			if spc = 1
+			if (spc == 1)
 				spc := 2	; 単独スペースではない
-			if ent = 1
+			if (ent == 1)
 				ent := 2	; 単独エンターではない
 
 			; 出力する文字列を選ぶ
-			if nkeys > 0	; 定義が見つかった時
+			if (nkeys > 0)	; 定義が見つかった時
 			{
 				OutStr := SelectStr(i)		; 出力する文字列
 				LastSetted := DefsSetted[i]	; 出力確定するか検索
 			}
-			else if nkeys = 0	; 定義が見つけられなかった時
+			else if (nkeys == 0)	; 定義が見つけられなかった時
 			{
 				; 出力確定するか検索
 				SearchBit := DefsKey[i]
@@ -781,9 +781,9 @@ Convert()
 				while (j < jmax)
 				{
 					; SearchBit は DefsKey[j] に内包されているか
-					if (DefsKey[j] != SearchBit && DefsKanaMode[j] = KanaMode && (DefsKey[j] & SearchBit) = SearchBit)
+					if (DefsKey[j] != SearchBit && DefsKanaMode[j] == KanaMode && (DefsKey[j] & SearchBit) == SearchBit)
 					{
-						if ((DefsKey[j] & KC_SPC) = (SearchBit & KC_SPC))
+						if ((DefsKey[j] & KC_SPC) == (SearchBit & KC_SPC))
 						{	; シフトも一致
 							LastSetted := 0	; 出力確定はしない
 							break
@@ -809,13 +809,13 @@ Convert()
 			; 出力確定文字か？
 			if (nkeys < 0 || LastSetted > (ShiftDelay > 0 ? 1 : 0))
 				OutBuf()	; 出力確定
-			else if (InBufRest = 15 && NextKey == "")
+			else if (InBufRest == 15 && NextKey == "")
 			{
 				; 同時押しの判定期限タイマー起動(シフト時のみ)
 				if (CombDelay > 0 && (RealBit & KC_SPC))
 					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
-				if LastSetted = 1
+				if (LastSetted == 1)
 					SetTimer, PSTimer, % - ShiftDelay
 			}
 		}
@@ -832,9 +832,9 @@ Convert()
 						; 最大のスレッド数を設定
 
 ; キー入力部
-#If (USKB = True)	; USキーボードの場合
+#If (USKB == True)	; USキーボードの場合
 sc29::	; (JIS)半角/全角	(US)`
-#If		; End #If (USKB = True)
+#If		; End #If (USKB == True)
 sc02::	; 1
 sc03::	; 2
 sc04::	; 3
@@ -885,10 +885,10 @@ sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
 ; キー入力部(左右シフト)
-#If (USKBSideShift = True)	; USキーボードの場合
+#If (USKBSideShift == True)	; USキーボードの場合
 +sc29::	; (JIS)半角/全角	(US)`
-#If		; End #If (USKBSideShift = True)
-#If (SideShift > 0)
+#If		; End #If (USKBSideShift == True)
+#If (SideShift)
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -937,7 +937,7 @@ sc39::	; Space
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-#If		; End #If (SideShift > 0)
+#If		; End #If (SideShift)
 ; SandS 用
 Enter::
 Up::	; ※小文字にしてはいけない
@@ -957,9 +957,9 @@ PgDn::
 	return
 
 ; キー押上げ
-#If (USKB = True)	; USキーボードの場合
+#If (USKB == True)	; USキーボードの場合
 sc29 up::	; (JIS)半角/全角	(US)`
-#If		; End #If (USKB = True)
+#If		; End #If (USKB == True)
 sc02 up::	; 1
 sc03 up::	; 2
 sc04 up::	; 3
@@ -1010,10 +1010,10 @@ sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
 ; キー押上げ(左右シフト)
-#If (USKBSideShift = True)	; USキーボードの場合
+#If (USKBSideShift == True)	; USキーボードの場合
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If		; End #If (USKBSideShift = True)
-#If (SideShift > 0)
+#If		; End #If (USKBSideShift == True)
+#If (SideShift)
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1062,11 +1062,11 @@ sc39 up::	; Space
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
-#If		; End #If (SideShift > 0)
+#If		; End #If (SideShift)
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift > 0)
+#If (EnterShift)
 Enter up::
-#If		; End #If (EnterShift > 0)
+#If		; End #If (EnterShift)
 ; 入力バッファへ保存
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest ? ++InBufWritePos & 15 : InBufWritePos)
