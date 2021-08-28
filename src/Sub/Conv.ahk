@@ -284,9 +284,16 @@ SendNeo(Str1, Delay:=0)
 				StrChopped := "{Enter}"
 			else if (StrChopped = "{IMEOff}")
 			{
-				IMECheck := 1			; IME入力モードを保存する必要あり
-				StrChopped := "{vkF3}"	; 半角/全角
-				PostDelay := 30
+				; IME入力モードを保存する
+				if (IME_GET() == 1)
+				{
+					IMECheck := 1			; 後で IME入力モードを回復する
+					IMEConvMode := IME_GetConvMode()
+					StrChopped := "{vkF3}"	; 半角/全角
+					PostDelay := 30
+				}
+				else	; かな入力モードでない時
+					StrChopped := "{Null}"
 			}
 			else if (SlowCopied == 0x11 && SubStr(StrChopped, 1, 6) = "{Enter")
 			{
@@ -297,12 +304,6 @@ SendNeo(Str1, Delay:=0)
 			; 前回の出力からの時間が短ければ、ディレイを入れる
 			if (LastDelay < PreDelay)
 				Sleep, % PreDelay - LastDelay
-			; IME入力モードを保存する
-			if (IMECheck == 1)
-			{
-				IMEConvMode := IME_GetConvMode()
-				IMECheck := 2	; 後で IME入力モードを回復する
-			}
 			; キー出力
 			if (StrChopped != "{Null}")
 			{
@@ -322,7 +323,7 @@ SendNeo(Str1, Delay:=0)
 	}
 
 	; IME ON
-	if (IMECheck == 2)
+	if (IMECheck == 1)
 	{
 		if (SlowCopied == 0x11)
 		{
