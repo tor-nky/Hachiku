@@ -75,19 +75,17 @@ KoyuReadAll:
 	B11 := KoyuIniRead(KoyuNumber, "B11")
 
 	Gosub, KoyuRegist
-
 	return
 
 ; 固有名詞ショートカットの登録
-; 出力確定する定義に印をつけることを含む
 KoyuRegist:
-	Group := 1	; 左手側
+	Group := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_1		,"{固有}" . E01)
 		SetKana(KC_U | KC_I | KC_2		,"{固有}" . E02)
 		SetKana(KC_U | KC_I | KC_3		,"{固有}" . E03)
 		SetKana(KC_U | KC_I | KC_4		,"{固有}" . E04)
 		SetKana(KC_U | KC_I | KC_5		,"{固有}" . E05)
-	Group := 2	; 右手側
+	Group := "KR"	; 右手側
 		SetKana(KC_E | KC_R | KC_6		,"{固有}" . E06)
 		SetKana(KC_E | KC_R | KC_7		,"{固有}" . E07)
 		SetKana(KC_E | KC_R | KC_8		,"{固有}" . E08)
@@ -97,13 +95,13 @@ KoyuRegist:
 		SetKana(KC_E | KC_R | KC_EQL	,"{固有}" . E12)
 		SetKana(KC_E | KC_R | JP_YEN	,"{固有}" . E13)
 
-	Group := 1	; 左手側
+	Group := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_Q		,"{固有}" . D01)
 		SetKana(KC_U | KC_I | KC_W		,"{固有}" . D02)
 		SetKana(KC_U | KC_I | KC_E		,"{固有}" . D03)
 		SetKana(KC_U | KC_I | KC_R		,"{固有}" . D04)
 		SetKana(KC_U | KC_I | KC_T		,"{固有}" . D05)
-	Group := 2	; 右手側
+	Group := "KR"	; 右手側
 		SetKana(KC_E | KC_R | KC_Y		,"{固有}" . D06)
 		SetKana(KC_E | KC_R | KC_U		,"{固有}" . D07)
 		SetKana(KC_E | KC_R | KC_I		,"{固有}" . D08)
@@ -112,13 +110,13 @@ KoyuRegist:
 		SetKana(KC_E | KC_R | KC_LBRC	,"{固有}" . D11)
 		SetKana(KC_E | KC_R | KC_RBRC	,"{固有}" . D12)
 
-	Group := 1	; 左手側
+	Group := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_A		,"{固有}" . C01)
 		SetKana(KC_U | KC_I | KC_S		,"{固有}" . C02)
 		SetKana(KC_U | KC_I | KC_D		,"{固有}" . C03)
 		SetKana(KC_U | KC_I | KC_F		,"{固有}" . C04)
 		SetKana(KC_U | KC_I | KC_G		,"{固有}" . C05)
-	Group := 2	; 右手側
+	Group := "KR"	; 右手側
 		SetKana(KC_E | KC_R | KC_H		,"{固有}" . C06)
 		SetKana(KC_E | KC_R | KC_J		,"{固有}" . C07)
 		SetKana(KC_E | KC_R | KC_K		,"{固有}" . C08)
@@ -127,13 +125,13 @@ KoyuRegist:
 		SetKana(KC_E | KC_R | KC_QUOT	,"{固有}" . C11)
 		SetKana(KC_E | KC_R | KC_NUHS	,"{固有}" . C12)
 
-	Group := 1	; 左手側
+	Group := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_Z		,"{固有}" . B01)
 		SetKana(KC_U | KC_I | KC_X		,"{固有}" . B02)
 		SetKana(KC_U | KC_I | KC_C		,"{固有}" . B03)
 		SetKana(KC_U | KC_I | KC_V		,"{固有}" . B04)
 		SetKana(KC_U | KC_I | KC_B		,"{固有}" . B05)
-	Group := 2	; 右手側
+	Group := "KR"	; 右手側
 		SetKana(KC_E | KC_R | KC_N		,"{固有}" . B06)
 		SetKana(KC_E | KC_R | KC_M		,"{固有}" . B07)
 		SetKana(KC_E | KC_R | KC_COMM	,"{固有}" . B08)
@@ -141,13 +139,12 @@ KoyuRegist:
 		SetKana(KC_E | KC_R | KC_SLSH	,"{固有}" . B10)
 		SetKana(KC_E | KC_R | KC_INT1	,"{固有}" . B11)
 
+	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver == "kbd101.dll")
 	{
 		SetKana(KC_E | KC_R | KC_BSLS	,"{固有}" . E13)
 		SetKana(KC_E | KC_R | KC_GRV	,"{固有}" . C12)
 	}
-
-	Setting()	; 出力確定する定義に印をつける
 
 	return
 
@@ -209,6 +206,7 @@ KoyuOK:
 	KoyuIniWrite(KoyuNumber, "B11", B11)
 
 	Gosub, KoyuRegist
+	Setting()	; 出力確定する定義に印をつける
 KoyuCancel:
 	Gui, Destroy
 	return

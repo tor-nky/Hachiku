@@ -72,9 +72,9 @@ toUSLike:
 	SetKana( KC_0 | KC_SPC		,"+{sc0A}"	)	; )
 	SetKana( KC_MINS | KC_SPC	,"+{sc73}"	)	; _
 	SetKana( KC_EQL | KC_SPC	,"+{sc27}"	)	; +
-;	SetKana( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
-;	SetKana( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
-;	SetKana( KC_SCLN | KC_SPC	,"{sc28}"	)	; :
+	SetKana( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
+	SetKana( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
+;	SetKana( KC_SCLN | KC_SPC	,"{sc28}"	)	; :	(薙刀式で使用)
 	SetKana( KC_QUOT | KC_SPC	,"+{sc03}"	)	; "
 	SetKana( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
 
@@ -88,7 +88,7 @@ toUSLike:
 		SetKana( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
 	}
 
-	; 薙刀式固有の変更箇所
+	; 薙刀式v13
 	SetKana( KC_INT1			,"?"		)	; ？
 	SetKana( KC_LBRC | KC_SPC	,"『"		)	; 『
 	SetKana( KC_RBRC | KC_SPC	,"』"		)	; 』
@@ -144,15 +144,19 @@ toJIS:
 	SetKana( KC_MINS | KC_SPC	,"+{sc0C}"	)
 	SetKana( KC_EQL | KC_SPC	,"+{sc0D}"	)
 	SetKana( KC_LBRC | KC_SPC	,"+{sc1A}"	)
-;	SetKana( KC_RBRC | KC_SPC	,"+{sc1B}"	)
+	SetKana( KC_RBRC | KC_SPC	,"+{sc1B}"	)
 	SetKana( KC_QUOT | KC_SPC	,"+{sc28}"	)
 	SetKana( KC_NUHS | KC_SPC	,"+{sc2B}"	)
 
 
-	; 薙刀式固有の変更箇所
-	SetKana( KC_INT1	,"\"		)		; ￥(PC-9800キーボード対策)
+	; 薙刀式v13
+	SetKana( KC_INT1			,"{sc73}"	)
 	SetKana( KC_RBRC | KC_SPC	,"『"		)		; 『
 	SetKana( KC_NUHS | KC_SPC	,"』"		)		; 』
 	SetKana( KC_INT1 | KC_SPC	,"+{sc73}"	)
+
+	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver = "kbdnec.dll")
+		SetKana( KC_INT1	,"\"	)
 
 	return

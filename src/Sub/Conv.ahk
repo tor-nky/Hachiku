@@ -114,6 +114,7 @@ return
 ; 設定画面
 PrefMenu:
 	Gui, Destroy
+	Gui, -MinimizeBox
 	Gui, Add, Text, , 設定
 	Gui, Add, Text, x+0 W180 Right, %Version%
 
@@ -755,6 +756,7 @@ Convert()
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
 			}
+
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && nkeys == 0)
 			{
@@ -775,8 +777,8 @@ Convert()
 			else if (nkeys == 0)	; 定義が見つけられなかった時
 			{
 				; 出力確定するか検索
-				SearchBit := DefsKey[i]
 				LastSetted := 2	; 初期値は出力確定する
+				SearchBit := DefsKey[i]
 				j := DefBegin[3]
 				jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
 				while (j < jmax)
@@ -795,6 +797,8 @@ Convert()
 					j++
 				}
 			}
+			else
+				LastSetted := 2	; 出力確定する
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr)
@@ -808,7 +812,7 @@ Convert()
 				RepeatBit := NowBit		; キーリピートする
 
 			; 出力確定文字か？
-			if (nkeys < 0 || LastSetted > (ShiftDelay > 0 ? 1 : 0))
+			if (LastSetted > (ShiftDelay > 0 ? 1 : 0))
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{

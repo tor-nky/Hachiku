@@ -22,17 +22,13 @@
 ; ----------------------------------------------------------------------
 
 
-; ここからはすべてグループなし
 Group := 0	; 0 はグループAll
-
-; 1キー
 	SetEisu( KC_1		,"{sc02}"	)
 	SetEisu( KC_2		,"{sc03}"	)
 	SetEisu( KC_3		,"{sc04}"	)
 	SetEisu( KC_4		,"{sc05}"	)
 	SetEisu( KC_5		,"{sc06}"	)
 	SetEisu( KC_6		,"{sc07}"	)
-
 	SetEisu( KC_7		,"{sc08}"	)
 	SetEisu( KC_8		,"{sc09}"	)
 	SetEisu( KC_9		,"{sc0A}"	)
@@ -46,7 +42,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_E		,"{sc12}"	)
 	SetEisu( KC_R		,"{sc13}"	)
 	SetEisu( KC_T		,"{sc14}"	)
-
 	SetEisu( KC_Y		,"{sc15}"	)
 	SetEisu( KC_U		,"{sc16}"	)
 	SetEisu( KC_I		,"{sc17}"	)
@@ -60,7 +55,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_D		,"{sc20}"	)
 	SetEisu( KC_F		,"{sc21}"	)
 	SetEisu( KC_G		,"{sc22}"	)
-
 	SetEisu( KC_H		,"{sc23}"	)
 	SetEisu( KC_J		,"{sc24}"	)
 	SetEisu( KC_K		,"{sc25}"	)
@@ -74,7 +68,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_C		,"{sc2E}"	)
 	SetEisu( KC_V		,"{sc2F}"	)
 	SetEisu( KC_B		,"{sc30}"	)
-
 	SetEisu( KC_N		,"{sc31}"	)
 	SetEisu( KC_M		,"{sc32}"	)
 	SetEisu( KC_COMM	,"{sc33}"	)
@@ -88,7 +81,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_4 | KC_SPC		,"+{sc05}"	)
 	SetEisu( KC_5 | KC_SPC		,"+{sc06}"	)
 	SetEisu( KC_6 | KC_SPC		,"+{sc07}"	)
-
 	SetEisu( KC_7 | KC_SPC		,"+{sc08}"	)
 	SetEisu( KC_8 | KC_SPC		,"+{sc09}"	)
 	SetEisu( KC_9 | KC_SPC		,"+{sc0A}"	)
@@ -102,7 +94,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_E | KC_SPC		,"+{sc12}"	)
 	SetEisu( KC_R | KC_SPC		,"+{sc13}"	)
 	SetEisu( KC_T | KC_SPC		,"+{sc14}"	)
-
 	SetEisu( KC_Y | KC_SPC		,"+{sc15}"	)
 	SetEisu( KC_U | KC_SPC		,"+{sc16}"	)
 	SetEisu( KC_I | KC_SPC		,"+{sc17}"	)
@@ -116,7 +107,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_D | KC_SPC		,"+{sc20}"	)
 	SetEisu( KC_F | KC_SPC		,"+{sc21}"	)
 	SetEisu( KC_G | KC_SPC		,"+{sc22}"	)
-
 	SetEisu( KC_H | KC_SPC		,"+{sc23}"	)
 	SetEisu( KC_J | KC_SPC		,"+{sc24}"	)
 	SetEisu( KC_K | KC_SPC		,"+{sc25}"	)
@@ -130,7 +120,6 @@ Group := 0	; 0 はグループAll
 	SetEisu( KC_C | KC_SPC		,"+{sc2E}"	)
 	SetEisu( KC_V | KC_SPC		,"+{sc2F}"	)
 	SetEisu( KC_B | KC_SPC		,"+{sc30}"	)
-
 	SetEisu( KC_N | KC_SPC		,"+{sc31}"	)
 	SetEisu( KC_M | KC_SPC		,"+{sc32}"	)
 	SetEisu( KC_COMM | KC_SPC	,"+{sc33}"	)
@@ -145,7 +134,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_4		,"{sc05}"	)
 	SetKana( KC_5		,"{sc06}"	)
 	SetKana( KC_6		,"{sc07}"	)
-
 	SetKana( KC_7		,"{sc08}"	)
 	SetKana( KC_8		,"{sc09}"	)
 	SetKana( KC_9		,"{sc0A}"	)
@@ -159,7 +147,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_E		,"{sc12}"	)
 	SetKana( KC_R		,"{sc13}"	)
 	SetKana( KC_T		,"{sc14}"	)
-
 	SetKana( KC_Y		,"{sc15}"	)
 	SetKana( KC_U		,"{sc16}"	)
 	SetKana( KC_I		,"{sc17}"	)
@@ -173,7 +160,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_D		,"{sc20}"	)
 	SetKana( KC_F		,"{sc21}"	)
 	SetKana( KC_G		,"{sc22}"	)
-
 	SetKana( KC_H		,"{sc23}"	)
 	SetKana( KC_J		,"{sc24}"	)
 	SetKana( KC_K		,"{sc25}"	)
@@ -187,7 +173,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_C		,"{sc2E}"	)
 	SetKana( KC_V		,"{sc2F}"	)
 	SetKana( KC_B		,"{sc30}"	)
-
 	SetKana( KC_N		,"{sc31}"	)
 	SetKana( KC_M		,"{sc32}"	)
 	SetKana( KC_COMM	,"{sc33}"	)
@@ -201,7 +186,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_4 | KC_SPC		,"+{sc05}"	)
 	SetKana( KC_5 | KC_SPC		,"+{sc06}"	)
 	SetKana( KC_6 | KC_SPC		,"+{sc07}"	)
-
 	SetKana( KC_7 | KC_SPC		,"+{sc08}"	)
 	SetKana( KC_8 | KC_SPC		,"+{sc09}"	)
 	SetKana( KC_9 | KC_SPC		,"+{sc0A}"	)
@@ -215,7 +199,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_E | KC_SPC		,"+{sc12}"	)
 	SetKana( KC_R | KC_SPC		,"+{sc13}"	)
 	SetKana( KC_T | KC_SPC		,"+{sc14}"	)
-
 	SetKana( KC_Y | KC_SPC		,"+{sc15}"	)
 	SetKana( KC_U | KC_SPC		,"+{sc16}"	)
 	SetKana( KC_I | KC_SPC		,"+{sc17}"	)
@@ -229,7 +212,6 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_D | KC_SPC		,"+{sc20}"	)
 	SetKana( KC_F | KC_SPC		,"+{sc21}"	)
 	SetKana( KC_G | KC_SPC		,"+{sc22}"	)
-
 	SetKana( KC_H | KC_SPC		,"+{sc23}"	)
 	SetKana( KC_J | KC_SPC		,"+{sc24}"	)
 	SetKana( KC_K | KC_SPC		,"+{sc25}"	)
@@ -243,15 +225,12 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_C | KC_SPC		,"+{sc2E}"	)
 	SetKana( KC_V | KC_SPC		,"+{sc2F}"	)
 	SetKana( KC_B | KC_SPC		,"+{sc30}"	)
-
 	SetKana( KC_N | KC_SPC		,"+{sc31}"	)
 	SetKana( KC_M | KC_SPC		,"+{sc32}"	)
 	SetKana( KC_COMM | KC_SPC	,"+{sc33}"	)
 	SetKana( KC_DOT | KC_SPC	,"+{sc34}"	)
 	SetKana( KC_SLSH | KC_SPC	,"+{sc35}"	)
 	SetKana( KC_INT1 | KC_SPC	,"+{sc73}"	)
-
-; スペースキーの定義は不要
 
 
 ; ----------------------------------------------------------------------
@@ -272,4 +251,12 @@ if (KeyDriver = "kbd101.dll")
 	SetEisu( KC_INT1 | KC_SPC	,"_"		)
 	SetKana( KC_INT1			,"\"		)
 	SetKana( KC_INT1 | KC_SPC	,"_"		)
+}
+; ----------------------------------------------------------------------
+; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+; ----------------------------------------------------------------------
+else if (KeyDriver = "kbdnec.dll")
+{
+	SetEisu( KC_INT1	,"\"	)
+	SetKana( KC_INT1	,"\"	)
 }

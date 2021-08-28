@@ -278,19 +278,19 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 		, DefBegin, DefEnd
 		, Group
 ;	local nkeys		; 何キー同時押しか
-;		, i, n		; カウンタ用
+;		, i, imax	; カウンタ用
 
 	; 機能置き換え処理
 	Str1 := StrReplace(Str1)
 
-	; Str1 の文字列に必要に応じて"確定"を加える
+	; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
 	Str1 := Analysis(Str1)
 
 	; 登録
 	nkeys := CountBit(KeyComb)	; 何キー同時押しか
 	i := DefBegin[nkeys]		; 始まり
-	n := DefEnd[nkeys]			; 終わり
-	while (i < n)
+	imax := DefEnd[nkeys]			; 終わり
+	while (i < imax)
 	{
 		; 定義の重複があったら、古いのを消す
 		; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
@@ -358,18 +358,18 @@ Setting()
 	imax := DefEnd[1]
 	while (i < imax)
 	{
-		KanaMode := DefsKanaMode[i]
-		KeyComb := DefsKey[i]
 		LastSetted := 2	; 初期値は出力確定する
-		nkeys := CountBit(KeyComb)	; 何キー同時押しか
+		SearchBit := DefsKey[i]
+		KanaMode := DefsKanaMode[i]
+		nkeys := CountBit(SearchBit)	; 何キー同時押しか
 		j := DefBegin[3]
 		jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
 		while (j < jmax)
 		{
-			; KeyComb は DefsKey[j] に内包されているか
-			if (DefsKey[j] != KeyComb && DefsKanaMode[j] == KanaMode && (DefsKey[j] & KeyComb) == KeyComb)
+			; SearchBit は DefsKey[j] に内包されているか
+			if (DefsKey[j] != SearchBit && DefsKanaMode[j] == KanaMode && (DefsKey[j] & SearchBit) == SearchBit)
 			{
-				if ((DefsKey[j] & KC_SPC) == (KeyComb & KC_SPC))
+				if ((DefsKey[j] & KC_SPC) == (SearchBit & KC_SPC))
 				{	; シフトも一致
 					LastSetted := 0	; 出力確定はしない
 					break
