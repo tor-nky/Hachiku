@@ -345,43 +345,49 @@ SetEisu(KeyComb, Str1, Repeat:=0)
 	return
 }
 
+; 出力確定するか検索
+SearchSet(SearchBit, KanaMode, nkeys)
+{
+	global DefsKey, DefsKanaMode, DefBegin, DefEnd
+		, KC_SPC
+;	local j, jmax	; カウンタ用
+;		, LastSetted
+;		, DefKeyCopy
+
+	LastSetted := ((SearchBit & KC_SPC) ? 2 : 1)	; 初期値
+	j := DefBegin[3]
+	jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
+	while (j < jmax)
+	{
+		; SearchBit は DefsKey[j] に内包されているか
+		DefKeyCopy := DefsKey[j]
+		if (SearchBit != DefKeyCopy && KanaMode == DefsKanaMode[j] && (DefKeyCopy & SearchBit) == SearchBit)
+		{
+			if ((DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC))	; シフトも一致
+				return 0	; 出力確定はしない
+			else
+				LastSetted := 1	; 後置シフトは出力確定しない
+		}
+		j++
+	}
+	return LastSetted
+}
+
 ; 出力確定するかな定義を調べて DefsSetted[] に記録
 ; 0: 確定しない, 1: 通常シフトのみ確定, 2: 後置シフトでも確定
 Setting()
 {
 	global DefsKey, DefsKanaMode, DefsSetted, DefBegin, DefEnd
-		, KC_SPC
-;	local nkeys, i, imax, j, jmax	; カウンタ用
+;	local i, imax	; カウンタ用
 
 	; 出力確定するか検索
 	i := DefBegin[3]
 	imax := DefEnd[1]
 	while (i < imax)
 	{
-		LastSetted := 2	; 初期値は出力確定する
 		SearchBit := DefsKey[i]
-		KanaMode := DefsKanaMode[i]
-		nkeys := CountBit(SearchBit)	; 何キー同時押しか
-		j := DefBegin[3]
-		jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
-		while (j < jmax)
-		{
-			; SearchBit は DefsKey[j] に内包されているか
-			if (DefsKey[j] != SearchBit && DefsKanaMode[j] == KanaMode && (DefsKey[j] & SearchBit) == SearchBit)
-			{
-				if ((DefsKey[j] & KC_SPC) == (SearchBit & KC_SPC))
-				{	; シフトも一致
-					LastSetted := 0	; 出力確定はしない
-					break
-				}
-				else
-					LastSetted := 1	; 後置シフトは出力確定しない
-			}
-			j++
-		}
-		DefsSetted[i] := LastSetted
+		DefsSetted[i] := SearchSet(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
 		i++
 	}
-
 	return
 }

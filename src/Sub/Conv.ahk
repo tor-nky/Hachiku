@@ -211,7 +211,7 @@ QPCInit() {
 QPC() {	; ミリ秒単位
 	static Freq := QPCInit() / 1000.0
 	DllCall("QueryPerformanceCounter", "Int64P", Count)
-	Return, Count / Freq
+	Return Count / Freq
 }
 
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
@@ -447,11 +447,11 @@ Convert()
 		, Last2Bit	:= 0	; 前々回のキービット
 		, LastKeyTime := 0	; 有効なキーを押した時間
 		, OutStr	:= ""	; 出力する文字列
+		, LastStr	:= ""	; 前回、出力した文字列
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
 		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループAll
 		, RepeatBit	:= 0	; リピート中のキーのビット
-		, LastSetted := 0	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
-			; シフト用キーの状態 0: 押していない, 1: 単独押し, 2以上: シフト状態
+		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2以上: シフト状態
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左右シフト
 		, ent		:= 0	; エンター
@@ -459,10 +459,12 @@ Convert()
 ;		, Detect
 ;		, NowKey
 ;		, Term		; 入力の末端2文字
+;		, nkeys		; 今回は何キー同時押しか
 ;		, NowBit	; 今回のキービット
 ;		, SearchBit	; いま検索しようとしているキーの集合
 ;		, i, imax, j, jmax	; カウンタ用
-;		, nkeys		; 今回は何キー同時押しか
+;		, DefKeyCopy
+;		, LastSetted ; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
 
 	if (ConvRest > 0 || NextKey != "")
 		return	; 多重起動防止で戻る
@@ -517,7 +519,7 @@ Convert()
 			{
 				OutBuf()
 				NextKey := NowKey
-				NowKey := "sc39"	; シフト
+				NowKey := "sc39"	; スペース押す→押したキー
 				sft := 1
 			}
 			else
@@ -528,7 +530,7 @@ Convert()
 			if (spc == 0 && ent == 0)
 			{
 				NextKey := NowKey
-				NowKey := "sc39 up"	; シフト押し上げ
+				NowKey := "sc39 up"	; スペース上げ→押したキー
 			}
 			sft := 0
 		}
@@ -537,25 +539,21 @@ Convert()
 		{
 			if (spc == 0)
 				spc := 1
-;			if (ent == 1)
-;				ent := 2	; 単独エンターではない
 		}
 		else if (NowKey == "sc39 up")
 		{
-			if (sft > 0 || ent > 0)
+			if (sft > 0 || ent > 0)		; 他のシフトを押している時
 			{
 				if (spc == 1)
-					NowKey := "space "
+					NowKey := "space "	; スペース単独押しのみ
 				else
 				{
 					spc := 0
-;					if (ent == 1)
-;						ent := 2	; 単独エンターではない
 					continue
 				}
 			}
 			else if (spc == 1)
-				NextKey := "space "	; スペースキー単独押し
+				NextKey := "space "	; スペース単独押し→スペース上げ
 			spc := 0
 		}
 		; エンターキー処理
@@ -564,32 +562,28 @@ Convert()
 			NowKey := "sc39"	; シフト
 			if (ent == 0)
 				ent := 1
-;			if (spc == 1)
-;				spc := 2		; 単独スペースではない
 		}
 		else if (NowKey == "Enter up")
 		{
-			NowKey := "sc39 up"		; シフト押上げ
-			if (sft > 0 || spc > 0)
+			NowKey := "sc39 up"			; スペース上げ
+			if (sft > 0 || spc > 0)		; 他のシフトを押している時
 			{
 				if (ent == 1)
-					NowKey := "enter "
+					NowKey := "enter "	; エンター単独押しのみ
 				else
 				{
 					ent := 0
-;					if (spc == 1)
-;						spc := 2	; 単独スペースではない
 					continue
 				}
 			}
 			else if (ent == 1)
-				NextKey := "enter "	; エンターキー単独押し ※"Enter"としないこと
+				NextKey := "enter "	; エンター単独押し→スペース上げ ※"Enter"としないこと
 			ent := 0
 		}
 
-		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
+		IfWinExist, ahk_class #32768		; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if (sft > 0 && SideShift == 1)
+		else if (sft > 0 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
 		else
 		{
@@ -646,7 +640,7 @@ Convert()
 										; 32ビット計算になることがあり、不適切
 			Last2Bit := LastBit := RealBit
 			LastGroup := 0
-			RepeatBit := 0	; リピート解除
+			RepeatBit := -1	; リピート解除
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
 		else if (NowBit == KC_SPC && !(RealBit & NowBit)
@@ -655,10 +649,10 @@ Convert()
 			OutBuf()
 			RealBit |= KC_SPC
 			LastGroup := 0
-			RepeatBit := 0	; リピート解除
+			RepeatBit := -1	; リピート解除
 		}
-		; 押されていなかったキー、sc○○でないキー、リピートできるキー
-		else if (!(RealBit & NowBit) || NowBit == RepeatBit)
+		; 押されていなかったキー、sc○○でないキー
+		else if !(RealBit & NowBit)
 		{
 			; 同時押しの判定期限到来(シフト時のみ)
 			if (CombDelay > 0 && (RealBit & KC_SPC) && LastKeyTime + CombDelay <= KeyTime)
@@ -679,15 +673,16 @@ Convert()
 					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit
 					while (i < imax)
 					{
-						if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
-							&& (DefsKey[i] & NowBit) 				; 今回のキーを含み
-							&& (DefsKey[i] & SearchBit) == DefsKey[i]	; 検索中のキー集合が、いま調べている定義内にあり
-							&& !((DefsKey[i] ^ SearchBit) & KC_SPC)	; ただしシフトの相違はなく
-							&& DefsKanaMode[i] == KanaMode)			; 英数用、かな用の種別が一致していること
+						DefKeyCopy := DefsKey[i]
+						if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+							&& (DefKeyCopy & NowBit) 		; 今回のキーを含み
+							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
+							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC && CombDelay > 0)
 							{	; 前回もシフト付き3キー入力だったら
-								Last2Bit := LastBit := 0	; 1キー入力の検索へ
+								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							if (_lks == 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
@@ -710,15 +705,16 @@ Convert()
 					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit
 					while (i < imax)
 					{
-						if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
-							&& (DefsKey[i] & NowBit)
-							&& (DefsKey[i] & SearchBit) == DefsKey[i]
-							&& !((DefsKey[i] ^ SearchBit) & KC_SPC)
-							&& DefsKanaMode[i] == KanaMode)
+						DefKeyCopy := DefsKey[i]
+						if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+							&& (DefKeyCopy & NowBit) 		; 今回のキーを含み
+							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
+							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC && CombDelay > 0)
 							{	; 前回もシフト付き2キー入力だったら
-								Last2Bit := LastBit := 0	; 1キー入力の検索へ
+								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							if (_lks >= 2 && NowBit != KC_SPC)	; 2キー以上同時→2キー同時 は仮出力バッファを全て出力
@@ -739,9 +735,9 @@ Convert()
 					SearchBit := (RealBit & KC_SPC) | NowBit
 				while (i < imax)
 				{
-					if ((LastGroup == 0 || DefsGroup[i] == LastGroup)
-						&& DefsKey[i] == SearchBit
-						&& DefsKanaMode[i] == KanaMode)
+					if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+						&& SearchBit == DefsKey[i]
+						&& KanaMode == DefsKanaMode[i])
 					{
 						if (_lks >= 2)
 							OutBuf()	; 前回が2キー、3キー同時押しだったら、仮出力バッファを全て出力
@@ -775,41 +771,24 @@ Convert()
 				LastSetted := DefsSetted[i]	; 出力確定するか検索
 			}
 			else if (nkeys == 0)	; 定義が見つけられなかった時
-			{
 				; 出力確定するか検索
-				LastSetted := 2	; 初期値は出力確定する
-				SearchBit := DefsKey[i]
-				j := DefBegin[3]
-				jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
-				while (j < jmax)
-				{
-					; SearchBit は DefsKey[j] に内包されているか
-					if (DefsKey[j] != SearchBit && DefsKanaMode[j] == KanaMode && (DefsKey[j] & SearchBit) == SearchBit)
-					{
-						if ((DefsKey[j] & KC_SPC) == (SearchBit & KC_SPC))
-						{	; シフトも一致
-							LastSetted := 0	; 出力確定はしない
-							break
-						}
-						else
-							LastSetted := 1	; 後置シフトは出力確定しない
-					}
-					j++
-				}
-			}
+				LastSetted := SearchSet(SearchBit, KanaMode, nkeys)
 			else
 				LastSetted := 2	; 出力確定する
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr)
 			; 次回に向けて変数を更新
+			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
 			_lks := nkeys			; 何キー同時押しだったかを保存
-			Last2Bit := (nkeys >= 2 ? 0 : LastBit)			; 2、3キー入力のときは、この前のキービットを保存しない
+			Last2Bit := (nkeys >= 2 ? 0 : LastBit)	; 2、3キー入力のときは、この前のキービットを保存しない
 			LastBit := (nkeys >= 1 ? DefsKey[i] : NowBit)	; 今回のキービットを保存
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
-			if (nkeys >= 1 && DefsRepeat[i] & R)
+			if ((DefsRepeat[i] & R) && nkeys >= 1 && NowBit != KC_SPC)
 				RepeatBit := NowBit		; キーリピートする
+			else
+				RepeatBit := -1
 
 			; 出力確定文字か？
 			if (LastSetted > (ShiftDelay > 0 ? 1 : 0))
@@ -823,6 +802,12 @@ Convert()
 				if (LastSetted == 1)
 					SetTimer, PSTimer, % - ShiftDelay
 			}
+		}
+		; リピートできるキー
+		else if (NowBit == RepeatBit)
+		{	; 前回の文字列を出力
+			StoreBuf(0, LastStr)
+			OutBuf()
 		}
 	}
 
