@@ -354,7 +354,7 @@ SearchSet(SearchBit, KanaMode, nkeys)
 ;		, LastSetted
 ;		, DefKeyCopy
 
-	LastSetted := ((SearchBit & KC_SPC) ? 2 : 1)	; 初期値
+	LastSetted := (nkeys > 1 || (SearchBit & KC_SPC) ? 2 : 1)	; 初期値
 	j := DefBegin[3]
 	jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
 	while (j < jmax)
