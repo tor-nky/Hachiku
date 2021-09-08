@@ -7,6 +7,15 @@
 ; 記号はすべて全角文字を出力する
 ; **********************************************************************
 
+#Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
+	; ↑ 無くても動くが、あるほうがわずかに速い
+
+; 特別出力
+SendSP(Str1, CtrlNo)
+{
+	Send, % Str1
+}
+
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
 ;
@@ -26,8 +35,18 @@
 ;	※順序はグループ内で自由です。同じキーの組み合わせは、後の方が有効になります。
 ; ----------------------------------------------------------------------
 
+; 薙刀式配列固有名詞ショートカットを実装するためのルーチン
+#Include %A_ScriptDir%/Sub/Naginata-Koyu.ahk
 
-Group := 0	; 0 はグループAll
+; かな配列読み込み
+ReadLayout()
+{
+	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
+	global KoyuNumber
+
+	ReadStandardLayout()	; キーボード初期配列を読み込み
+
+KanaGroup := 0	; 0 はグループAll
 
 ;***********************************************/
 ;***********************************************/
@@ -416,7 +435,7 @@ Group := 0	; 0 はグループAll
 ; 「て」の部分は定義できない。「ディ」があるため */
 
 ; 左手*/
-Group := "1L"
+KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_Q		,"^{End}"			)		; ◀最末尾
 	SetKana( KC_J | KC_K | KC_W		,"｜"				)		; ｜
 ;	SetKana( KC_J | KC_K | KC_E		,"dhi"				)		; でぃ
@@ -450,7 +469,7 @@ Group := "1L"
 	SetEisu( KC_J | KC_K | KC_B		,"）"				)		; ）
 
 ; 右手*/
-Group := "1R"
+KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ▲Home
 	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消
 	SetKana( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再変換
@@ -487,7 +506,7 @@ Group := "1R"
 ; 下段人差指＋中指 */
 
 ; 左手*/
-Group := "2L"
+KanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_Q	,"／"								)		; ／
 	SetKana( KC_M | KC_COMM | KC_W	,"｜{End}《》{↑}"					)		; ルビマクロ
 	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"			)		; トマクロ
@@ -521,7 +540,7 @@ Group := "2L"
 	SetEisu( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{改行}"	)		; x  x	 x
 
 ; 右手*/
-Group := "2R"
+KanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_Y		,"+{Home}"							)		; ▲Home選択
 	SetKana( KC_C | KC_V | KC_U		,"^x"								)		; カット
 	SetKana( KC_C | KC_V | KC_I		,"^v"								)		; ペースト
@@ -553,34 +572,188 @@ Group := "2R"
 	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"							, R)	; ←5選択
 	SetEisu( KC_C | KC_V | KC_DOT	,"^{PgDn}"							, R)	; 次◀ページ先頭
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^{PgDn 5}"						, R)	; 次 5◀ページ先頭
+KanaGroup := 0	; 0 はグループAll
 
-
-Group := 0	; 0 はグループAll
-
-; ----------------------------------------------------------------------
-; 固有名詞ショートカット(U+I)を押し続けて
-; 前文字削除(U)のリピートが起きる場合があるので対策
-; ----------------------------------------------------------------------
+	; 固有名詞ショートカット(U+I)を押し続けて
+	; 前文字削除(U)のリピートが起きる場合があるので対策
 	SetKana( KC_U | KC_I					,"{Null}"	)	; ダミー
 
 
-; ----------------------------------------------------------------------
-; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-; ----------------------------------------------------------------------
-if (KeyDriver = "kbd101.dll")
-{
-	SetKana( KC_INT1			,"?"	)	; ？
-	SetKana( KC_NUHS | KC_SPC	,"|"	)	; ｜
-	SetKana( KC_LBRC | KC_SPC	,"『"	)	; 『
-	SetKana( KC_RBRC | KC_SPC	,"』"	)	; 』
-	SetKana( KC_INT1 | KC_SPC	,"{!}"	)	; ！
+	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver = "kbd101.dll")
+	{
+		SetKana( KC_INT1			,"?"	)	; ？
+		SetKana( KC_NUHS | KC_SPC	,"|"	)	; ｜
+		SetKana( KC_LBRC | KC_SPC	,"『"	)	; 『
+		SetKana( KC_RBRC | KC_SPC	,"』"	)	; 』
+		SetKana( KC_INT1 | KC_SPC	,"{!}"	)	; ！
 
-; おまけ
-	SetEisu( JP_YEN				,"\"	)	; ￥
-	SetEisu( KC_INT1			,"\"	)	; ￥
-	SetEisu( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
-	SetEisu( KC_INT1 | KC_SPC	,"_"	)	; ＿	スペース押しながら
+	; おまけ
+		SetEisu( JP_YEN				,"\"	)	; ￥
+		SetEisu( KC_INT1			,"\"	)	; ￥
+		SetEisu( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
+		SetEisu( KC_INT1 | KC_SPC	,"_"	)	; ＿	スペース押しながら
 
-	SetKana( JP_YEN				,"\"	)	; ￥
-	SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
+		SetKana( JP_YEN				,"\"	)	; ￥
+		SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
+	}
+
+	if (USLike > 0)
+		USLikeLayout()	; USキーボード風の配列へ
+
+	KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
+
+	return
 }
+
+; USキーボード風の配列へ
+USLikeLayout()
+{
+	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
+
+	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver = "kbd101.dll")
+		return
+
+KanaGroup := 0	; 0 はグループAll
+	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
+	SetEisu( KC_LBRC			,"{sc1B}"	)	; [
+	SetEisu( KC_RBRC			,"{sc2B}"	)	; ]
+	SetEisu( KC_QUOT			,"+{sc08}"	)	; '
+	SetEisu( KC_NUHS			,"+{sc1A}"	)	; `
+
+	SetEisu( KC_2 | KC_SPC		,"{sc1A}"	)	; @
+	SetEisu( KC_6 | KC_SPC		,"{sc0D}"	)	; ^
+	SetEisu( KC_7 | KC_SPC		,"+{sc07}"	)	; &
+	SetEisu( KC_8 | KC_SPC		,"+{sc28}"	)	; *
+	SetEisu( KC_9 | KC_SPC		,"+{sc09}"	)	; (
+	SetEisu( KC_0 | KC_SPC		,"+{sc0A}"	)	; )
+	SetEisu( KC_MINS | KC_SPC	,"+{sc73}"	)	; _
+	SetEisu( KC_EQL | KC_SPC	,"+{sc27}"	)	; +
+	SetEisu( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
+	SetEisu( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
+	SetEisu( KC_SCLN | KC_SPC	,"{sc28}"	)	; :
+	SetEisu( KC_QUOT | KC_SPC	,"+{sc03}"	)	; "
+	SetEisu( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
+
+
+	SetKana( KC_EQL				,"+{sc0C}"	)	; =
+	SetKana( KC_LBRC			,"{sc1B}"	)	; [
+	SetKana( KC_RBRC			,"{sc2B}"	)	; ]
+	SetKana( KC_QUOT			,"+{sc08}"	)	; '
+	SetKana( KC_NUHS			,"+{sc1A}"	)	; `
+
+	SetKana( KC_2 | KC_SPC		,"{sc1A}"	)	; @
+	SetKana( KC_6 | KC_SPC		,"{sc0D}"	)	; ^
+	SetKana( KC_7 | KC_SPC		,"+{sc07}"	)	; &
+	SetKana( KC_8 | KC_SPC		,"+{sc28}"	)	; *
+	SetKana( KC_9 | KC_SPC		,"+{sc09}"	)	; (
+	SetKana( KC_0 | KC_SPC		,"+{sc0A}"	)	; )
+	SetKana( KC_MINS | KC_SPC	,"+{sc73}"	)	; _
+	SetKana( KC_EQL | KC_SPC	,"+{sc27}"	)	; +
+	SetKana( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
+	SetKana( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
+;	SetKana( KC_SCLN | KC_SPC	,"{sc28}"	)	; :	(薙刀式で使用)
+	SetKana( KC_QUOT | KC_SPC	,"+{sc03}"	)	; "
+	SetKana( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
+
+	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver = "kbdnec.dll")
+	{
+		SetEisu( KC_NUHS			,"+{sc0D}"	)	; `
+		SetEisu( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
+
+		SetKana( KC_NUHS			,"+{sc0D}"	)	; `
+		SetKana( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
+	}
+
+	; 薙刀式v13
+	SetKana( KC_INT1			,"?"		)	; ？
+	SetKana( KC_LBRC | KC_SPC	,"『"		)	; 『
+	SetKana( KC_RBRC | KC_SPC	,"』"		)	; 』
+	SetKana( KC_INT1 | KC_SPC	,"{!}"		)	; ！
+
+	return
+}
+
+; 固有名詞ショートカットの登録
+KoyuRegist()
+{
+	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
+	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_1		,"{固有}" . E01)
+		SetKana(KC_U | KC_I | KC_2		,"{固有}" . E02)
+		SetKana(KC_U | KC_I | KC_3		,"{固有}" . E03)
+		SetKana(KC_U | KC_I | KC_4		,"{固有}" . E04)
+		SetKana(KC_U | KC_I | KC_5		,"{固有}" . E05)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_6		,"{固有}" . E06)
+		SetKana(KC_E | KC_R | KC_7		,"{固有}" . E07)
+		SetKana(KC_E | KC_R | KC_8		,"{固有}" . E08)
+		SetKana(KC_E | KC_R | KC_9		,"{固有}" . E09)
+		SetKana(KC_E | KC_R | KC_0		,"{固有}" . E10)
+		SetKana(KC_E | KC_R | KC_MINS	,"{固有}" . E11)
+		SetKana(KC_E | KC_R | KC_EQL	,"{固有}" . E12)
+		SetKana(KC_E | KC_R | JP_YEN	,"{固有}" . E13)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_Q		,"{固有}" . D01)
+		SetKana(KC_U | KC_I | KC_W		,"{固有}" . D02)
+		SetKana(KC_U | KC_I | KC_E		,"{固有}" . D03)
+		SetKana(KC_U | KC_I | KC_R		,"{固有}" . D04)
+		SetKana(KC_U | KC_I | KC_T		,"{固有}" . D05)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_Y		,"{固有}" . D06)
+		SetKana(KC_E | KC_R | KC_U		,"{固有}" . D07)
+		SetKana(KC_E | KC_R | KC_I		,"{固有}" . D08)
+		SetKana(KC_E | KC_R | KC_O		,"{固有}" . D09)
+		SetKana(KC_E | KC_R | KC_P		,"{固有}" . D10)
+		SetKana(KC_E | KC_R | KC_LBRC	,"{固有}" . D11)
+		SetKana(KC_E | KC_R | KC_RBRC	,"{固有}" . D12)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_A		,"{固有}" . C01)
+		SetKana(KC_U | KC_I | KC_S		,"{固有}" . C02)
+		SetKana(KC_U | KC_I | KC_D		,"{固有}" . C03)
+		SetKana(KC_U | KC_I | KC_F		,"{固有}" . C04)
+		SetKana(KC_U | KC_I | KC_G		,"{固有}" . C05)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_H		,"{固有}" . C06)
+		SetKana(KC_E | KC_R | KC_J		,"{固有}" . C07)
+		SetKana(KC_E | KC_R | KC_K		,"{固有}" . C08)
+		SetKana(KC_E | KC_R | KC_L		,"{固有}" . C09)
+		SetKana(KC_E | KC_R | KC_SCLN	,"{固有}" . C10)
+		SetKana(KC_E | KC_R | KC_QUOT	,"{固有}" . C11)
+		SetKana(KC_E | KC_R | KC_NUHS	,"{固有}" . C12)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_Z		,"{固有}" . B01)
+		SetKana(KC_U | KC_I | KC_X		,"{固有}" . B02)
+		SetKana(KC_U | KC_I | KC_C		,"{固有}" . B03)
+		SetKana(KC_U | KC_I | KC_V		,"{固有}" . B04)
+		SetKana(KC_U | KC_I | KC_B		,"{固有}" . B05)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_N		,"{固有}" . B06)
+		SetKana(KC_E | KC_R | KC_M		,"{固有}" . B07)
+		SetKana(KC_E | KC_R | KC_COMM	,"{固有}" . B08)
+		SetKana(KC_E | KC_R | KC_DOT	,"{固有}" . B09)
+		SetKana(KC_E | KC_R | KC_SLSH	,"{固有}" . B10)
+		SetKana(KC_E | KC_R | KC_INT1	,"{固有}" . B11)
+
+	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver == "kbd101.dll")
+	{
+		SetKana(KC_E | KC_R | KC_BSLS	,"{固有}" . E13)
+		SetKana(KC_E | KC_R | KC_GRV	,"{固有}" . C12)
+	}
+
+	return
+}
+
+; ----------------------------------------------------------------------
+; 追加のホットキー
+; ----------------------------------------------------------------------
++^sc0B::Suspend On	; 薙刀式中断 Shift+Ctrl+0
++^sc02::Suspend Off	; 薙刀式再開 Shift+Ctrl+1

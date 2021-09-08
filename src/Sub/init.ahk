@@ -29,37 +29,8 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ;CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
 
 ; ----------------------------------------------------------------------
-; 設定ファイル読み込み
-; ----------------------------------------------------------------------
-
-; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
-IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
-
-; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
-IniRead, INIVersion, %IniFilePath%, general, Version, ""
-IniRead, Vertical, %IniFilePath%, general, Vertical, 1
-	; Vertical		0: 横書き用, 1: 縦書き用
-IniRead, Slow, %IniFilePath%, general, Slow, 0
-	; Slow			0: MS-IME専用, 1: ATOK可
-IniRead, USLike, %IniFilePath%, general, USLike, 0
-	; USLike 0: 英数表記通り, 1: USキーボード風配列
-IniRead, SideShift, %IniFilePath%, general, SideShift, 2
-	; SideShift		0-1: 左右シフト英数, 2: 左右シフトかな
-IniRead, EnterShift, %IniFilePath%, general, EnterShift, 0
-	; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
-IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
-	; ShiftDelay	0: 通常シフト, 1以上: 後置シフトの待ち時間(ミリ秒)
-IniRead, CombDelay, %IniFilePath%, general, CombDelay, 60
-	; CombDelay		0以下: 同時押しは時間無制限
-	; 				1以上: シフト中の同時打鍵判定時間(ミリ秒)
-IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
-
-IniRead, TestMode, %IniFilePath%, test, TestMode, 0
-IniRead, DispTime, %IniFilePath%, test, DispTime, 0
-	; DispTime		0: なし, 1: 変換時間表示あり
-
-; ----------------------------------------------------------------------
-; 配列定義で使う変数
+; 配列定義で使う定数
+;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk を利用
 ; ----------------------------------------------------------------------
 ; キーを64bitの各ビットに割り当てる
 ; 右側の数字は仮想キーコードになっている
@@ -126,268 +97,220 @@ KC_SPC	:= 1 << 0x39
 ; リピート定義用
 R := 1
 
-
 ; ----------------------------------------------------------------------
-; 共通変数
+; 共用変数(メニュー用は別途)
 ; ----------------------------------------------------------------------
-Group := 0	; 0 はグループAll
-; 入れ物の定義
+KanaGroup := 0		; かな配列定義のグループ。0 はグループAll
+; かな配列の入れ物
 DefsKey := []		; キービットの集合
 DefsGroup := []		; 定義のグループ番号 ※0はグループAll
 DefsKanaMode := []	; 0: 英数入力用, 1: かな入力用
 DefsTateStr := []	; 縦書き用定義
 DefsYokoStr := []	; 横書き用定義
-DefsRepeat := []	; 1: リピートできる
+DefsCtrlNo := []	; 0: なし, 1: リピートできる, 2以上: 特別出力(かな定義ファイルで操作)
 DefsSetted := []	; 0: 出力確定しない,
 					; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
 DefBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
 DefEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
+; 入力バッファ
+InBufsKey := []
+InBufsTime := []	; 入力の時間
+InBufReadPos := 0	; 読み出し位置
+InBufWritePos := 0	; 書き込み位置
+InBufRest := 15
+; 仮出力バッファ
+OutStrs := []
+OutCtrlNos := []
+_usc := 0			; 保存されている文字数
 
 ; キーボードドライバを調べて KeyDriver に格納する
 ; 参考: https://ixsvr.dyndns.org/blog/764
 RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
 USKB := (KeyDriver = "kbd101.dll" ? True : False)
-USKBSideShift := (USKB == 1 && SideShift > 0 ? True : False)
+USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
 
 ; ----------------------------------------------------------------------
-; 関数
+; 設定ファイル読み込み
 ; ----------------------------------------------------------------------
 
-; 何キー同時か数える
-CountBit(KeyComb)
-{
-	global KC_SPC
-;	local count, i
+; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
+IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
-	KeyComb &= KC_SPC ^ (-1)	; スペースキーは数えない
+; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
+; バージョン記録
+	IniRead, INIVersion, %IniFilePath%, general, Version, ""
+; Vertical		0: 横書き用, 1: 縦書き用
+	IniRead, Vertical, %IniFilePath%, general, Vertical, 1
+; IMESelect			0: MS-IME専用, 1: ATOK対応
+	IniRead, IMESelect, %IniFilePath%, general, IMESelect, 0
+; USLike 0: 英数表記通り, 1: USキーボード風配列
+	IniRead, USLike, %IniFilePath%, general, USLike, 0
+; SideShift		0-1: 左右シフト英数, 2: 左右シフトかな
+	IniRead, SideShift, %IniFilePath%, general, SideShift, 2
+; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
+	IniRead, EnterShift, %IniFilePath%, general, EnterShift, 0
+; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
+	IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
+; CombDelay		0: 同時押しは時間無制限
+; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
+	IniRead, CombDelay, %IniFilePath%, general, CombDelay, 60
+; 固有名詞ショートカットの選択
+	IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
 
-	count := 0
-	i := 0
-	while (i < 64 && count < 3)	; 3になったら、それ以上数えない
+; TestMode		0: なし, 1: あり
+	IniRead, TestMode, %IniFilePath%, test, TestMode, 0
+; DispTime		0: なし, 1: 処理時間表示あり
+	IniRead, INIDispTime, %IniFilePath%, test, DispTime, 0
+
+; ----------------------------------------------------------------------
+; かな配列読み込み
+; ----------------------------------------------------------------------
+	ReadLayout()	; かな配列読み込み
+	SettingLayout()	; 出力確定する定義に印をつける
+
+; ----------------------------------------------------------------------
+; メニューで使う変数
+; ----------------------------------------------------------------------
+SideShift0 := (SideShift == 0 ? 1 : 0)
+SideShift1 := (SideShift == 1 ? 1 : 0)
+SideShift2 := (SideShift == 2 ? 1 : 0)
+EnterShift0 := (EnterShift == 0 ? 1 : 0)
+EnterShift1 := (EnterShift == 1 ? 1 : 0)
+
+; ----------------------------------------------------------------------
+; メニュー表示
+; ----------------------------------------------------------------------
+	menu, tray, tip, Hachiku`n%Version%
+	; タスクトレイメニューの標準メニュー項目を解除
+	menu, tray, NoStandard
+
+	; 薙刀式配列用メニュー
+	if (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在したら
 	{
-		count += KeyComb & 1
-		KeyComb >>= 1
-		i++
-	}
-	return count
-}
-
-; 縦書き用定義から横書き用に変換
-ConvTateYoko(Str1)
-{
-	StringReplace, Str1, Str1, {Up,		{Temp,	A
-	StringReplace, Str1, Str1, {Right,	{Up,	A
-	StringReplace, Str1, Str1, {Down,	{Right,	A
-	StringReplace, Str1, Str1, {Left,	{Down,	A
-	StringReplace, Str1, Str1, {Temp,	{Left,	A
-
-	return Str1
-}
-
-; 機能置き換え処理 - DvorakJ との互換用
-StrReplace(Str1)
-{
-	StringReplace, Str1, Str1, {→,			{Right,		A
-	StringReplace, Str1, Str1, {->,			{Right,		A
-	StringReplace, Str1, Str1, {右,			{Right,		A
-	StringReplace, Str1, Str1, {←,			{Left,		A
-	StringReplace, Str1, Str1, {<-,			{Left,		A
-	StringReplace, Str1, Str1, {左,			{Right,		A
-	StringReplace, Str1, Str1, {↑,			{Up,		A
-	StringReplace, Str1, Str1, {上,			{Up,		A
-	StringReplace, Str1, Str1, {↓,			{Down,		A
-	StringReplace, Str1, Str1, {下,			{Down,		A
-	StringReplace, Str1, Str1, {ペースト},	^v,			A
-	StringReplace, Str1, Str1, {貼付},		^v,			A
-	StringReplace, Str1, Str1, {貼り付け},	^v,			A
-	StringReplace, Str1, Str1, {カット},	^x,			A
-	StringReplace, Str1, Str1, {切取},		^x,			A
-	StringReplace, Str1, Str1, {切り取り},	^x,			A
-	StringReplace, Str1, Str1, {コピー},	^c,			A
-	StringReplace, Str1, Str1, {無変換,		{vk1D,		A
-	StringReplace, Str1, Str1, {変換,		{vk1C,		A
-	StringReplace, Str1, Str1, {ひらがな,	{vkF2,		A
-	StringReplace, Str1, Str1, {改行,		{Enter,		A
-	StringReplace, Str1, Str1, {後退,		{BS,		A
-	StringReplace, Str1, Str1, {取消,		{Esc,		A
-	StringReplace, Str1, Str1, {削除,		{Del,		A
-	StringReplace, Str1, Str1, {全角,		{vkF3,		A
-	StringReplace, Str1, Str1, {タブ,		{Tab,		A
-	StringReplace, Str1, Str1, {空白		{Space,		A
-	StringReplace, Str1, Str1, {メニュー,	{AppsKey,	A
-
-	StringReplace, Str1, Str1, {Caps Lock,	{vkF0,		A
-	StringReplace, Str1, Str1, {Back Space,	{BS,		A
-
-	StringReplace, Str1, Str1, {固有},		{直接},		A
-
-	return Str1
-}
-
-; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
-; 先頭が"{記号}"または"{直接}"だったらそのまま
-Analysis(Str1)
-{
-;	local StrBegin
-;		, i			; カウンタ
-;		, len, StrChopped, c, bracket
-
-	if (Str1 == "{記号}" || Str1 == "{直接}")
-		return ""	; 有効な文字列がないので空白を返す
-
-	StrBegin := SubStr(Str1, 1, 4)
-	if (StrBegin == "{記号}" || StrBegin == "{直接}")
-		return Str1	; そのまま返す
-
-	; 1文字ずつ分析する
-	len := StrLen(Str1)
-	StrChopped := ""
-	len2 := 0
-	bracket := 0
-	i := 1
-	while (i <= len)
-	{
-		c := SubStr(Str1, i, 1)
-		if (c == "}" && bracket != 1)
-			bracket := 0
-		else if (c == "{" || bracket > 0)
-			bracket++
-		StrChopped .= c
-		len2++
-		if (i == len || !(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#"))
-		{
-			; ASCIIコードでない
-			if (Asc(StrChopped) > 127
-			 || SubStr(StrChopped, 1, 3) = "{U+"
-			 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127))
-				return "{記号}" . Str1	; 先頭に"記号"を書き足して終了
-			StrChopped := ""
-			len2 := 0
-		}
-		i++
+		; 縦書きモード切替を追加
+		menu, tray, add, 縦書きモード, VerticalMode
+		if (Vertical)
+			menu, tray, Check, 縦書きモード	; “縦書きモード”にチェックを付ける
+		; 「固有名詞」編集画面を追加
+		menu, tray, add, 固有名詞登録, KoyuMenu
 	}
 
-	; すべて ASCIIコードだった
-	return Str1	; そのまま返す
-}
+	; 設定画面を追加
+	menu, tray, add, 設定..., PrefMenu
+	; セパレーター
+	menu, tray, add
+	; 標準メニュー項目を追加
+	menu, tray, Standard
 
-; 定義登録
-SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
-{
-	global DefsKey, DefsGroup, DefsKanaMode, DefsTateStr, DefsYokoStr, DefsRepeat
-		, DefBegin, DefEnd
-		, Group
-;	local nkeys		; 何キー同時押しか
-;		, i, imax	; カウンタ用
+	; バージョンアップ後、初めての起動時は設定画面を表示
+	if (INIVersion != Version)
+		Gosub, PrefMenu
 
-	; 機能置き換え処理
-	Str1 := StrReplace(Str1)
+exit	; 起動時はここまで実行
 
-	; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
-	Str1 := Analysis(Str1)
+; ----------------------------------------------------------------------
+; メニュー動作
+; ----------------------------------------------------------------------
+; 参考: https://rcmdnk.com/blog/2017/11/07/computer-windows-autohotkey/
 
-	; 登録
-	nkeys := CountBit(KeyComb)	; 何キー同時押しか
-	i := DefBegin[nkeys]		; 始まり
-	imax := DefEnd[nkeys]			; 終わり
-	while (i < imax)
+; 縦書きモード切替
+VerticalMode:
+	menu, tray, ToggleCheck, 縦書きモード
+	Vertical := (Vertical == 0 ? 1 : 0)
+	; 設定ファイル書き込み
+	IniWrite, %Vertical%, %IniFilePath%, general, Vertical
+return
+
+ButtonOK:
+	Gui, Submit
+	INIVersion := Version
+	if (SideShift0)
+		SideShift := 0
+	else if (SideShift1)
+		SideShift := 1
+	else
+		SideShift := 2
+	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
+	EnterShift := (EnterShift0 == 1 ? 0 : 1)
+	; 設定ファイル書き込み
+	IniWrite, %INIVersion%, %IniFilePath%, general, Version
+	IniWrite, %IMESelect%, %IniFilePath%, general, IMESelect
+	IniWrite, %USLike%, %IniFilePath%, general, USLike
+	IniWrite, %SideShift%, %IniFilePath%, general, SideShift
+	IniWrite, %EnterShift%, %IniFilePath%, general, EnterShift
+	IniWrite, %ShiftDelay%, %IniFilePath%, general, ShiftDelay
+	IniWrite, %CombDelay%, %IniFilePath%, general, CombDelay
+	if (TestMode)
+		IniWrite, %INIDispTime%, %IniFilePath%, test, DispTime
+	ShiftDelay += 0.0
+	CombDelay += 0.0
+	ReadLayout()	; かな配列読み込み
+	SettingLayout()	; 出力確定する定義に印をつける
+ButtonCancel:
+GuiClose:
+	Gui, Destroy
+	return
+
+; 設定画面
+PrefMenu:
+	Gui, Destroy
+	Gui, -MinimizeBox
+	Gui, Add, Text, , 設定
+	Gui, Add, Text, x+0 W180 Right, %Version%
+
+	Gui, Add, Checkbox, xm vIMESelect, ATOK対応
+	if (IMESelect)
+		GuiControl, , IMESelect, 1
+
+	if (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在したら
 	{
-		; 定義の重複があったら、古いのを消す
-		; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
-		if (DefsKey[i] == KeyComb && DefsKanaMode[i] == KanaMode)
-		{
-			DefsKey.RemoveAt(i)
-			DefsGroup.RemoveAt(i)
-			DefsKanaMode.RemoveAt(i)
-			DefsTateStr.RemoveAt(i)
-			DefsYokoStr.RemoveAt(i)
-			DefsRepeat.RemoveAt(i)
-
-			DefEnd[1]--
-			if (nkeys > 1)
-				DefBegin[1]--, DefEnd[2]--
-			if (nkeys > 2)
-				DefBegin[2]--, DefEnd[3]--
-			break
-		}
-		i++
+		Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
+		if (USLike)
+			GuiControl, , USLike, 1
+		Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
+		Gui, Add, Text, xm+18 y+1, ※ 左右シフトかなに設定してください
 	}
-	if (Str1 != "")		; 定義あり
+
+	Gui, Add, Text, xm y+10, 左右シフト
+	Gui, Add, Radio, xm+68 yp+0 Group vSideShift0, 英数
+	if (TestMode)
+		Gui, Add, Radio, x+0 vSideShift1, 英数2
+	Gui, Add, Radio, x+0 vSideShift2, かな
+	if (SideShift0)
+		GuiControl, , SideShift0, 1
+	else if (SideShift1)
+		GuiControl, , SideShift1, 1
+	else
+		GuiControl, , SideShift2, 1
+
+	Gui, Add, Text, xm, エンター
+	Gui, Add, Radio, xm+68 yp+0 Group vEnterShift0, 通常
+	Gui, Add, Radio, x+0 vEnterShift1, 同時押しシフト
+	if (EnterShift0)
+		GuiControl, , EnterShift0, 1
+	else
+		GuiControl, , EnterShift1, 1
+
+	Gui, Add, Text, xm y+15, 後置シフトの待ち時間
+	Gui, Add, Edit, xm+128 yp-3 W45
+	Gui, Add, UpDown, vShiftDelay Range0-200, %ShiftDelay%
+	Gui, Add, Text, x+5 yp+3, ミリ秒
+
+	Gui, Add, Text, xm y+15, シフト中の同時打鍵判定
+	Gui, Add, Edit, xm+128 yp-3 W45
+	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
+	Gui, Add, Text, x+5 yp+3, ミリ秒
+	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
+
+	if (TestMode)
 	{
-		i := DefEnd[nkeys]
-		DefsKey.InsertAt(i, KeyComb)
-		DefsGroup.InsertAt(i, Group)
-		DefsKanaMode.InsertAt(i, KanaMode)
-		DefsTateStr.InsertAt(i, Str1)
-		DefsYokoStr.InsertAt(i, ConvTateYoko(Str1))	; 縦横変換
-		DefsRepeat.InsertAt(i, Repeat)
-
-		DefEnd[1]++
-		if (nkeys > 1)
-			DefBegin[1]++, DefEnd[2]++
-		if (nkeys > 2)
-			DefBegin[2]++, DefEnd[3]++
+		Gui, Add, Checkbox, xm vINIDispTime, 処理時間表示
+		if (INIDispTime)
+			GuiControl, , INIDispTime, 1
 	}
+
+	Gui, Add, Button, W60 xm+45 y+10 Default, OK
+	Gui, Add, Button, W60 x+0, Cancel
+	Gui, Show
 
 	return
-}
-
-; かな定義登録
-SetKana(KeyComb, Str1, Repeat:=0)
-{
-	SetDefinition(1, KeyComb, Str1, Repeat)
-	return
-}
-; 英数定義登録
-SetEisu(KeyComb, Str1, Repeat:=0)
-{
-	SetDefinition(0, KeyComb, Str1, Repeat)
-	return
-}
-
-; 出力確定するか検索
-SearchSet(SearchBit, KanaMode, nkeys)
-{
-	global DefsKey, DefsKanaMode, DefBegin, DefEnd
-		, KC_SPC
-;	local j, jmax	; カウンタ用
-;		, LastSetted
-;		, DefKeyCopy
-
-	LastSetted := (nkeys > 1 || (SearchBit & KC_SPC) ? 2 : 1)	; 初期値
-	j := DefBegin[3]
-	jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
-	while (j < jmax)
-	{
-		; SearchBit は DefsKey[j] に内包されているか
-		DefKeyCopy := DefsKey[j]
-		if (SearchBit != DefKeyCopy && KanaMode == DefsKanaMode[j] && (DefKeyCopy & SearchBit) == SearchBit)
-		{
-			if ((DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC))	; シフトも一致
-				return 0	; 出力確定はしない
-			else
-				LastSetted := 1	; 後置シフトは出力確定しない
-		}
-		j++
-	}
-	return LastSetted
-}
-
-; 出力確定するかな定義を調べて DefsSetted[] に記録
-; 0: 確定しない, 1: 通常シフトのみ確定, 2: 後置シフトでも確定
-Setting()
-{
-	global DefsKey, DefsKanaMode, DefsSetted, DefBegin, DefEnd
-;	local i, imax	; カウンタ用
-
-	; 出力確定するか検索
-	i := DefBegin[3]
-	imax := DefEnd[1]
-	while (i < imax)
-	{
-		SearchBit := DefsKey[i]
-		DefsSetted[i] := SearchSet(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
-		i++
-	}
-	return
-}

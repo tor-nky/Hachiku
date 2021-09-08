@@ -21,8 +21,12 @@
 ;	※順序はグループ内で自由です。同じキーの組み合わせは、後の方が有効になります。
 ; ----------------------------------------------------------------------
 
+; キーボード初期配列
+ReadStandardLayout()
+{
+	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk
 
-Group := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループAll
 	SetEisu( KC_1		,"{sc02}"	)
 	SetEisu( KC_2		,"{sc03}"	)
 	SetEisu( KC_3		,"{sc04}"	)
@@ -232,31 +236,27 @@ Group := 0	; 0 はグループAll
 	SetKana( KC_SLSH | KC_SPC	,"+{sc35}"	)
 	SetKana( KC_INT1 | KC_SPC	,"+{sc73}"	)
 
+	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	if (KeyDriver = "kbd101.dll")
+	{
+		SetEisu( KC_GRV				,"{sc29}"	)
+		SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)
+		SetKana( KC_GRV				,"{sc29}"	)
+		SetKana( KC_GRV | KC_SPC	,"+{sc29}"	)
 
-; ----------------------------------------------------------------------
-; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-; ----------------------------------------------------------------------
-if (KeyDriver = "kbd101.dll")
-{
-	SetEisu( KC_GRV				,"{sc29}"	)
-	SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)
-	SetKana( KC_GRV				,"{sc29}"	)
-	SetKana( KC_GRV | KC_SPC	,"+{sc29}"	)
-
-	SetEisu( JP_YEN				,"\"		)
-	SetEisu( JP_YEN | KC_SPC	,"|"		)
-	SetKana( JP_YEN				,"\"		)
-	SetKana( JP_YEN | KC_SPC	,"|"		)
-	SetEisu( KC_INT1			,"\"		)
-	SetEisu( KC_INT1 | KC_SPC	,"_"		)
-	SetKana( KC_INT1			,"\"		)
-	SetKana( KC_INT1 | KC_SPC	,"_"		)
-}
-; ----------------------------------------------------------------------
-; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-; ----------------------------------------------------------------------
-else if (KeyDriver = "kbdnec.dll")
-{
-	SetEisu( KC_INT1	,"\"	)
-	SetKana( KC_INT1	,"\"	)
+		SetEisu( JP_YEN				,"\"		)
+		SetEisu( JP_YEN | KC_SPC	,"|"		)
+		SetKana( JP_YEN				,"\"		)
+		SetKana( JP_YEN | KC_SPC	,"|"		)
+		SetEisu( KC_INT1			,"\"		)
+		SetEisu( KC_INT1 | KC_SPC	,"_"		)
+		SetKana( KC_INT1			,"\"		)
+		SetKana( KC_INT1 | KC_SPC	,"_"		)
+	}
+	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
+	else if (KeyDriver = "kbdnec.dll")
+	{
+		SetEisu( KC_INT1	,"\"	)
+		SetKana( KC_INT1	,"\"	)
+	}
 }
