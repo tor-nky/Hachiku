@@ -250,15 +250,15 @@ SetEisu(KeyComb, Str1, Repeat:=0)
 }
 
 ; 出力確定するか検索
-SearchSet(SearchBit, KanaMode, nkeys)
+FindComplete(SearchBit, KanaMode, nkeys)
 {
 	global DefsKey, DefsKanaMode, DefBegin, DefEnd
 		, KC_SPC
 ;	local j, jmax	; カウンタ用
-;		, Setted
+;		, Complete
 ;		, DefKeyCopy
 
-	Setted := (nkeys > 1 || (SearchBit & KC_SPC) ? 2 : 1)	; 初期値
+	Complete := (nkeys > 1 || (SearchBit & KC_SPC) ? 2 : 1)	; 初期値
 	j := DefBegin[3]
 	jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
 	while (j < jmax)
@@ -268,20 +268,20 @@ SearchSet(SearchBit, KanaMode, nkeys)
 		if (SearchBit != DefKeyCopy && KanaMode == DefsKanaMode[j] && (DefKeyCopy & SearchBit) == SearchBit)
 		{
 			if ((DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC))	; シフトも一致
-				return 0	; 出力確定はしない
+				return 0		; 出力確定はしない
 			else
-				Setted := 1	; 後置シフトは出力確定しない
+				Complete := 1	; 後置シフトは出力確定しない
 		}
 		j++
 	}
-	return Setted
+	return Complete
 }
 
-; 出力確定するかな定義を調べて DefsSetted[] に記録
+; 出力確定するかな定義を調べて DefsComplete[] に記録
 ; 0: 確定しない, 1: 通常シフトのみ確定, 2: 後置シフトでも確定
 SettingLayout()
 {
-	global DefsKey, DefsKanaMode, DefsSetted, DefBegin, DefEnd
+	global DefsKey, DefsKanaMode, DefsComplete, DefBegin, DefEnd
 ;	local i, imax	; カウンタ用
 ;		, SearchBit
 
@@ -291,7 +291,7 @@ SettingLayout()
 	while (i < imax)
 	{
 		SearchBit := DefsKey[i]
-		DefsSetted[i] := SearchSet(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
+		DefsComplete[i] := FindComplete(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
 		i++
 	}
 	return
@@ -557,7 +557,7 @@ Convert()
 {
 	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
-		, DefsKey, DefsGroup, DefsKanaMode, DefsSetted, DefsCtrlNo, DefBegin, DefEnd
+		, DefsKey, DefsGroup, DefsKanaMode, DefsComplete, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
 		, SideShift, EnterShift, ShiftDelay, CombDelay
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
@@ -585,7 +585,7 @@ Convert()
 ;		, SearchBit	; いま検索しようとしているキーの集合
 ;		, i, imax, j, jmax	; カウンタ用
 ;		, DefKeyCopy
-;		, Setted 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
+;		, Complete 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
 ;		, CtrlNo
 ;		, TimeAtoB
 
@@ -895,15 +895,15 @@ Convert()
 			CtrlNo := 0
 			if (nkeys > 0)	; 定義が見つかった時
 			{
-				OutStr := SelectStr(i)	; 出力する文字列
-				Setted := DefsSetted[i]	; 出力確定するか検索
+				OutStr := SelectStr(i)		; 出力する文字列
+				Complete := DefsComplete[i]	; 出力確定するか検索
 				CtrlNo := DefsCtrlNo[i]
 			}
 			else if (nkeys == 0)	; 定義が見つけられなかった時
 				; 出力確定するか検索
-				Setted := SearchSet(SearchBit, KanaMode, nkeys)
+				Complete := FindComplete(SearchBit, KanaMode, nkeys)
 			else
-				Setted := 2	; 出力確定する
+				Complete := 2	; 出力確定する
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
@@ -921,7 +921,7 @@ Convert()
 				RepeatBit := 0
 
 			; 出力確定文字か？
-			if (Setted > (ShiftDelay > 0.0 ? 1 : 0))
+			if (Complete > (ShiftDelay > 0.0 ? 1 : 0))
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{
@@ -929,7 +929,7 @@ Convert()
 				if (CombDelay > 0.0 && (RealBit & KC_SPC))
 					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
-				if (Setted == 1)
+				if (Complete == 1)
 					SetTimer, PSTimer, % - ShiftDelay
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
