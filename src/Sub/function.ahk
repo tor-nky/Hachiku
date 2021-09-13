@@ -792,7 +792,7 @@ Convert()
 			while (nkeys == 0)
 			{
 				; 3キー入力を検索
-				if (_lks > 1 || Last2Bit != 0)
+				if (Last2Bit != 0)
 				{
 					i := DefBegin[3]
 					imax := DefEnd[3]	; 検索場所の設定
@@ -907,11 +907,12 @@ Convert()
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
-			; 次回に向けて変数を更新
+			; 次回の検索用に変数を更新
 			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
 			_lks := nkeys			; 何キー同時押しだったかを保存
-			Last2Bit := (nkeys >= 2 ? 0 : LastBit)	; 2、3キー入力のときは、この前のキービットを保存しない
+			Last2Bit := (nkeys >= 2 ? DefsKey[i] : LastBit)	; 2、3キー入力のときは今回のキービットを保存
+															; それ以外は前回のキービットを保存
 			LastBit := (nkeys >= 1 ? DefsKey[i] : NowBit)	; 今回のキービットを保存
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
 			if (CtrlNo == R && NowBit != KC_SPC)
