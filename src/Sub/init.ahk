@@ -138,11 +138,12 @@ USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
 IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
 ; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
+; [general]
 ; バージョン記録
 	IniRead, INIVersion, %IniFilePath%, general, Version, ""
 ; Vertical		0: 横書き用, 1: 縦書き用
 	IniRead, Vertical, %IniFilePath%, general, Vertical, 1
-; IMESelect			0: MS-IME専用, 1: ATOK対応
+; IMESelect		0: MS-IME専用, 1: ATOK対応
 	IniRead, IMESelect, %IniFilePath%, general, IMESelect, 0
 ; USLike 0: 英数表記通り, 1: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, general, USLike, 0
@@ -158,6 +159,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; 固有名詞ショートカットの選択
 	IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
 
+; [test]
 ; TestMode		0: なし, 1: あり
 	IniRead, TestMode, %IniFilePath%, test, TestMode, 0
 ; DispTime		0: なし, 1: 処理時間表示あり

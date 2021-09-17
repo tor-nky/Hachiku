@@ -177,11 +177,11 @@ Analysis(Str1)
 }
 
 ; 定義登録
-SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
+SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
 {
 	global DefsKey, DefsGroup, DefsKanaMode, DefsTateStr, DefsYokoStr, DefsCtrlNo
 		, DefBegin, DefEnd
-		, KanaGroup
+		, KanaGroup, R
 ;	local nkeys		; 何キー同時押しか
 ;		, i, imax	; カウンタ用
 
@@ -216,7 +216,7 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 		}
 		i++
 	}
-	if (Str1 != "")		; 定義あり
+	if ((CtrlNo != 0 && CtrlNo != R) || Str1 != "")		; 定義あり
 	{
 		i := DefEnd[nkeys]
 		DefsKey.InsertAt(i, KeyComb)
@@ -224,7 +224,7 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 		DefsKanaMode.InsertAt(i, KanaMode)
 		DefsTateStr.InsertAt(i, Str1)
 		DefsYokoStr.InsertAt(i, ConvTateYoko(Str1))	; 縦横変換
-		DefsCtrlNo.InsertAt(i, Repeat)
+		DefsCtrlNo.InsertAt(i, CtrlNo)
 
 		DefEnd[1]++
 		if (nkeys > 1)
@@ -237,15 +237,15 @@ SetDefinition(KanaMode, KeyComb, Str1, Repeat:=0)
 }
 
 ; かな定義登録
-SetKana(KeyComb, Str1, Repeat:=0)
+SetKana(KeyComb, Str1, CtrlNo:=0)
 {
-	SetDefinition(1, KeyComb, Str1, Repeat)
+	SetDefinition(1, KeyComb, Str1, CtrlNo)
 	return
 }
 ; 英数定義登録
-SetEisu(KeyComb, Str1, Repeat:=0)
+SetEisu(KeyComb, Str1, CtrlNo:=0)
 {
-	SetDefinition(0, KeyComb, Str1, Repeat)
+	SetDefinition(0, KeyComb, Str1, CtrlNo)
 	return
 }
 
@@ -472,9 +472,7 @@ OutBuf(i:=2)
 
 	while (i > 0 && _usc > 0)
 	{
-		if (OutCtrlNos[1] > R)
-			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
-		else
+		if (OutCtrlNos[1] == 0 || OutCtrlNos[1] == R)
 		{
 			Str1 := OutStrs[1]
 			StrBegin := SubStr(Str1, 1, 4)
@@ -499,6 +497,8 @@ OutBuf(i:=2)
 			else
 				SendEachChar(Str1)
 		}
+		else
+			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
 
 		OutStrs[1] := OutStrs[2]
 		OutCtrlNos[1] := OutCtrlNos[2]
@@ -806,7 +806,7 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC && CombDelay > 0.0)
+							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き3キー入力だったら
 								LastBit := 0	; 1キー入力の検索へ
 								break
@@ -838,7 +838,7 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC && CombDelay > 0.0)
+							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き2キー入力だったら
 								LastBit := 0	; 1キー入力の検索へ
 								break
@@ -915,7 +915,7 @@ Convert()
 															; それ以外は前回のキービットを保存
 			LastBit := (nkeys >= 1 ? DefsKey[i] : NowBit)	; 今回のキービットを保存
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
-			if (CtrlNo == R && NowBit != KC_SPC)
+			if (CtrlNo == R)
 				RepeatBit := NowBit		; キーリピートする
 			else
 				RepeatBit := 0
@@ -936,7 +936,12 @@ Convert()
 		}
 		; リピートできるキー
 		else if (NowBit == RepeatBit)
-		{	; 前回の文字列を出力
+		{
+			if (spc == 1)
+				spc := 2	; 単独スペースではない
+			if (ent == 1)
+				ent := 2	; 単独エンターではない
+			; 前回の文字列を出力
 			StoreBuf(0, LastStr)
 			OutBuf()
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
