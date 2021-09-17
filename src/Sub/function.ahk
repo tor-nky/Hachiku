@@ -936,12 +936,7 @@ Convert()
 		}
 		; リピートできるキー
 		else if (NowBit == RepeatBit)
-		{
-			if (spc == 1)
-				spc := 2	; 単独スペースではない
-			if (ent == 1)
-				ent := 2	; 単独エンターではない
-			; 前回の文字列を出力
+		{	; 前回の文字列を出力
 			StoreBuf(0, LastStr)
 			OutBuf()
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
