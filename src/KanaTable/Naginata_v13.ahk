@@ -8,7 +8,6 @@
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
-	; ↑ 無くても動くが、あるほうがわずかに速い
 
 ; 特別出力
 SendSP(Str1, CtrlNo)
@@ -42,9 +41,11 @@ SendSP(Str1, CtrlNo)
 ReadLayout()
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	global KoyuNumber
+	global LayoutName, KoyuNumber
 
+	LayoutName := "薙刀式v13完成版"
 	ReadStandardLayout()	; キーボード初期配列を読み込み
+	; ↑ 無くても動くが、あるほうがわずかに速い
 
 KanaGroup := 0	; 0 はグループAll
 
