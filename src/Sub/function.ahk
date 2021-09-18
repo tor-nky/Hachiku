@@ -806,12 +806,12 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks >= 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き3キー入力だったら
 								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
-							if (_lks == 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
+							if (_lks >= 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
 								OutBuf()
 							else if (_lks >= 2)
 								nBack := 1	; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
@@ -838,7 +838,7 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks == 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
+							if (_lks >= 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
 							{	; 前回もシフト付き2キー入力だったら
 								LastBit := 0	; 1キー入力の検索へ
 								break
