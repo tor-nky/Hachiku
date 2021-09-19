@@ -33,6 +33,7 @@ KoyuCancel:
 KoyuMenu:
 	Gui, Destroy
 	Gui, Add, Text, , 固有名詞ショートカット設定
+;	Gui, Add, Text, x+15, 〈セット%KoyuNumber%〉
 
 ; E列
 	Gui, Add, Text, xm+0 y+12 W90 Center, 1

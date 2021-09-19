@@ -559,7 +559,7 @@ Convert()
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsComplete, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
-		, SideShift, EnterShift, ShiftDelay, CombDelay
+		, SideShift, EnterShift, ShiftDelay, CombDelay, NonSpace, WithSpace, KeyRelease
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
@@ -583,6 +583,7 @@ Convert()
 ;		, nkeys		; 今回は何キー同時押しか
 ;		, NowBit	; 今回のキービット
 ;		, SearchBit	; いま検索しようとしているキーの集合
+;		, ShiftStyle
 ;		, i, imax, j, jmax	; カウンタ用
 ;		, DefKeyCopy
 ;		, Complete 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
@@ -760,9 +761,21 @@ Convert()
 		if (Term == "up")
 		{
 			OutBuf()
+			LastStr := ""
+			_lks := 0
 			RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では
 										; 32ビット計算になることがあり、不適切
-			Last2Bit := LastBit := RealBit
+			; 文字キーによるシフトの適用範囲
+			if (KeyRelease == 0)		; シフト復活
+				Last2Bit := LastBit := RealBit
+			else if (KeyRelease == 1)	; シフトは1回のみ
+				Last2Bit := LastBit := 0
+			else						; シフトは途切れるまで
+			{
+				Last2Bit &= NowBit ^ (-1)
+				LastBit &= NowBit ^ (-1)
+			}
+
 			LastGroup := 0
 			RepeatBit := 0	; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
@@ -787,6 +800,7 @@ Convert()
 				Last2Bit := LastBit := 0
 			}
 
+			ShiftStyle := ((RealBit & KC_SPC) ? WithSpace : NonSpace)	; 文字キーによるシフトの適用範囲
 			RealBit |= NowBit
 			nBack := 0
 			while (nkeys == 0)
@@ -796,7 +810,8 @@ Convert()
 				{
 					i := DefBegin[3]
 					imax := DefEnd[3]	; 検索場所の設定
-					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit
+					SearchBit := (ShiftStyle == 0 ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
+						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
 						DefKeyCopy := DefsKey[i]
@@ -806,8 +821,8 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks >= 3 && (RealBit & KC_SPC) && NowBit != KC_SPC)
-							{	; 前回もシフト付き3キー入力だったら
+							if (ShiftStyle == 1 && _lks >= 3 && NowBit != KC_SPC)
+							{
 								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
@@ -828,7 +843,8 @@ Convert()
 				{
 					i := DefBegin[2]
 					imax := DefEnd[2]	; 検索場所の設定
-					SearchBit := (RealBit & KC_SPC) | NowBit | LastBit
+					SearchBit := (ShiftStyle == 0 ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
+						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
 						DefKeyCopy := DefsKey[i]
@@ -838,8 +854,8 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if (_lks >= 2 && (RealBit & KC_SPC) && NowBit != KC_SPC)
-							{	; 前回もシフト付き2キー入力だったら
+							if (ShiftStyle == 1 && _lks >= 2 && NowBit != KC_SPC)
+							{
 								LastBit := 0	; 1キー入力の検索へ
 								break
 							}

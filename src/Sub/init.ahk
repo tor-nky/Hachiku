@@ -159,6 +159,14 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; 固有名詞ショートカットの選択
 	IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
 
+; [ShiftStyle]	文字キーによるシフトの適用範囲
+; NonSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
+	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 2
+; WithSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
+	IniRead, WithSpace, %IniFilePath%, ShiftStyle, WithSpace, 1
+; KeyRelease	0: 復活, 1: 1回のみ, 2: 途切れるまで
+	IniRead, KeyRelease, %IniFilePath%, ShiftStyle, KeyRelease, 0
+
 ; [test]
 ; TestMode		0: なし, 1: あり
 	IniRead, TestMode, %IniFilePath%, test, TestMode, 0
@@ -183,7 +191,8 @@ EnterShift1 := (EnterShift == 1 ? 1 : 0)
 ; ----------------------------------------------------------------------
 ; メニュー表示
 ; ----------------------------------------------------------------------
-	menu, tray, tip, Hachiku %Version%`n%LayoutName%
+	; ツールチップを変更する
+	menu, tray, tip, Hachiku %Version%`n%LayoutName%`n固有名詞セット%KoyuNumber%
 	; タスクトレイメニューの標準メニュー項目を解除
 	menu, tray, NoStandard
 
