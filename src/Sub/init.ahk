@@ -302,7 +302,7 @@ PrefMenu:
 
 	if (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在したら
 	{
-		Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
+		Gui, Add, Checkbox, xm y+10 vUSLike, 記号をUSキーボード風にする
 		if (USLike)
 			GuiControl, , USLike, 1
 		Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
