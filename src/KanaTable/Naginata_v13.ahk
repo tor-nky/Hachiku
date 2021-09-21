@@ -15,20 +15,20 @@ SendSP(Str1, CtrlNo)
 	global KoyuNumber, Version, LayoutName, IniFilePath
 
 	; 固有名詞ショートカットを切り替える
-	if (CtrlNo == "KoyuNumber")
+	if (CtrlNo == "KoyuChange")
 	{
 		if (Str1 == KoyuNumber)	; 番号が変わらない
 		{
 			MsgBox, , , 固有名詞セット%KoyuNumber%
 			return
 		}
-		MsgBox, 1, , 固有名詞セット%KoyuNumber% → %Str1%
+		MsgBox, 1, , 固有名詞 セット%KoyuNumber% → %Str1%
 		IfMsgBox, Cancel	; キャンセル
 			return
 
 		KoyuNumber := Str1
 		; 設定ファイル書き込み
-		IniWrite, %KoyuNumber%, %IniFilePath%, general, KoyuNumber
+		IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
 		; ツールチップを変更する
 		menu, tray, tip, Hachiku %Version%`n%LayoutName%`n固有名詞セット%KoyuNumber%
 
@@ -804,26 +804,88 @@ KoyuRegist()
 		SetKana(KC_E | KC_R | KC_SLSH	,"{固有}" . B10)
 		SetKana(KC_E | KC_R | KC_INT1	,"{固有}" . B11)
 
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_1 | KC_SPC		,"{固有}" . E01S)
+		SetKana(KC_U | KC_I | KC_2 | KC_SPC		,"{固有}" . E02S)
+		SetKana(KC_U | KC_I | KC_3 | KC_SPC		,"{固有}" . E03S)
+		SetKana(KC_U | KC_I | KC_4 | KC_SPC		,"{固有}" . E04S)
+		SetKana(KC_U | KC_I | KC_5 | KC_SPC		,"{固有}" . E05S)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_6 | KC_SPC		,"{固有}" . E06S)
+		SetKana(KC_E | KC_R | KC_7 | KC_SPC		,"{固有}" . E07S)
+		SetKana(KC_E | KC_R | KC_8 | KC_SPC		,"{固有}" . E08S)
+		SetKana(KC_E | KC_R | KC_9 | KC_SPC		,"{固有}" . E09S)
+		SetKana(KC_E | KC_R | KC_0 | KC_SPC		,"{固有}" . E10S)
+		SetKana(KC_E | KC_R | KC_MINS | KC_SPC	,"{固有}" . E11S)
+		SetKana(KC_E | KC_R | KC_EQL | KC_SPC	,"{固有}" . E12S)
+		SetKana(KC_E | KC_R | JP_YEN | KC_SPC	,"{固有}" . E13S)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_Q | KC_SPC		,"{固有}" . D01S)
+		SetKana(KC_U | KC_I | KC_W | KC_SPC		,"{固有}" . D02S)
+		SetKana(KC_U | KC_I | KC_E | KC_SPC		,"{固有}" . D03S)
+		SetKana(KC_U | KC_I | KC_R | KC_SPC		,"{固有}" . D04S)
+		SetKana(KC_U | KC_I | KC_T | KC_SPC		,"{固有}" . D05S)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_Y | KC_SPC		,"{固有}" . D06S)
+		SetKana(KC_E | KC_R | KC_U | KC_SPC		,"{固有}" . D07S)
+		SetKana(KC_E | KC_R | KC_I | KC_SPC		,"{固有}" . D08S)
+		SetKana(KC_E | KC_R | KC_O | KC_SPC		,"{固有}" . D09S)
+		SetKana(KC_E | KC_R | KC_P | KC_SPC		,"{固有}" . D10S)
+		SetKana(KC_E | KC_R | KC_LBRC | KC_SPC	,"{固有}" . D11S)
+		SetKana(KC_E | KC_R | KC_RBRC | KC_SPC	,"{固有}" . D12S)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_A | KC_SPC		,"{固有}" . C01S)
+		SetKana(KC_U | KC_I | KC_S | KC_SPC		,"{固有}" . C02S)
+		SetKana(KC_U | KC_I | KC_D | KC_SPC		,"{固有}" . C03S)
+		SetKana(KC_U | KC_I | KC_F | KC_SPC		,"{固有}" . C04S)
+		SetKana(KC_U | KC_I | KC_G | KC_SPC		,"{固有}" . C05S)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_H | KC_SPC		,"{固有}" . C06S)
+		SetKana(KC_E | KC_R | KC_J | KC_SPC		,"{固有}" . C07S)
+		SetKana(KC_E | KC_R | KC_K | KC_SPC		,"{固有}" . C08S)
+		SetKana(KC_E | KC_R | KC_L | KC_SPC		,"{固有}" . C09S)
+		SetKana(KC_E | KC_R | KC_SCLN | KC_SPC	,"{固有}" . C10S)
+		SetKana(KC_E | KC_R | KC_QUOT | KC_SPC	,"{固有}" . C11S)
+		SetKana(KC_E | KC_R | KC_NUHS | KC_SPC	,"{固有}" . C12S)
+
+	KanaGroup := "KL"	; 左手側
+		SetKana(KC_U | KC_I | KC_Z | KC_SPC		,"{固有}" . B01S)
+		SetKana(KC_U | KC_I | KC_X | KC_SPC		,"{固有}" . B02S)
+		SetKana(KC_U | KC_I | KC_C | KC_SPC		,"{固有}" . B03S)
+		SetKana(KC_U | KC_I | KC_V | KC_SPC		,"{固有}" . B04S)
+		SetKana(KC_U | KC_I | KC_B | KC_SPC		,"{固有}" . B05S)
+	KanaGroup := "KR"	; 右手側
+		SetKana(KC_E | KC_R | KC_N | KC_SPC		,"{固有}" . B06S)
+		SetKana(KC_E | KC_R | KC_M | KC_SPC		,"{固有}" . B07S)
+		SetKana(KC_E | KC_R | KC_COMM | KC_SPC	,"{固有}" . B08S)
+		SetKana(KC_E | KC_R | KC_DOT | KC_SPC	,"{固有}" . B09S)
+		SetKana(KC_E | KC_R | KC_SLSH | KC_SPC	,"{固有}" . B10S)
+		SetKana(KC_E | KC_R | KC_INT1 | KC_SPC	,"{固有}" . B11S)
+
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver == "kbd101.dll")
 	{
-		SetKana(KC_E | KC_R | KC_BSLS	,"{固有}" . E13)
-		SetKana(KC_E | KC_R | KC_GRV	,"{固有}" . C12)
+		SetKana(KC_E | KC_R | KC_BSLS			,"{固有}" . E13)
+		SetKana(KC_E | KC_R | KC_GRV			,"{固有}" . C12)
+		SetKana(KC_E | KC_R | KC_BSLS | KC_SPC	,"{固有}" . E13S)
+		SetKana(KC_E | KC_R | KC_GRV | KC_SPC	,"{固有}" . C12S)
 	}
-/*
-	KanaGroup := "2R"
+
+	KanaGroup := "2L"
 		; 固有名詞ショートカットを切り替える
-		SetKana( KC_C | KC_V | KC_Q	, 1, "KoyuNumber")	; 固有名詞ショートカット１
-		SetEisu( KC_C | KC_V | KC_Q	, 1, "KoyuNumber")
-		SetKana( KC_C | KC_V | KC_W	, 2, "KoyuNumber")	; 固有名詞ショートカット２
-		SetEisu( KC_C | KC_V | KC_W	, 2, "KoyuNumber")
-		SetKana( KC_C | KC_V | KC_E	, 3, "KoyuNumber")	; 固有名詞ショートカット３
-		SetEisu( KC_C | KC_V | KC_E	, 3, "KoyuNumber")
-		SetKana( KC_C | KC_V | KC_R	, 4, "KoyuNumber")	; 固有名詞ショートカット４
-		SetEisu( KC_C | KC_V | KC_R	, 4, "KoyuNumber")
-		SetKana( KC_C | KC_V | KC_T	, 5, "KoyuNumber")	; 固有名詞ショートカット５
-		SetEisu( KC_C | KC_V | KC_T	, 5, "KoyuNumber")
-*/
+		SetKana( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
+		SetEisu( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")
+		SetKana( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
+		SetEisu( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")
+		SetKana( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
+		SetEisu( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")
+		SetKana( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
+		SetEisu( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")
+		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
+		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
+
 	return
 }
 
