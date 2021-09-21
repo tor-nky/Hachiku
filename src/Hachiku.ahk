@@ -9,12 +9,12 @@
 ;		カタカナ	→ 入力文字種全角カタカナ(ア)
 ;		半角／全角	→ [文字未入力]日本語入力ON/OFF [他]入力文字種半角無変換(A)
 ; **********************************************************************
-Version := "v1.2-beta1"
+Version := "1.2-beta.2"
 
 ; --------〈起動処理〉--------------------------------------------------
 SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変更
 #SingleInstance force			; 既存のプロセスを終了して実行開始
-#Include %A_ScriptDir%/Sub/init.ahk		; 初期設定
+#Include %A_ScriptDir%/Sub/init.ahk	; 初期設定
 ; --------〈AutoHotkey LIB〉-------------------------------------------
 #Include %A_ScriptDir%/Sub/IME.ahk	; Author: eamat. http://www6.atwiki.jp/eamat/
 #Include %A_ScriptDir%/Sub/Path.ahk	; Author: eamat. http://www6.atwiki.jp/eamat/
