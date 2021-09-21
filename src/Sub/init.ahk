@@ -384,7 +384,7 @@ PrefMenu:
 			GuiControl, , INIDispTime, 1
 
 		Gui, Tab
-		Gui, Add, Button, W60 xm+80 ys+190 Default, OK
+		Gui, Add, Button, W60 xm+80 ys+200 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 		Gui, Show
 	}
