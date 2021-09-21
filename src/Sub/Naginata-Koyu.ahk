@@ -34,9 +34,10 @@ KoyuMenu:
 	Gui, Destroy
 	Gui, Add, Text, , 固有名詞ショートカット設定
 ;	Gui, Add, Text, x+15, 〈セット%KoyuNumber%〉
+	Gui, Add, Tab2, xm+560 y+0 Section Buttons Center, 通常面|シフト面
 
 ; E列
-	Gui, Add, Text, xm+0 y+12 W90 Center, 1
+	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
 	Gui, Add, Text, xp+95 W92 Center, 2
 	Gui, Add, Text, xp+95 W92 Center, 3
 	Gui, Add, Text, xp+95 W92 Center, 4
@@ -144,6 +145,117 @@ KoyuMenu:
 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11, %B11%
 
 
+	Gui, Tab, シフト面
+; E列
+	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
+	Gui, Add, Text, xp+95 W92 Center, 2
+	Gui, Add, Text, xp+95 W92 Center, 3
+	Gui, Add, Text, xp+95 W92 Center, 4
+	Gui, Add, Text, xp+95 W92 Center, 5
+	Gui, Add, Text, xp+115 W92 Center, 6
+	Gui, Add, Text, xp+95 W92 Center, 7
+	Gui, Add, Text, xp+95 W92 Center, 8
+	Gui, Add, Text, xp+95 W92 Center, 9
+	Gui, Add, Text, xp+95 W92 Center, 0
+	Gui, Add, Text, xp+95 W92 Center, -
+	Gui, Add, Text, xp+95 W92 Center, ^  (US)=
+	Gui, Add, Text, xp+95 W92 Center, \  (US)＼
+
+	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vE01S, %E01S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE02S, %E02S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE03S, %E03S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE04S, %E04S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE05S, %E05S%
+	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vE06S, %E06S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE07S, %E07S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE08S, %E08S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE09S, %E09S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE10S, %E10S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE11S, %E11S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE12S, %E12S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE13S, %E13S%
+
+; D列
+	Gui, Add, Text, xm+0 y+15 W92 Center, Q
+	Gui, Add, Text, xp+95 W92 Center, W
+	Gui, Add, Text, xp+95 W92 Center, E
+	Gui, Add, Text, xp+95 W92 Center, R
+	Gui, Add, Text, xp+95 W92 Center, T
+	Gui, Add, Text, xp+115 W92 Center, Y
+	Gui, Add, Text, xp+95 W92 Center, U
+	Gui, Add, Text, xp+95 W92 Center, I
+	Gui, Add, Text, xp+95 W92 Center, O
+	Gui, Add, Text, xp+95 W92 Center, P
+	Gui, Add, Text, xp+95 W92 Center, @  (US)[
+	Gui, Add, Text, xp+95 W92 Center, [  (US)]
+
+	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vD01S, %D01S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD02S, %D02S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD03S, %D03S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD04S, %D04S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD05S, %D05S%
+	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vD06S, %D06S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD07S, %D07S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD08S, %D08S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD09S, %D09S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD10S, %D10S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD11S, %D11S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD12S, %D12S%
+
+; C列
+	Gui, Add, Text, xm+0 y+15 W92 Center, A
+	Gui, Add, Text, xp+95 W92 Center, S
+	Gui, Add, Text, xp+95 W92 Center, D
+	Gui, Add, Text, xp+95 W92 Center, F
+	Gui, Add, Text, xp+95 W92 Center, G
+	Gui, Add, Text, xp+115 W92 Center, H
+	Gui, Add, Text, xp+95 W92 Center, J
+	Gui, Add, Text, xp+95 W92 Center, K
+	Gui, Add, Text, xp+95 W92 Center, L
+	Gui, Add, Text, xp+95 W92 Center, `;
+	Gui, Add, Text, xp+95 W92 Center, :  (US)'
+	Gui, Add, Text, xp+95 W92 Center, ]  (US)``
+
+	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vC01S, %C01S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC02S, %C02S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC03S, %C03S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC04S, %C04S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC05S, %C05S%
+	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vC06S, %C06S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC07S, %C07S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC08S, %C08S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC09S, %C09S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC10S, %C10S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC11S, %C11S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC12S, %C12S%
+
+; B列
+	Gui, Add, Text, xm+0 y+15 W92 Center, Z
+	Gui, Add, Text, xp+95 W92 Center, X
+	Gui, Add, Text, xp+95 W92 Center, C
+	Gui, Add, Text, xp+95 W92 Center, V
+	Gui, Add, Text, xp+95 W92 Center, B
+	Gui, Add, Text, xp+115 W92 Center, N
+	Gui, Add, Text, xp+95 W92 Center, M
+	Gui, Add, Text, xp+95 W92 Center, `,
+	Gui, Add, Text, xp+95 W92 Center, `.
+	Gui, Add, Text, xp+95 W92 Center, /
+	Gui, Add, Text, xp+95 W92 Center, _  (US)なし
+
+	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vB01S, %B01S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB02S, %B02S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB03S, %B03S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB04S, %B04S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB05S, %B05S%
+	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vB06S, %B06S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB07S, %B07S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB08S, %B08S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB09S, %B09S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB10S, %B10S%
+	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11S, %B11S%
+
+
+	Gui, Tab
 	Gui, Add, Button, W60 xm+566 y+15 GKoyuOK, OK
 	Gui, Add, Button, W60 x+0 GKoyuCancel, Cancel
 	Gui, Show
@@ -188,22 +300,25 @@ KoyuIniWrite(Number, KeyName, Str1:="")
 	global IniFilePath
 ;	local i, len, c, OutStr
 
-	OutStr := ""
-	i := 1
-	len := StrLen(Str1)
-	while (i <= len)
+	if (Str1 == "")	; 空白の時は、キーを削除する
+		IniDelete, %IniFilePath%, Koyu%Number% , %KeyName%
+	else
 	{
-		c := Asc(SubStr(Str1, i, 2))
-		if (c > 65535)	; ユニコード拡張領域
-			i += 2
-		else
-			i++
-		OutStr .= "#" . c
+		OutStr := ""
+		i := 1
+		len := StrLen(Str1)
+		while (i <= len)
+		{
+			c := Asc(SubStr(Str1, i, 2))
+			if (c > 65535)	; ユニコード拡張領域
+				i += 2
+			else
+				i++
+			OutStr .= "#" . c
+		}
+		; 設定ファイル書き込み
+		IniWrite, %OutStr%, %IniFilePath%, Koyu%Number%, %KeyName%
 	}
-
-	; 設定ファイル書き込み
-	IniWrite, %OutStr%, %IniFilePath%, Koyu%Number%, %KeyName%
-
 	return
 }
 
@@ -263,6 +378,58 @@ KoyuReadAndRegist(KoyuNumber)
 	B09 := KoyuIniRead(KoyuNumber, "B09")
 	B10 := KoyuIniRead(KoyuNumber, "B10")
 	B11 := KoyuIniRead(KoyuNumber, "B11")
+
+	E01S := KoyuIniRead(KoyuNumber, "E01S")
+	E02S := KoyuIniRead(KoyuNumber, "E02S")
+	E03S := KoyuIniRead(KoyuNumber, "E03S")
+	E04S := KoyuIniRead(KoyuNumber, "E04S")
+	E05S := KoyuIniRead(KoyuNumber, "E05S")
+	E06S := KoyuIniRead(KoyuNumber, "E06S")
+	E07S := KoyuIniRead(KoyuNumber, "E07S")
+	E08S := KoyuIniRead(KoyuNumber, "E08S")
+	E09S := KoyuIniRead(KoyuNumber, "E09S")
+	E10S := KoyuIniRead(KoyuNumber, "E10S")
+	E11S := KoyuIniRead(KoyuNumber, "E11S")
+	E12S := KoyuIniRead(KoyuNumber, "E12S")
+	E13S := KoyuIniRead(KoyuNumber, "E13S")
+
+	D01S := KoyuIniRead(KoyuNumber, "D01S")
+	D02S := KoyuIniRead(KoyuNumber, "D02S")
+	D03S := KoyuIniRead(KoyuNumber, "D03S")
+	D04S := KoyuIniRead(KoyuNumber, "D04S")
+	D05S := KoyuIniRead(KoyuNumber, "D05S")
+	D06S := KoyuIniRead(KoyuNumber, "D06S")
+	D07S := KoyuIniRead(KoyuNumber, "D07S")
+	D08S := KoyuIniRead(KoyuNumber, "D08S")
+	D09S := KoyuIniRead(KoyuNumber, "D09S")
+	D10S := KoyuIniRead(KoyuNumber, "D10S")
+	D11S := KoyuIniRead(KoyuNumber, "D11S")
+	D12S := KoyuIniRead(KoyuNumber, "D12S")
+
+	C01S := KoyuIniRead(KoyuNumber, "C01S")
+	C02S := KoyuIniRead(KoyuNumber, "C02S")
+	C03S := KoyuIniRead(KoyuNumber, "C03S")
+	C04S := KoyuIniRead(KoyuNumber, "C04S")
+	C05S := KoyuIniRead(KoyuNumber, "C05S")
+	C06S := KoyuIniRead(KoyuNumber, "C06S")
+	C07S := KoyuIniRead(KoyuNumber, "C07S")
+	C08S := KoyuIniRead(KoyuNumber, "C08S")
+	C09S := KoyuIniRead(KoyuNumber, "C09S")
+	C10S := KoyuIniRead(KoyuNumber, "C10S")
+	C11S := KoyuIniRead(KoyuNumber, "C11S")
+	C12S := KoyuIniRead(KoyuNumber, "C12S")
+
+	B01S := KoyuIniRead(KoyuNumber, "B01S")
+	B02S := KoyuIniRead(KoyuNumber, "B02S")
+	B03S := KoyuIniRead(KoyuNumber, "B03S")
+	B04S := KoyuIniRead(KoyuNumber, "B04S")
+	B05S := KoyuIniRead(KoyuNumber, "B05S")
+	B06S := KoyuIniRead(KoyuNumber, "B06S")
+	B07S := KoyuIniRead(KoyuNumber, "B07S")
+	B08S := KoyuIniRead(KoyuNumber, "B08S")
+	B09S := KoyuIniRead(KoyuNumber, "B09S")
+	B10S := KoyuIniRead(KoyuNumber, "B10S")
+	B11S := KoyuIniRead(KoyuNumber, "B11S")
 
 	KoyuRegist()	; 固有名詞ショートカットの登録
 	return
@@ -325,6 +492,58 @@ KoyuWriteAndRegist(KoyuNumber)
 	KoyuIniWrite(KoyuNumber, "B09", B09)
 	KoyuIniWrite(KoyuNumber, "B10", B10)
 	KoyuIniWrite(KoyuNumber, "B11", B11)
+
+	KoyuIniWrite(KoyuNumber, "E01S", E01S)
+	KoyuIniWrite(KoyuNumber, "E02S", E02S)
+	KoyuIniWrite(KoyuNumber, "E03S", E03S)
+	KoyuIniWrite(KoyuNumber, "E04S", E04S)
+	KoyuIniWrite(KoyuNumber, "E05S", E05S)
+	KoyuIniWrite(KoyuNumber, "E06S", E06S)
+	KoyuIniWrite(KoyuNumber, "E07S", E07S)
+	KoyuIniWrite(KoyuNumber, "E08S", E08S)
+	KoyuIniWrite(KoyuNumber, "E09S", E09S)
+	KoyuIniWrite(KoyuNumber, "E10S", E10S)
+	KoyuIniWrite(KoyuNumber, "E11S", E11S)
+	KoyuIniWrite(KoyuNumber, "E12S", E12S)
+	KoyuIniWrite(KoyuNumber, "E13S", E13S)
+
+	KoyuIniWrite(KoyuNumber, "D01S", D01S)
+	KoyuIniWrite(KoyuNumber, "D02S", D02S)
+	KoyuIniWrite(KoyuNumber, "D03S", D03S)
+	KoyuIniWrite(KoyuNumber, "D04S", D04S)
+	KoyuIniWrite(KoyuNumber, "D05S", D05S)
+	KoyuIniWrite(KoyuNumber, "D06S", D06S)
+	KoyuIniWrite(KoyuNumber, "D07S", D07S)
+	KoyuIniWrite(KoyuNumber, "D08S", D08S)
+	KoyuIniWrite(KoyuNumber, "D09S", D09S)
+	KoyuIniWrite(KoyuNumber, "D10S", D10S)
+	KoyuIniWrite(KoyuNumber, "D11S", D11S)
+	KoyuIniWrite(KoyuNumber, "D12S", D12S)
+
+	KoyuIniWrite(KoyuNumber, "C01S", C01S)
+	KoyuIniWrite(KoyuNumber, "C02S", C02S)
+	KoyuIniWrite(KoyuNumber, "C03S", C03S)
+	KoyuIniWrite(KoyuNumber, "C04S", C04S)
+	KoyuIniWrite(KoyuNumber, "C05S", C05S)
+	KoyuIniWrite(KoyuNumber, "C06S", C06S)
+	KoyuIniWrite(KoyuNumber, "C07S", C07S)
+	KoyuIniWrite(KoyuNumber, "C08S", C08S)
+	KoyuIniWrite(KoyuNumber, "C09S", C09S)
+	KoyuIniWrite(KoyuNumber, "C10S", C10S)
+	KoyuIniWrite(KoyuNumber, "C11S", C11S)
+	KoyuIniWrite(KoyuNumber, "C12S", C12S)
+
+	KoyuIniWrite(KoyuNumber, "B01S", B01S)
+	KoyuIniWrite(KoyuNumber, "B02S", B02S)
+	KoyuIniWrite(KoyuNumber, "B03S", B03S)
+	KoyuIniWrite(KoyuNumber, "B04S", B04S)
+	KoyuIniWrite(KoyuNumber, "B05S", B05S)
+	KoyuIniWrite(KoyuNumber, "B06S", B06S)
+	KoyuIniWrite(KoyuNumber, "B07S", B07S)
+	KoyuIniWrite(KoyuNumber, "B08S", B08S)
+	KoyuIniWrite(KoyuNumber, "B09S", B09S)
+	KoyuIniWrite(KoyuNumber, "B10S", B10S)
+	KoyuIniWrite(KoyuNumber, "B11S", B11S)
 
 	KoyuRegist()	; 固有名詞ショートカットの登録
 	return

@@ -53,9 +53,9 @@ QPCInit() {
 	return Freq
 }
 QPC() {	; ミリ秒単位
-	static Freq := QPCInit() / 1000.0
+	static Coefficient := 1000.0 / QPCInit()
 	DllCall("QueryPerformanceCounter", "Int64P", Count)
-	Return Count / Freq
+	Return Count * Coefficient
 }
 
 ; 何キー同時か数える
@@ -539,7 +539,7 @@ SelectStr(i)
 }
 
 ; TimeA からの時間を表示[ミリ秒単位]
-DispTime(TimeA)
+DispTime(TimeA, Str1:="")
 {
 	global INIDispTime
 ;	local TimeAtoB
@@ -547,7 +547,7 @@ DispTime(TimeA)
 	if (INIDispTime)
 	{
 		TimeAtoB := Round(QPC() - TimeA, 1)
-		ToolTip, %TimeAtoB% ms
+		ToolTip, %TimeAtoB% ms%Str1%
 		SetTimer, RemoveToolTip, 1000
 	}
 }
@@ -610,7 +610,7 @@ Convert()
 				if (LastKeyTime + ShiftDelay <= KeyTime)
 				{
 					OutBuf()
-					DispTime(LastKeyTime)	; キー変化からの経過時間を表示
+					DispTime(LastKeyTime, "`n後置シフト期限")	; キー変化からの経過時間を表示
 				}
 				else
 					SetTimer, PSTimer, -10	; 10ミリ秒後に再判定
@@ -623,7 +623,7 @@ Convert()
 				{
 					OutBuf()
 					Last2Bit := LastBit := 0
-					DispTime(LastKeyTime)	; キー変化からの経過時間を表示
+					DispTime(LastKeyTime, "`n同時押し期限")		; キー変化からの経過時間を表示
 				}
 				else
 					SetTimer, CombTimer, -10	; 10ミリ秒後に再判定
@@ -777,7 +777,7 @@ Convert()
 			}
 
 			LastGroup := 0
-			RepeatBit := 0	; リピート解除
+			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
@@ -787,7 +787,7 @@ Convert()
 			OutBuf()
 			RealBit |= KC_SPC
 			LastGroup := 0
-			RepeatBit := 0	; リピート解除
+			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー

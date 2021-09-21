@@ -141,23 +141,29 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; [general]
 ; バージョン記録
 	IniRead, INIVersion, %IniFilePath%, general, Version, ""
-; Vertical		0: 横書き用, 1: 縦書き用
-	IniRead, Vertical, %IniFilePath%, general, Vertical, 1
+; AdvancedMenu	0: なし, 1: あり
+	IniRead, AdvancedMenu, %IniFilePath%, general, AdvancedMenu, 0
+
+; [Basic]
 ; IMESelect		0: MS-IME専用, 1: ATOK対応
-	IniRead, IMESelect, %IniFilePath%, general, IMESelect, 0
-; USLike 0: 英数表記通り, 1: USキーボード風配列
-	IniRead, USLike, %IniFilePath%, general, USLike, 0
+	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
+; USLike		0: 英数表記通り, 1: USキーボード風配列
+	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
 ; SideShift		0-1: 左右シフト英数, 2: 左右シフトかな
-	IniRead, SideShift, %IniFilePath%, general, SideShift, 2
+	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
 ; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
-	IniRead, EnterShift, %IniFilePath%, general, EnterShift, 0
+	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
 ; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
-	IniRead, ShiftDelay, %IniFilePath%, general, ShiftDelay, 0
+	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, CombDelay, %IniFilePath%, general, CombDelay, 60
+	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 60
+
+;[Naginata]
+; Vertical		0: 横書き用, 1: 縦書き用
+	IniRead, Vertical, %IniFilePath%, Naginata, Vertical, 1
 ; 固有名詞ショートカットの選択
-	IniRead, KoyuNumber, %IniFilePath%, general, KoyuNumber, 1
+	IniRead, KoyuNumber, %IniFilePath%, Naginata, KoyuNumber, 1
 
 ; [ShiftStyle]	文字キーによるシフトの適用範囲
 ; NonSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
@@ -168,8 +174,6 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, KeyRelease, %IniFilePath%, ShiftStyle, KeyRelease, 0
 
 ; [test]
-; TestMode		0: なし, 1: あり
-	IniRead, TestMode, %IniFilePath%, test, TestMode, 0
 ; DispTime		0: なし, 1: 処理時間表示あり
 	IniRead, INIDispTime, %IniFilePath%, test, DispTime, 0
 
@@ -187,6 +191,15 @@ SideShift1 := (SideShift == 1 ? 1 : 0)
 SideShift2 := (SideShift == 2 ? 1 : 0)
 EnterShift0 := (EnterShift == 0 ? 1 : 0)
 EnterShift1 := (EnterShift == 1 ? 1 : 0)
+NonSpace0 := (NonSpace == 0 ? 1 : 0)
+NonSpace1 := (NonSpace == 1 ? 1 : 0)
+NonSpace2 := (NonSpace == 2 ? 1 : 0)
+WithSpace0 := (WithSpace == 0 ? 1 : 0)
+WithSpace1 := (WithSpace == 1 ? 1 : 0)
+WithSpace2 := (WithSpace == 2 ? 1 : 0)
+KeyRelease0 := (KeyRelease == 0 ? 1 : 0)
+KeyRelease1 := (KeyRelease == 1 ? 1 : 0)
+KeyRelease2 := (KeyRelease == 2 ? 1 : 0)
 
 ; ----------------------------------------------------------------------
 ; メニュー表示
@@ -230,34 +243,39 @@ VerticalMode:
 	menu, tray, ToggleCheck, 縦書きモード
 	Vertical := (Vertical == 0 ? 1 : 0)
 	; 設定ファイル書き込み
-	IniWrite, %Vertical%, %IniFilePath%, general, Vertical
+	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
 return
 
 ButtonOK:
 	Gui, Submit
 	INIVersion := Version
-	if (SideShift0)
-		SideShift := 0
-	else if (SideShift1)
-		SideShift := 1
-	else
-		SideShift := 2
+	SideShift := (SideShift0 ? 0 : (SideShift1 ? 1 : 2))
 	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
 	EnterShift := (EnterShift0 == 1 ? 0 : 1)
+	NonSpace := (NonSpace0 ? 0 : (NonSpace1 ? 1 : 2))
+	WithSpace := (WithSpace0 ? 0 : (WithSpace1 ? 1 : 2))
+	KeyRelease := (KeyRelease0 ? 0 : (KeyRelease1 ? 1 : 2))
 	; 設定ファイル書き込み
 	IniWrite, %INIVersion%, %IniFilePath%, general, Version
-	IniWrite, %IMESelect%, %IniFilePath%, general, IMESelect
-	IniWrite, %USLike%, %IniFilePath%, general, USLike
-	IniWrite, %SideShift%, %IniFilePath%, general, SideShift
-	IniWrite, %EnterShift%, %IniFilePath%, general, EnterShift
-	IniWrite, %ShiftDelay%, %IniFilePath%, general, ShiftDelay
-	IniWrite, %CombDelay%, %IniFilePath%, general, CombDelay
-	if (TestMode)
-		IniWrite, %INIDispTime%, %IniFilePath%, test, DispTime
+	IniWrite, %AdvancedMenu%, %IniFilePath%, general, AdvancedMenu
+	IniWrite, %IMESelect%, %IniFilePath%, Basic, IMESelect
+	IniWrite, %USLike%, %IniFilePath%, Basic, USLike
+	IniWrite, %SideShift%, %IniFilePath%, Basic, SideShift
+	IniWrite, %EnterShift%, %IniFilePath%, Basic, EnterShift
+	IniWrite, %ShiftDelay%, %IniFilePath%, Basic, ShiftDelay
+	IniWrite, %CombDelay%, %IniFilePath%, Basic, CombDelay
+	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
+	IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
+	IniWrite, %NonSpace%, %IniFilePath%, ShiftStyle, NonSpace
+	IniWrite, %WithSpace%, %IniFilePath%, ShiftStyle, WithSpace
+	IniWrite, %KeyRelease%, %IniFilePath%, ShiftStyle, KeyRelease
+	IniWrite, %INIDispTime%, %IniFilePath%, test, DispTime
+
 	ShiftDelay += 0.0
 	CombDelay += 0.0
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
+GuiEscape:
 ButtonCancel:
 GuiClose:
 	Gui, Destroy
@@ -268,24 +286,31 @@ PrefMenu:
 	Gui, Destroy
 	Gui, -MinimizeBox
 	Gui, Add, Text, , 設定
-	Gui, Add, Text, x+0 W180 Right, %Version%
 
-	Gui, Add, Checkbox, xm vIMESelect, ATOK対応
+	if (AdvancedMenu)	; 詳細メニュー
+	{
+		Gui, Add, Text, x+70 W190 Right, %Version%
+		Gui, Add, Tab2, xm+95 y+0 Section W120 Buttons Center, 基本|詳細
+		Gui, Tab, 基本
+	}
+	else	; 詳細メニュー不要の時
+		Gui, Add, Text, x+0 W180 Right Section, %Version%
+
+	Gui, Add, Checkbox, xm ys+25 vIMESelect, ATOK対応
 	if (IMESelect)
 		GuiControl, , IMESelect, 1
 
-	if (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在したら
+	if (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在するとき
 	{
-		Gui, Add, Checkbox, xm vUSLike, 記号をUSキーボード風にする
+		Gui, Add, Checkbox, xm y+10 vUSLike, 記号をUSキーボード風にする
 		if (USLike)
 			GuiControl, , USLike, 1
-		Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
 		Gui, Add, Text, xm+18 y+1, ※ 左右シフトかなに設定してください
 	}
 
 	Gui, Add, Text, xm y+10, 左右シフト
 	Gui, Add, Radio, xm+68 yp+0 Group vSideShift0, 英数
-	if (TestMode)
+	if (AdvancedMenu || SideShift1)	; AdvancedMenuオン、または英数２になっているとき
 		Gui, Add, Radio, x+0 vSideShift1, 英数2
 	Gui, Add, Radio, x+0 vSideShift2, かな
 	if (SideShift0)
@@ -295,7 +320,7 @@ PrefMenu:
 	else
 		GuiControl, , SideShift2, 1
 
-	Gui, Add, Text, xm, エンター
+	Gui, Add, Text, xm y+5, エンター
 	Gui, Add, Radio, xm+68 yp+0 Group vEnterShift0, 通常
 	Gui, Add, Radio, x+0 vEnterShift1, 同時押しシフト
 	if (EnterShift0)
@@ -314,15 +339,59 @@ PrefMenu:
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
 
-	if (TestMode)
+	if (AdvancedMenu)	; 詳細メニュー
 	{
-		Gui, Add, Checkbox, xm vINIDispTime, 処理時間表示
+		Gui, Tab, 詳細
+
+		Gui, Add, Text, xm ys+30, 文字キーによるシフトの適用範囲
+
+		Gui, Add, Text, xm+10 y+5, 通常
+		Gui, Add, Radio, xm+100 yp+0 Group vNonSpace0, ずっと
+		Gui, Add, Radio, x+0 vNonSpace1, 1回のみ
+		Gui, Add, Radio, x+0 vNonSpace2, 途切れるまで
+		if (NonSpace0)
+			GuiControl, , NonSpace0, 1
+		else if (NonSpace1)
+			GuiControl, , NonSpace1, 1
+		else
+			GuiControl, , NonSpace2, 1
+
+		Gui, Add, Text, xm+10 y+5, スペース押下時
+		Gui, Add, Radio, xm+100 yp+0 Group vWithSpace0, ずっと
+		Gui, Add, Radio, x+0 vWithSpace1, 1回のみ
+		Gui, Add, Radio, x+0 vWithSpace2, 途切れるまで
+		if (WithSpace0)
+			GuiControl, , WithSpace0, 1
+		else if (WithSpace1)
+			GuiControl, , WithSpace1, 1
+		else
+			GuiControl, , WithSpace2, 1
+
+		Gui, Add, Text, xm+10 y+5, キーを離したとき
+		Gui, Add, Radio, xm+100 yp+0 Group vKeyRelease0, 復活
+		Gui, Add, Radio, x+0 vKeyRelease1, 1回のみ
+		Gui, Add, Radio, x+0 vKeyRelease2, 途切れるまで
+		if (KeyRelease0)
+			GuiControl, , KeyRelease0, 1
+		else if (KeyRelease1)
+			GuiControl, , KeyRelease1, 1
+		else
+			GuiControl, , KeyRelease2, 1
+
+		Gui, Add, Checkbox, xm y+15 vINIDispTime, 処理時間表示
 		if (INIDispTime)
 			GuiControl, , INIDispTime, 1
-	}
 
-	Gui, Add, Button, W60 xm+45 y+10 Default, OK
-	Gui, Add, Button, W60 x+0, Cancel
-	Gui, Show
+		Gui, Tab
+		Gui, Add, Button, W60 xm+80 ys+190 Default, OK
+		Gui, Add, Button, W60 x+0, Cancel
+		Gui, Show
+	}
+	else	; 詳細メニュー不要の時
+	{
+		Gui, Add, Button, W60 xm+45 y+10 Default, OK
+		Gui, Add, Button, W60 x+0, Cancel
+		Gui, Show
+	}
 
 	return
