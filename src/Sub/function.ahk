@@ -441,11 +441,11 @@ SendEachChar(Str1, Delay:=0)
 	return
 }
 
-; 新MS-IME がオンになっていれば 1 を返す
+; MS-IME が低速ならば 1 を返す
 ; 10秒経過していれば再調査する
-DetectNewMSIME()
+DetectSlowMSIME()
 {
-	static NewMSIME := 0
+	static SlowMSIME := 1
 		, LastSearchTime := 0.0
 ;	local NowTime
 
@@ -453,14 +453,15 @@ DetectNewMSIME()
 	if (LastSearchTime + 10000.0 < NowTime)
 	{
 		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+		; 新旧MSIMEが選べる環境では、旧MSIMEは低速である
 		; 参考: https://registry.tomoroh.net/archives/11547
-		RegRead, NewMSIME, HKEY_CURRENT_USER
+		RegRead, SlowMSIME, HKEY_CURRENT_USER
 			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
 			, NoTsf3Override2
-		NewMSIME := (ErrorLevel == 1 ? 0 : NewMSIME ^ 1)
+		SlowMSIME := (ErrorLevel == 1 ? 0 : SlowMSIME)
 		LastSearchTime := NowTime
 	}
-	return NewMSIME
+	return SlowMSIME
 }
 
 ; 仮出力バッファの先頭から i 個出力する
@@ -488,11 +489,11 @@ OutBuf(i:=2)
 					else
 						Str1 := ":{確定}{BS}{IMEOff}" . Str1
 				}
-				if (IMESelect > 0 || DetectNewMSIME() || !InStr(Str1, "{Enter"))
-					; ATOK か 新MS-IME を使用、または改行が含まれないとき
-					SendEachChar(Str1, 10)	; 1文字ごとに 10ms のスリープ
-				else
+				if (IMESelect == 0 && DetectSlowMSIME() && InStr(Str1, "{Enter"))
+					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
+				else
+					SendEachChar(Str1, 10)	; 1文字ごとに 10ms のスリープ
 			}
 			else
 				SendEachChar(Str1)
