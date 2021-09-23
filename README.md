@@ -31,7 +31,8 @@ Hachiku.ahk にあるコメントをご覧ください。
 
 ## 動作確認
 
-* Windows 10 Home version 20H2 + AutoHotkey (v1.1.33.09) + 新旧MS-IME あるいは ATOK 2017
+* Windows 10 Home version 20H2 64-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME あるいは ATOK 2017
+* Windows 10 Home version 21H1 32-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME
 
 # 不具合
 
