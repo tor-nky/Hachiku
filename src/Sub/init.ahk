@@ -20,6 +20,7 @@
 SetBatchLines, -1			; 自動Sleepなし
 ListLines, Off				; スクリプトの実行履歴を取らない
 ;SetKeyDelay, 10, 0			; キーストローク間のディレイを変更
+;Process, Priority, , High	; スクリプトを実行するプロセスの優先度を上げる
 #MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
 #UseHook					; ホットキーはすべてフックを使用する
 Thread, interrupt, 15, 6	; スレッド開始から15ミリ秒ないし6行以内の割り込みを、絶対禁止
@@ -369,9 +370,9 @@ PrefMenu:
 			GuiControl, , WithSpace2, 1
 
 		Gui, Add, Text, xm+10 y+5, キーを離したとき
-		Gui, Add, Radio, xm+100 yp+0 Group vKeyRelease0, 復活
-		Gui, Add, Radio, x+0 vKeyRelease1, 1回のみ
-		Gui, Add, Radio, x+0 vKeyRelease2, 途切れるまで
+		Gui, Add, Radio, xm+100 yp+0 Group vKeyRelease0, 全復活
+		Gui, Add, Radio, x+0 vKeyRelease1, 全解除
+		Gui, Add, Radio, x+0 vKeyRelease2, そのまま
 		if (KeyRelease0)
 			GuiControl, , KeyRelease0, 1
 		else if (KeyRelease1)

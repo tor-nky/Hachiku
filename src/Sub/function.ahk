@@ -582,13 +582,13 @@ Convert()
 ;		, Term		; 入力の末端2文字
 ;		, nkeys		; 今回は何キー同時押しか
 ;		, NowBit	; 今回のキービット
+;		, nBack
 ;		, SearchBit	; いま検索しようとしているキーの集合
 ;		, ShiftStyle
 ;		, i, imax, j, jmax	; カウンタ用
 ;		, DefKeyCopy
 ;		, Complete 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
 ;		, CtrlNo
-;		, TimeAtoB
 
 	if (ConvRest > 0 || NextKey != "")
 		return	; 多重起動防止で戻る
