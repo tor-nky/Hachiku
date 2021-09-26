@@ -155,11 +155,11 @@ Analysis(Str1)
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
 			bracket := 0
-		else if (c == "{" || bracket > 0)
+		else if (c == "{" || bracket)
 			bracket++
 		StrChopped .= c
 		len2++
-		if (i == len || !(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#"))
+		if (i == len || !(bracket || c == "+" || c == "^" || c == "!" || c == "#"))
 		{
 			; ASCIIコードでない
 			if (Asc(StrChopped) > 127
@@ -216,7 +216,7 @@ SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
 		}
 		i++
 	}
-	if ((CtrlNo != 0 && CtrlNo != R) || Str1 != "")		; 定義あり
+	if ((CtrlNo && CtrlNo != R) || Str1 != "")		; 定義あり
 	{
 		i := DefEnd[nkeys]
 		DefsKey.InsertAt(i, KeyComb)
@@ -430,7 +430,7 @@ SendEachChar(Str1, Delay:=0)
 		if (PostDelay > 0)
 			Sleep, PostDelay
 		; IME入力モードを回復する
-		if (IMEConvMode > 0)
+		if (IMEConvMode)
 		{
 			IME_SetConvMode(IMEConvMode)
 			Sleep, Delay
@@ -473,7 +473,7 @@ OutBuf(i:=2)
 
 	while (i > 0 && _usc > 0)
 	{
-		if (OutCtrlNos[1] == 0 || OutCtrlNos[1] == R)
+		if (!OutCtrlNos[1] || OutCtrlNos[1] == R)
 		{
 			Str1 := OutStrs[1]
 			StrBegin := SubStr(Str1, 1, 4)
@@ -489,7 +489,7 @@ OutBuf(i:=2)
 					else
 						Str1 := ":{確定}{BS}{IMEOff}" . Str1
 				}
-				if (IMESelect == 0 && DetectSlowMSIME() && InStr(Str1, "{Enter"))
+				if (!IMESelect && DetectSlowMSIME() && InStr(Str1, "{Enter"))
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
 				else
@@ -517,10 +517,8 @@ StoreBuf(nBack, Str1, CtrlNo:=0)
 	if (nBack > 0)
 	{
 		_usc -= nBack
-		if (_usc <= 0)
+		if (_usc < 0)
 			_usc := 0	; バッファが空になる以上は削除しない
-		else
-			OutBuf(1)	; nBack の分だけ戻って、残ったバッファは出力する
 	}
 	else if (_usc == 2)	; バッファがいっぱいなので、1文字出力
 		OutBuf(1)
@@ -591,7 +589,7 @@ Convert()
 ;		, Complete 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
 ;		, CtrlNo
 
-	if (ConvRest > 0 || NextKey != "")
+	if (ConvRest || NextKey != "")
 		return	; 多重起動防止で戻る
 
 	; 入力バッファが空になるまで
@@ -640,7 +638,7 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
-			if (sft == 0)			; 左右シフトなし→あり
+			if !(sft)			; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -650,9 +648,9 @@ Convert()
 			else
 				NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
 		}
-		else if (sft > 0)			; 左右シフトあり→なし
+		else if (sft)			; 左右シフトあり→なし
 		{
-			if (spc == 0 && ent == 0)
+			if (!spc && !ent)
 			{
 				NextKey := NowKey
 				NowKey := "sc39 up"	; スペース上げ→押したキー
@@ -660,11 +658,11 @@ Convert()
 			sft := 0
 		}
 		; スペースキー処理
-		else if (NowKey == "sc39" && spc == 0)
+		else if (NowKey == "sc39" && !spc)
 			spc := 1
 		else if (NowKey == "sc39 up")
 		{
-			if (sft > 0 || ent > 0)		; 他のシフトを押している時
+			if (sft || ent)		; 他のシフトを押している時
 			{
 				if (spc == 1)
 					NowKey := "vk20"	; スペース単独押しのみ
@@ -683,13 +681,13 @@ Convert()
 		else if (NowKey == "Enter" && EnterShift)
 		{
 			NowKey := "sc39"	; スペース押す
-			if (ent == 0)
+			if !(ent)
 				ent := 1
 		}
 		else if (NowKey == "Enter up")
 		{
 			NowKey := "sc39 up"			; スペース上げ
-			if (sft > 0 || spc > 0)		; 他のシフトを押している時
+			if (sft || spc)		; 他のシフトを押している時
 			{
 				if (ent == 1)
 					NowKey := "vk0D"	; エンター単独押しのみ
@@ -707,7 +705,7 @@ Convert()
 
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if (sft > 0 && SideShift == 1)	; 左右シフト英数２
+		else if (sft && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
 		else
 		{
@@ -755,7 +753,7 @@ Convert()
 			NowBit := JP_YEN
 		else if (NowBit == 0x73)	; (JIS)_
 			NowBit := KC_INT1
-		else if (NowBit != 0)
+		else if (NowBit)
 			NowBit := 1 << NowBit
 
 		; キーリリース時
@@ -767,7 +765,7 @@ Convert()
 			RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では
 										; 32ビット計算になることがあり、不適切
 			; 文字キーによるシフトの適用範囲
-			if (KeyRelease == 0)		; シフト復活
+			if !(KeyRelease)		; シフト復活
 				Last2Bit := LastBit := RealBit
 			else if (KeyRelease == 1)	; シフトは1回のみ
 				Last2Bit := LastBit := 0
@@ -783,7 +781,7 @@ Convert()
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
 		else if (NowBit == KC_SPC && !(RealBit & NowBit)
-			&& (_usc == 0 || LastKeyTime + ShiftDelay <= KeyTime))
+			&& (!_usc || LastKeyTime + ShiftDelay <= KeyTime))
 		{
 			OutBuf()
 			RealBit |= KC_SPC
@@ -804,19 +802,19 @@ Convert()
 			ShiftStyle := ((RealBit & KC_SPC) ? WithSpace : NonSpace)	; 文字キーによるシフトの適用範囲
 			RealBit |= NowBit
 			nBack := 0
-			while (nkeys == 0)
+			while !(nkeys)
 			{
 				; 3キー入力を検索
-				if (Last2Bit != 0)
+				if (Last2Bit)
 				{
 					i := DefBegin[3]
 					imax := DefEnd[3]	; 検索場所の設定
-					SearchBit := (ShiftStyle == 0 ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
 						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
 						DefKeyCopy := DefsKey[i]
-						if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+						if ((!LastGroup || LastGroup == DefsGroup[i])
 							&& (DefKeyCopy & NowBit) 		; 今回のキーを含み
 							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
@@ -840,16 +838,16 @@ Convert()
 					}
 				}
 				; 2キー入力を検索
-				if (LastBit != 0)
+				if (LastBit)
 				{
 					i := DefBegin[2]
 					imax := DefEnd[2]	; 検索場所の設定
-					SearchBit := (ShiftStyle == 0 ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
 						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
 						DefKeyCopy := DefsKey[i]
-						if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+						if ((!LastGroup || LastGroup == DefsGroup[i])
 							&& (DefKeyCopy & NowBit) 		; 今回のキーを含み
 							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
@@ -878,7 +876,7 @@ Convert()
 					SearchBit := (RealBit & KC_SPC) | NowBit
 				while (i < imax)
 				{
-					if ((LastGroup == 0 || LastGroup == DefsGroup[i])
+					if ((!LastGroup || LastGroup == DefsGroup[i])
 						&& SearchBit == DefsKey[i]
 						&& KanaMode == DefsKanaMode[i])
 					{
@@ -891,13 +889,13 @@ Convert()
 					}
 					i++
 				}
-				if (LastGroup == 0)
+				if !(LastGroup)
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
 			}
 
 			; スペースを押したが、定義がなかった時
-			if (NowBit == KC_SPC && nkeys == 0)
+			if (NowBit == KC_SPC && !nkeys)
 			{
 				RepeatBit := 0
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
@@ -916,7 +914,7 @@ Convert()
 				Complete := DefsComplete[i]	; 出力確定するか検索
 				CtrlNo := DefsCtrlNo[i]
 			}
-			else if (nkeys == 0)	; 定義が見つけられなかった時
+			else if !(nkeys)	; 定義が見つけられなかった時
 				; 出力確定するか検索
 				Complete := FindComplete(SearchBit, KanaMode, nkeys)
 			else
@@ -928,9 +926,13 @@ Convert()
 			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
 			_lks := nkeys			; 何キー同時押しだったかを保存
-			Last2Bit := (nkeys >= 2 ? DefsKey[i] : LastBit)	; 2、3キー入力のときは今回のキービットを保存
-															; それ以外は前回のキービットを保存
-			LastBit := (nkeys >= 1 ? DefsKey[i] : NowBit)	; 今回のキービットを保存
+			if (nkeys >= 2)	; 2、3キー入力のときは今回のキービットを保存
+				Last2Bit := LastBit := DefsKey[i]
+			else if (NowBit != KC_SPC)	; 現在のを繰り上げ
+			{
+				Last2Bit := LastBit
+				LastBit := SearchBit
+			}
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
 			if (CtrlNo == R)
 				RepeatBit := NowBit		; キーリピートする
@@ -1026,7 +1028,7 @@ sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
 #If (USKBSideShift)
 +sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift > 0)
+#If (SideShift)
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -1150,7 +1152,7 @@ sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
 #If (USKBSideShift)
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift > 0)
+#If (SideShift)
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
