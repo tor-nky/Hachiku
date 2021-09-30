@@ -482,6 +482,8 @@ OutBuf(i:=2)
 				{
 					if (IME_GetSentenceMode() == 0)
 						Str1 := "{IMEOff}" . Str1
+					else if (IME_GetConverting())
+						Str1 := "{確定}{IMEOff}" . Str1
 					else
 						Str1 := ":{確定}{BS}{IMEOff}" . Str1
 				}

@@ -158,7 +158,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
+	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 60
 
 ;[Naginata]
 ; Vertical		0: 横書き用, 1: 縦書き用
@@ -168,7 +168,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
 ; [ShiftStyle]	文字キーによるシフトの適用範囲
 ; NonSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
-	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 1
+	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 2
 ; WithSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
 	IniRead, WithSpace, %IniFilePath%, ShiftStyle, WithSpace, 1
 ; KeyRelease	0: 復活, 1: 1回のみ, 2: 途切れるまで
