@@ -159,6 +159,8 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
 	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 60
+; SpaceKeyRepeat		スペースキーのリピート	0: なし, 1: あり
+	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
 ;[Naginata]
 ; Vertical		0: 横書き用, 1: 縦書き用
@@ -171,7 +173,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 2
 ; WithSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
 	IniRead, WithSpace, %IniFilePath%, ShiftStyle, WithSpace, 1
-; KeyRelease	0: 復活, 1: 1回のみ, 2: 途切れるまで
+; KeyRelease	0: 全復活, 1: 全解除, 2: そのまま
 	IniRead, KeyRelease, %IniFilePath%, ShiftStyle, KeyRelease, 0
 
 ; [test]
@@ -265,6 +267,7 @@ ButtonOK:
 	IniWrite, %EnterShift%, %IniFilePath%, Basic, EnterShift
 	IniWrite, %ShiftDelay%, %IniFilePath%, Basic, ShiftDelay
 	IniWrite, %CombDelay%, %IniFilePath%, Basic, CombDelay
+	IniWrite, %SpaceKeyRepeat%, %IniFilePath%, Basic, SpaceKeyRepeat
 	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
 	IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
 	IniWrite, %NonSpace%, %IniFilePath%, ShiftStyle, NonSpace
@@ -341,6 +344,10 @@ PrefMenu:
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
 
+	Gui, Add, Checkbox, xm y+10 vSpaceKeyRepeat, スペースキーのリピート
+	if (SpaceKeyRepeat)
+		GuiControl, , SpaceKeyRepeat, 1
+
 	if (AdvancedMenu)	; 詳細メニュー
 	{
 		Gui, Tab, 詳細
@@ -385,7 +392,7 @@ PrefMenu:
 			GuiControl, , INIDispTime, 1
 
 		Gui, Tab
-		Gui, Add, Button, W60 xm+80 ys+200 Default, OK
+		Gui, Add, Button, W60 xm+80 ys+222 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 		Gui, Show
 	}

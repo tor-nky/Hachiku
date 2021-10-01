@@ -465,7 +465,8 @@ DetectSlowMSIME()
 OutBuf(i:=2)
 {
 	global _usc, OutStrs, OutCtrlNos, IMESelect, R
-;	local Str1, StrBegin
+	static IMEDetectableHwnd := ""
+;	local Str1, StrBegin, Hwnd
 
 	while (i > 0 && _usc > 0)
 	{
@@ -480,10 +481,16 @@ OutBuf(i:=2)
 					Str1 := "{Raw}" . Str1
 				if (IME_GET() == 1)		; IME ON の時
 				{
+					WinGet, Hwnd, ID, A					; ウィンドウハンドルを取得
 					if (IME_GetSentenceMode() == 0)
 						Str1 := "{IMEOff}" . Str1
 					else if (IME_GetConverting())
+					{
+						IMEDetectableHwnd := Hwnd		; IME窓が検出できたらウィンドウハンドルを保存
 						Str1 := "{確定}{IMEOff}" . Str1
+					}
+					else if (Hwnd == IMEDetectableHwnd)	; IME窓が検出可能なウィンドウハンドル
+						Str1 := "{IMEOff}" . Str1
 					else
 						Str1 := ":{確定}{BS}{IMEOff}" . Str1
 				}
@@ -499,6 +506,8 @@ OutBuf(i:=2)
 		else
 			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
 
+		if (IME_GetConverting())
+			WinGet, IMEDetectableHwnd, ID, A	; IME窓が検出できたらウィンドウハンドルを保存
 		OutStrs[1] := OutStrs[2]
 		OutCtrlNos[1] := OutCtrlNos[2]
 		_usc--
@@ -556,7 +565,7 @@ Convert()
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
-		, SideShift, EnterShift, ShiftDelay, CombDelay, NonSpace, WithSpace, KeyRelease
+		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat, NonSpace, WithSpace, KeyRelease
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
@@ -568,7 +577,7 @@ Convert()
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
 		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループAll
 		, RepeatBit	:= 0	; リピート中のキーのビット
-		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2以上: シフト状態
+		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左右シフト
 		, ent		:= 0	; エンター
@@ -636,7 +645,7 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
-			if !(sft)			; 左右シフトなし→あり
+			if (!sft)			; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -656,8 +665,19 @@ Convert()
 			sft := 0
 		}
 		; スペースキー処理
-		else if (NowKey == "sc39" && !spc)
-			spc := 1
+		else if (NowKey == "sc39")
+		{
+			if (!spc)
+				spc := 1
+			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
+			{
+				Send, {Space}
+				spc := 3
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
+				continue
+			}
+
+		}
 		else if (NowKey == "sc39 up")
 		{
 			if (sft || ent)		; 他のシフトを押している時
@@ -679,7 +699,7 @@ Convert()
 		else if (NowKey == "Enter" && EnterShift)
 		{
 			NowKey := "sc39"	; スペース押す
-			if !(ent)
+			if (!ent)
 				ent := 1
 		}
 		else if (NowKey == "Enter up")
@@ -700,6 +720,13 @@ Convert()
 				NextKey := "vk0D"	; エンター単独押し→スペース上げ ※"Enter"としないこと
 			ent := 0
 		}
+		else if (spc == 3)		; スペースのリピートを止める
+		{
+			NextKey := NowKey
+			NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			spc := 2
+		}
+
 
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
@@ -763,11 +790,11 @@ Convert()
 			RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では
 										; 32ビット計算になることがあり、不適切
 			; 文字キーによるシフトの適用範囲
-			if !(KeyRelease)		; シフト復活
+			if (!KeyRelease)			; シフト全復活
 				Last2Bit := LastBit := RealBit
-			else if (KeyRelease == 1)	; シフトは1回のみ
+			else if (KeyRelease == 1)	; シフト全解除
 				Last2Bit := LastBit := 0
-			else						; シフトは途切れるまで
+			else						; シフトそのまま
 			{
 				Last2Bit &= NowBit ^ (-1)
 				LastBit &= NowBit ^ (-1)
@@ -804,7 +831,7 @@ Convert()
 			ShiftStyle := ((RealBit & KC_SPC) ? WithSpace : NonSpace)	; 文字キーによるシフトの適用範囲
 			RealBit |= NowBit
 			nBack := 0
-			while !(nkeys)
+			while (!nkeys)
 			{
 				; 3キー入力を検索
 				if (Last2Bit)
@@ -884,7 +911,7 @@ Convert()
 					}
 					i++
 				}
-				if !(LastGroup)
+				if (!LastGroup)
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
 			}
@@ -908,7 +935,7 @@ Convert()
 				CombinableBit := DefsCombinableBit[i]	; さらに同時押しができるキーがあるか
 				CtrlNo := DefsCtrlNo[i]
 			}
-			else if !(nkeys)	; 定義が見つけられなかった時
+			else if (!nkeys)	; 定義が見つけられなかった時
 				; さらに同時押しができるキーがあるか
 				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
 			else
