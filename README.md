@@ -13,7 +13,7 @@ Ahk2Exe.exe でコンパイルする場合は、Unicode版で出力してくだ�
 Shift+[ 、Shift+] で入力される『』は、確定文字になります。
 
 # IME の設定
-
+w
 ### 旧MS-IME
 
 初期状態の設定のままでも使えますが、キー設定を行うことをおすすめします。
@@ -32,6 +32,8 @@ Hachiku.ahk にあるコメントをご覧ください。
 ## 動作確認
 
 * Windows 10 Home version 20H2 64-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME あるいは ATOK 2017
+
+Windows 10 version 2004 以降のバージョンでなければ記号、固有名詞ショートカットが正しく入力できないと思われます。
 
 # 不具合
 

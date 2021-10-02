@@ -405,7 +405,7 @@ SendEachChar(Str1, Delay:=0)
 	}
 
 	; IME ON
-	if (IMECheck == 1)
+	if (IMECheck)
 	{
 		if (Slow == 0x11)
 		{
