@@ -249,39 +249,35 @@ SetEisu(KeyComb, Str1, CtrlNo:=0)
 	return
 }
 
-; 出力確定するか検索
-FindComplete(SearchBit, KanaMode, nkeys)
+; さらに同時押しができるキーを見つける
+FindCombinableBit(SearchBit, KanaMode, nkeys)
 {
 	global DefsKey, DefsKanaMode, DefBegin, DefEnd
 		, KC_SPC
 ;	local j, jmax	; カウンタ用
-;		, Complete
+;		, Bit
 ;		, DefKeyCopy
 
-	Complete := (nkeys > 1 || (SearchBit & KC_SPC) ? 2 : 1)	; 初期値
+	Bit := (nkeys > 1 ? 0 : KC_SPC)
 	j := DefBegin[3]
-	jmax := (nkeys >= 1 ? DefEnd[nkeys] : DefEnd[1])
+	jmax := (nkeys >= 1 && nkeys <= 3 ? DefEnd[nkeys] : DefEnd[1])
 	while (j < jmax)
 	{
-		; SearchBit は DefsKey[j] に内包されているか
 		DefKeyCopy := DefsKey[j]
-		if (SearchBit != DefKeyCopy && KanaMode == DefsKanaMode[j] && (DefKeyCopy & SearchBit) == SearchBit)
-		{
-			if ((DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC))	; シフトも一致
-				return 0		; 出力確定はしない
-			else
-				Complete := 1	; 後置シフトは出力確定しない
-		}
+		if (KanaMode == DefsKanaMode[j] && (DefKeyCopy & SearchBit) == SearchBit)
+			Bit |= DefKeyCopy
 		j++
 	}
-	return Complete
+	Bit &= SearchBit ^ (-1)	; 検索中のキーを削除
+
+	return Bit
 }
 
-; 出力確定するかな定義を調べて DefsComplete[] に記録
+; さらに同時押しができるキーを見つけて DefsCombinableBit[] に記録
 ; 0: 確定しない, 1: 通常シフトのみ確定, 2: 後置シフトでも確定
 SettingLayout()
 {
-	global DefsKey, DefsKanaMode, DefsComplete, DefBegin, DefEnd
+	global DefsKey, DefsKanaMode, DefsCombinableBit, DefBegin, DefEnd
 ;	local i, imax	; カウンタ用
 ;		, SearchBit
 
@@ -291,7 +287,7 @@ SettingLayout()
 	while (i < imax)
 	{
 		SearchBit := DefsKey[i]
-		DefsComplete[i] := FindComplete(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
+		DefsCombinableBit[i] := FindCombinableBit(SearchBit, DefsKanaMode[i], CountBit(SearchBit))
 		i++
 	}
 	return
@@ -409,7 +405,7 @@ SendEachChar(Str1, Delay:=0)
 	}
 
 	; IME ON
-	if (IMECheck == 1)
+	if (IMECheck)
 	{
 		if (Slow == 0x11)
 		{
@@ -469,7 +465,8 @@ DetectSlowMSIME()
 OutBuf(i:=2)
 {
 	global _usc, OutStrs, OutCtrlNos, IMESelect, R
-;	local Str1, StrBegin
+	static IMEDetectableHwnd := ""
+;	local Str1, StrBegin, Hwnd
 
 	while (i > 0 && _usc > 0)
 	{
@@ -484,7 +481,15 @@ OutBuf(i:=2)
 					Str1 := "{Raw}" . Str1
 				if (IME_GET() == 1)		; IME ON の時
 				{
+					WinGet, Hwnd, ID, A					; ウィンドウハンドルを取得
 					if (IME_GetSentenceMode() == 0)
+						Str1 := "{IMEOff}" . Str1
+					else if (IME_GetConverting())
+					{
+						IMEDetectableHwnd := Hwnd		; IME窓が検出できたらウィンドウハンドルを保存
+						Str1 := "{確定}{IMEOff}" . Str1
+					}
+					else if (Hwnd == IMEDetectableHwnd)	; IME窓が検出可能なウィンドウハンドル
 						Str1 := "{IMEOff}" . Str1
 					else
 						Str1 := ":{確定}{BS}{IMEOff}" . Str1
@@ -501,6 +506,8 @@ OutBuf(i:=2)
 		else
 			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
 
+		if (IME_GetConverting())
+			WinGet, IMEDetectableHwnd, ID, A	; IME窓が検出できたらウィンドウハンドルを保存
 		OutStrs[1] := OutStrs[2]
 		OutCtrlNos[1] := OutCtrlNos[2]
 		_usc--
@@ -556,9 +563,9 @@ Convert()
 {
 	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
-		, DefsKey, DefsGroup, DefsKanaMode, DefsComplete, DefsCtrlNo, DefBegin, DefEnd
+		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
-		, SideShift, EnterShift, ShiftDelay, CombDelay, NonSpace, WithSpace, KeyRelease
+		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat, NonSpace, WithSpace, KeyRelease
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
@@ -570,10 +577,11 @@ Convert()
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
 		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループAll
 		, RepeatBit	:= 0	; リピート中のキーのビット
-		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2以上: シフト状態
+		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左右シフト
 		, ent		:= 0	; エンター
+		, CombinableBit := -1 ; 次の入力で確定しないキー
 ;	local KeyTime	; キーを押した時間
 ;		, KanaMode	; 0: 英数入力, 1: かな入力
 ;		, Detect
@@ -586,7 +594,6 @@ Convert()
 ;		, ShiftStyle
 ;		, i, imax, j, jmax	; カウンタ用
 ;		, DefKeyCopy
-;		, Complete 	; 出力確定したか(1 だと、後置シフトの判定期限到来で出力確定)
 ;		, CtrlNo
 
 	if (ConvRest || NextKey != "")
@@ -638,7 +645,7 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
-			if !(sft)			; 左右シフトなし→あり
+			if (!sft)			; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -658,8 +665,19 @@ Convert()
 			sft := 0
 		}
 		; スペースキー処理
-		else if (NowKey == "sc39" && !spc)
-			spc := 1
+		else if (NowKey == "sc39")
+		{
+			if (!spc)
+				spc := 1
+			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
+			{
+				Send, {Space}
+				spc := 3
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
+				continue
+			}
+
+		}
 		else if (NowKey == "sc39 up")
 		{
 			if (sft || ent)		; 他のシフトを押している時
@@ -681,7 +699,7 @@ Convert()
 		else if (NowKey == "Enter" && EnterShift)
 		{
 			NowKey := "sc39"	; スペース押す
-			if !(ent)
+			if (!ent)
 				ent := 1
 		}
 		else if (NowKey == "Enter up")
@@ -702,6 +720,13 @@ Convert()
 				NextKey := "vk0D"	; エンター単独押し→スペース上げ ※"Enter"としないこと
 			ent := 0
 		}
+		else if (spc == 3)		; スペースのリピートを止める
+		{
+			NextKey := NowKey
+			NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			spc := 2
+		}
+
 
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
@@ -765,15 +790,16 @@ Convert()
 			RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では
 										; 32ビット計算になることがあり、不適切
 			; 文字キーによるシフトの適用範囲
-			if !(KeyRelease)		; シフト復活
+			if (!KeyRelease)			; シフト全復活
 				Last2Bit := LastBit := RealBit
-			else if (KeyRelease == 1)	; シフトは1回のみ
+			else if (KeyRelease == 1)	; シフト全解除
 				Last2Bit := LastBit := 0
-			else						; シフトは途切れるまで
+			else						; シフトそのまま
 			{
 				Last2Bit &= NowBit ^ (-1)
 				LastBit &= NowBit ^ (-1)
 			}
+			CombinableBit := -1 ; 次の入力で確定しないキー
 
 			LastGroup := 0
 			RepeatBit := 0		; リピート解除
@@ -784,6 +810,7 @@ Convert()
 			&& (!_usc || LastKeyTime + ShiftDelay <= KeyTime))
 		{
 			OutBuf()
+			CombinableBit := -1 ; 次の入力で確定しないキー
 			RealBit |= KC_SPC
 			LastGroup := 0
 			RepeatBit := 0		; リピート解除
@@ -798,11 +825,13 @@ Convert()
 				OutBuf()
 				Last2Bit := LastBit := 0
 			}
+			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
+				OutBuf()
 
 			ShiftStyle := ((RealBit & KC_SPC) ? WithSpace : NonSpace)	; 文字キーによるシフトの適用範囲
 			RealBit |= NowBit
 			nBack := 0
-			while !(nkeys)
+			while (!nkeys)
 			{
 				; 3キー入力を検索
 				if (Last2Bit)
@@ -825,12 +854,9 @@ Convert()
 								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
-							if (_lks >= 3 && NowBit != KC_SPC)	; 3キー同時→3キー同時 は仮出力バッファを全て出力
-								OutBuf()
-							else if (_lks >= 2)
-								nBack := 1	; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
-							else
-								nBack := 2	; 前回が1キー入力だったら、2文字消して仮出力バッファへ
+							nBack := (_lks >= 2 ? 1 : 2)
+								; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
+								; 前回が1キー入力だったら、2文字消して仮出力バッファへ
 							nkeys := 3
 							break, 2
 						}
@@ -858,8 +884,6 @@ Convert()
 								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
-							if (_lks >= 2 && NowBit != KC_SPC)	; 2キー以上同時→2キー同時 は仮出力バッファを全て出力
-								OutBuf()
 							nBack := 1
 							nkeys := 2
 							break, 2
@@ -880,27 +904,24 @@ Convert()
 						&& SearchBit == DefsKey[i]
 						&& KanaMode == DefsKanaMode[i])
 					{
-						if (_lks >= 2)
-							OutBuf()	; 前回が2キー、3キー同時押しだったら、仮出力バッファを全て出力
-						else if (NowBit == KC_SPC)
+						if (NowBit == KC_SPC)
 							nBack := 1
 						nkeys := 1
 						break, 2
 					}
 					i++
 				}
-				if !(LastGroup)
+				if (!LastGroup)
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
 			}
-
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)
 			{
-				RepeatBit := 0
-				DispTime(KeyTime)	; キー変化からの経過時間を表示
-				continue	; 次の入力へ
+				OutStr := "+" . LastStr	; 後置シフト
+				nBack := 1
 			}
+
 			if (spc == 1)
 				spc := 2	; 単独スペースではない
 			if (ent == 1)
@@ -910,15 +931,15 @@ Convert()
 			CtrlNo := 0
 			if (nkeys > 0)	; 定義が見つかった時
 			{
-				OutStr := SelectStr(i)		; 出力する文字列
-				Complete := DefsComplete[i]	; 出力確定するか検索
+				OutStr := SelectStr(i)					; 出力する文字列
+				CombinableBit := DefsCombinableBit[i]	; さらに同時押しができるキーがあるか
 				CtrlNo := DefsCtrlNo[i]
 			}
-			else if !(nkeys)	; 定義が見つけられなかった時
-				; 出力確定するか検索
-				Complete := FindComplete(SearchBit, KanaMode, nkeys)
+			else if (!nkeys)	; 定義が見つけられなかった時
+				; さらに同時押しができるキーがあるか
+				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
 			else
-				Complete := 2	; 出力確定する
+				CombinableBit := 0
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
@@ -940,7 +961,7 @@ Convert()
 				RepeatBit := 0
 
 			; 出力確定文字か？
-			if (Complete > (ShiftDelay > 0.0 ? 1 : 0))
+			if (CombinableBit == 0 || (ShiftDelay <= 0.0 && CombinableBit == KC_SPC))
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{
@@ -948,7 +969,7 @@ Convert()
 				if (CombDelay > 0.0 && (RealBit & KC_SPC))
 					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
-				if (Complete == 1)
+				if (CombinableBit == KC_SPC)
 					SetTimer, PSTimer, % - ShiftDelay
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
