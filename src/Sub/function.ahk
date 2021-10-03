@@ -177,7 +177,12 @@ Analysis(Str1)
 }
 
 ; 定義登録
-SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
+; KanaMode	0: 英数, 1: かな
+; KeyComb	キーをビットに置き換えたものの集合
+; ConvYoko	False: Str1 - 縦書き定義, Str2 - 横書き定義
+;			True:  Str1 - 縦書き定義, Str2 - Str1から自動変換
+; CtrlNo	0: リピートなし, R: リピートあり, それ以外: かな配列ごとの特殊コード
+SetDefinition(KanaMode, KeyComb, ConvYoko, Str1, Str2, CtrlNo)
 {
 	global DefsKey, DefsGroup, DefsKanaMode, DefsTateStr, DefsYokoStr, DefsCtrlNo
 		, DefBegin, DefEnd
@@ -185,10 +190,12 @@ SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
 ;	local nkeys		; 何キー同時押しか
 ;		, i, imax	; カウンタ用
 
-	; 機能置き換え処理
-	Str1 := ControlReplace(Str1)
-	; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
-	Str1 := Analysis(Str1)
+	; 機能を置き換え、ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
+	Str1 := Analysis(ControlReplace(Str1))
+	if (ConvYoko)
+		Str2 := ConvTateYoko(Str1)	; 縦横変換
+	else
+		Str2 := Analysis(ControlReplace(Str2))
 
 	; 登録
 	nkeys := CountBit(KeyComb)	; 何キー同時押しか
@@ -223,7 +230,7 @@ SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
 		DefsGroup.InsertAt(i, KanaGroup)
 		DefsKanaMode.InsertAt(i, KanaMode)
 		DefsTateStr.InsertAt(i, Str1)
-		DefsYokoStr.InsertAt(i, ConvTateYoko(Str1))	; 縦横変換
+		DefsYokoStr.InsertAt(i, Str2)
 		DefsCtrlNo.InsertAt(i, CtrlNo)
 
 		DefEnd[1]++
@@ -232,20 +239,29 @@ SetDefinition(KanaMode, KeyComb, Str1, CtrlNo:=0)
 		if (nkeys > 2)
 			DefBegin[2]++, DefEnd[3]++
 	}
-
 	return
 }
 
 ; かな定義登録
-SetKana(KeyComb, Str1, CtrlNo:=0)
+SetKana(KeyComb, Str1, CtrlNo:=0)	; 横書き用は自動変換
 {
-	SetDefinition(1, KeyComb, Str1, CtrlNo)
+	SetDefinition(1, KeyComb, True, Str1, "", CtrlNo)
+	return
+}
+SetKana2(KeyComb, Str1, Str2, CtrlNo:=0)
+{
+	SetDefinition(1, KeyComb, False, Str1, Str2, CtrlNo)
 	return
 }
 ; 英数定義登録
-SetEisu(KeyComb, Str1, CtrlNo:=0)
+SetEisu(KeyComb, Str1, CtrlNo:=0)	; 横書き用は自動変換
 {
-	SetDefinition(0, KeyComb, Str1, CtrlNo)
+	SetDefinition(0, KeyComb, True, Str1, "", CtrlNo)
+	return
+}
+SetEisu2(KeyComb, Str1, Str2, CtrlNo:=0)
+{
+	SetDefinition(0, KeyComb, False, Str1, Str2, CtrlNo)
 	return
 }
 
