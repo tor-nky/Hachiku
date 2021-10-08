@@ -124,33 +124,27 @@ ControlReplace(Str1)
 	StringReplace, Str1, Str1, {Caps Lock,	{vkF0,		A
 	StringReplace, Str1, Str1, {Back Space,	{BS,		A
 
-	StringReplace, Str1, Str1, {固有},		{直接},		A
-
 	return Str1
 }
 
-; ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
-; 先頭が"{記号}"または"{直接}"だったらそのまま
+; ASCIIコードでない文字が入っていたら、"{確定}{NoIME}"を書き足す
+; "{直接}"は"{Raw}"に書き換え
 Analysis(Str1)
 {
-;	local StrBegin
-;		, i			; カウンタ
-;		, len, len2, StrChopped, c, bracket
+;	local i		; カウンタ
+;		, len1, StrChopped, LenChopped, Str2, c, bracket, Kakutei, NoIME
 
-	if (Str1 == "{記号}" || Str1 == "{直接}")
+	if (Str1 = "{Raw}" || Str1 = "{直接}")
 		return ""	; 有効な文字列がないので空白を返す
 
-	StrBegin := SubStr(Str1, 1, 4)
-	if (StrBegin == "{記号}" || StrBegin == "{直接}")
-		return Str1	; そのまま返す
-
-	; 1文字ずつ分析する
-	len := StrLen(Str1)
+	Kakutei := NoIME := False
+	Str2 := ""			; 変換後文字列
 	StrChopped := ""
-	len2 := 0
+	LenChopped := 0
 	bracket := 0
 	i := 1
-	while (i <= len)
+	len1 := StrLen(Str1)
+	while (i <= len1)
 	{
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
@@ -158,29 +152,63 @@ Analysis(Str1)
 		else if (c == "{" || bracket)
 			bracket++
 		StrChopped .= c
-		len2++
-		if (i == len || !(bracket || c == "+" || c == "^" || c == "!" || c == "#"))
+		LenChopped++
+		if (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
+			|| i == len1 )
 		{
+			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
+			{
+				Str2 .= SubStr(Str1, i - LenChopped + 1)	; 残り全部を出力
+				break
+			}
+			else if (SubStr(StrChopped, LenChopped - 3, 4) = "{直接}")
+			{
+				if (!NoIME)
+				{
+					if (!Kakutei)
+						Str2 .= "{確定}"
+					Str2 .= "{NoIME}"
+				}
+				Str2 .= "{Raw}" . SubStr(Str1, i + 1)	; 残り全部を出力
+				break
+			}
+
 			; ASCIIコードでない
-			if (Asc(StrChopped) > 127
-			 || SubStr(StrChopped, 1, 3) = "{U+"
-			 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127))
-				return "{記号}" . Str1	; 先頭に"記号"を書き足して終了
+			else if (!NoIME && (Asc(StrChopped) > 127
+				|| SubStr(StrChopped, 1, 3) = "{U+"
+				|| (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127)))
+			{
+				if (!Kakutei)
+					Str2 .= "{確定}"
+				Str2 .= "{NoIME}" . StrChopped
+				Kakutei := NoIME := True
+			}
+			else if (StrChopped = "{確定}")
+			{
+				if (!NoIME && !Kakutei)
+					Str2 .= StrChopped
+				Kakutei := True
+			}
+			else
+			{
+				Str2 .= ControlReplace(StrChopped)
+				Kakutei := False
+			}
+
 			StrChopped := ""
-			len2 := 0
+			LenChopped := 0
 		}
 		i++
 	}
 
-	; すべて ASCIIコードだった
-	return Str1	; そのまま返す
+	return Str2
 }
 
 ; 定義登録
 ; KanaMode	0: 英数, 1: かな
 ; KeyComb	キーをビットに置き換えたものの集合
 ; ConvYoko	False: Str1 - 縦書き定義, Str2 - 横書き定義
-;			True:  Str1 - 縦書き定義, Str2 - Str1から自動変換
+;			True:  Str1 - 縦書き定義, Str2 - Str1から変換必要
 ; CtrlNo	0: リピートなし, R: リピートあり, それ以外: かな配列ごとの特殊コード
 SetDefinition(KanaMode, KeyComb, ConvYoko, Str1, Str2, CtrlNo)
 {
@@ -190,12 +218,17 @@ SetDefinition(KanaMode, KeyComb, ConvYoko, Str1, Str2, CtrlNo)
 ;	local nkeys		; 何キー同時押しか
 ;		, i, imax	; カウンタ用
 
-	; 機能を置き換え、ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
-	Str1 := Analysis(ControlReplace(Str1))
-	if (ConvYoko)
+	if (!CtrlNo || CtrlNo == R)
+	{
+		; 機能を置き換え、ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
+		Str1 := Analysis(Str1)
+		if (ConvYoko)
+			Str2 := ConvTateYoko(Str1)	; 縦横変換
+		else
+			Str2 := Analysis(Str2)
+	}
+	else if (ConvYoko)
 		Str2 := ConvTateYoko(Str1)	; 縦横変換
-	else
-		Str2 := Analysis(ControlReplace(Str2))
 
 	; 登録
 	nkeys := CountBit(KeyComb)	; 何キー同時押しか
@@ -223,8 +256,9 @@ SetDefinition(KanaMode, KeyComb, ConvYoko, Str1, Str2, CtrlNo)
 		}
 		i++
 	}
-	if ((CtrlNo && CtrlNo != R) || Str1 != "")		; 定義あり
+	if ((CtrlNo && CtrlNo != R) || Str1 != "" || Str2 != "")
 	{
+		; 定義あり
 		i := DefEnd[nkeys]
 		DefsKey.InsertAt(i, KeyComb)
 		DefsGroup.InsertAt(i, KanaGroup)
@@ -314,13 +348,23 @@ SendEachChar(Str1, Delay:=0)
 {
 	global IMESelect
 	static LastTickCount := QPC()
-;	local len						; Str1 の長さ
+		, IMEDetectableHwnd := ""
+;	local Hwnd,
+;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
-;		, IMECheck, IMEConvMode		; IME入力モードの保存、復元に関するフラグと変数
+;		, NoIME, IMEConvMode		; IME入力モードの保存、復元に関するフラグと変数
 ;		, PreDelay, PostDelay		; 出力前後のディレイの値
 ;		, LastDelay					; 前回出力時のディレイの値
 ;		, Slow
+;		, ClipSaved
+
+;ToolTip, %Str1%
+;SetTimer, RemoveToolTip, 5000
+	; IME窓が検出できるならウィンドウハンドルを保存
+	WinGet, Hwnd, ID, A
+	if (Hwnd != IMEDetectableHwnd && IME_GetConverting())
+		IMEDetectableHwnd := Hwnd
 
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
@@ -334,13 +378,13 @@ SendEachChar(Str1, Delay:=0)
 	; 文字列を細切れにして出力
 	PreDelay := 0
 	PostDelay := Delay	; ディレイの初期値
-	IMECheck := 0
-	StrChopped := ""
+	NoIME := False
+	StrChopped := Str2 := ""
 	LenChopped := 0
 	bracket := 0
 	i := 1
-	len := StrLen(Str1)
-	while (i <= len)
+	len1 := StrLen(Str1)
+	while (i <= len1)
 	{
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
@@ -350,13 +394,13 @@ SendEachChar(Str1, Delay:=0)
 		StrChopped .= c
 		LenChopped++
 		if (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i == len )
+			|| i == len1 )
 		{
 			; SendRaw(直接入力モード)にする時
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
 				i++
-				while (i <= len)
+				while (i <= len1)
 				{
 					StrChopped := SubStr(Str1, i, 2)
 					if (Asc(StrChopped) > 65535)	; ユニコード拡張領域
@@ -377,35 +421,66 @@ SendEachChar(Str1, Delay:=0)
 			}
 			; 出力するキーを変換
 			else if (StrChopped == "{確定}")
-				StrChopped := "{Enter}"
-			else if (StrChopped = "{IMEOff}")
+			{
+				if (IME_GET() && IME_GetSentenceMode() != 0)	; 変換モード(無変換)ではない
+				{
+					if (IME_GetConverting())
+					{
+						IMEDetectableHwnd := Hwnd		; IME窓を検出できたらウィンドウハンドルを保存
+						Str2 := "{Enter}"
+					}
+					else if (Hwnd != IMEDetectableHwnd)	; IME窓を検出可能か不明
+					{
+						Send, :
+						Sleep, PostDelay
+						Send, {Enter}
+						Sleep, PostDelay
+						Send, {BS}
+						Sleep, PostDelay
+						LastDelay := Delay	; 今回のディレイの値を保存
+					}
+				}
+			}
+			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEを一旦オフにして後で元に戻す
 			{
 				; IME入力モードを保存する
-				if (IME_GET() == 1)
-				{
-					IMECheck := 1			; 後で IME入力モードを回復する
-					IMEConvMode := IME_GetConvMode()
-					StrChopped := "{vkF3}"	; 半角/全角
-					PostDelay := 30
-				}
-				else	; かな入力モードでない時
-					StrChopped := "{Null}"
+				NoIME := True			; 後で IME入力モードを回復する
+				IMEConvMode := IME_GetConvMode()
+				Str2 := "{vkF3}"	; 半角/全角
+				PostDelay := 30
 			}
 			; ATOK+秀丸エディタで、エンターを途中に含む文字列はゆっくり出力する
 			else if (SubStr(Str1, 1, 6) != "{Enter"
 				&& Slow == 0x11 && SubStr(StrChopped, 1, 6) = "{Enter")
 			{
+				Str2 := StrChopped
 				PreDelay := 80
 				PostDelay := 100	; 秀丸エディタ + ATOK 用
 			}
+			else if (StrChopped = "{C_Clr}")
+				clipboard =					;クリップボードを空にする
+			else if (SubStr(StrChopped, 1, 7) = "{C_Wait")
+			{
+				Wait := SubStr(StrChopped, 9)		; {C_Wait 0.5} なら 0.5秒待機
+				ClipWait, (Wait ? Wait : 0.2), 1
+			}
+			else if (StrChopped = "{C_Bkup}")
+				ClipSaved := ClipboardAll	;クリップボードの全内容を保存
+			else if (StrChopped = "{C_Rstr}")
+			{
+				Clipboard := ClipSaved		;クリップボードの内容を復元
+				ClipSaved =					;保存用変数に使ったメモリを開放
+			}
+			else if (StrChopped != "{Null}")
+				Str2 := StrChopped
 
 			; 前回の出力からの時間が短ければ、ディレイを入れる
 			if (LastDelay < PreDelay)
 				Sleep, % PreDelay - LastDelay
 			; キー出力
-			if (StrChopped != "{Null}")
+			if (Str2)
 			{
-				Send, % StrChopped
+				Send, % Str2
 				; 出力直後のディレイ
 				if (PostDelay > 0)
 					Sleep, PostDelay
@@ -414,14 +489,14 @@ SendEachChar(Str1, Delay:=0)
 				PostDelay := Delay		; ディレイの初期値
 			}
 
-			StrChopped := ""
+			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
 		i++
 	}
 
 	; IME ON
-	if (IMECheck)
+	if (NoIME)
 	{
 		if (Slow == 0x11)
 		{
@@ -481,7 +556,6 @@ DetectSlowMSIME()
 OutBuf(i:=2)
 {
 	global _usc, OutStrs, OutCtrlNos, IMESelect, R
-	static IMEDetectableHwnd := ""
 ;	local Str1, StrBegin, Hwnd
 
 	while (i > 0 && _usc > 0)
@@ -489,27 +563,8 @@ OutBuf(i:=2)
 		if (!OutCtrlNos[1] || OutCtrlNos[1] == R)
 		{
 			Str1 := OutStrs[1]
-			StrBegin := SubStr(Str1, 1, 4)
-			if (StrBegin == "{記号}" || StrBegin == "{直接}")
+			if (InStr(Str1, "{NoIME}"))
 			{
-				StringTrimLeft, Str1, Str1, 4
-				if (StrBegin == "{直接}")
-					Str1 := "{Raw}" . Str1
-				if (IME_GET() == 1)		; IME ON の時
-				{
-					WinGet, Hwnd, ID, A					; ウィンドウハンドルを取得
-					if (IME_GetSentenceMode() == 0)
-						Str1 := "{IMEOff}" . Str1
-					else if (IME_GetConverting())
-					{
-						IMEDetectableHwnd := Hwnd		; IME窓が検出できたらウィンドウハンドルを保存
-						Str1 := "{確定}{IMEOff}" . Str1
-					}
-					else if (Hwnd == IMEDetectableHwnd)	; IME窓が検出可能なウィンドウハンドル
-						Str1 := "{IMEOff}" . Str1
-					else
-						Str1 := ":{確定}{BS}{IMEOff}" . Str1
-				}
 				if (!IMESelect && DetectSlowMSIME() && InStr(Str1, "{Enter"))
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
@@ -522,8 +577,6 @@ OutBuf(i:=2)
 		else
 			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
 
-		if (IME_GetConverting())
-			WinGet, IMEDetectableHwnd, ID, A	; IME窓が検出できたらウィンドウハンドルを保存
 		OutStrs[1] := OutStrs[2]
 		OutCtrlNos[1] := OutCtrlNos[2]
 		_usc--
@@ -588,6 +641,7 @@ Convert()
 		, LastBit	:= 0	; 前回のキービット
 		, Last2Bit	:= 0	; 前々回のキービット
 		, LastKeyTime := 0	; 有効なキーを押した時間
+		, KanaMode	:= 0	; 0: 英数入力, 1: かな入力
 		, OutStr	:= ""	; 出力する文字列
 		, LastStr	:= ""	; 前回、出力した文字列
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
@@ -599,7 +653,6 @@ Convert()
 		, ent		:= 0	; エンター
 		, CombinableBit := -1 ; 次の入力で確定しないキー
 ;	local KeyTime	; キーを押した時間
-;		, KanaMode	; 0: 英数入力, 1: かな入力
 ;		, Detect
 ;		, NowKey, len
 ;		, Term		; 入力の末端2文字
@@ -688,7 +741,7 @@ Convert()
 			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
 			{
 				Send, {Space}
-				spc := 3
+				spc := 3	; リピート中
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
@@ -752,9 +805,9 @@ Convert()
 		{
 			; IME の状態を検出(失敗したら書き換えない)
 			Detect := IME_GET()
-			if (Detect == 0)		; IME OFF の時
+			if (Detect == 0)	; IME OFF の時
 				KanaMode := 0
-			else if (Detect == 1)	; IME ON の時
+			else if (Detect)	; IME ON の時
 			{
 				Detect := IME_GetConvMode()
 				if (Detect != "")
@@ -956,6 +1009,7 @@ Convert()
 				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
 			else
 				CombinableBit := 0
+			CombinableBit &= RealBit ^ (-1)	; 現在押されているキーは入れない
 
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)

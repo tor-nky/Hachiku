@@ -19,7 +19,7 @@
 #NoEnv						; 変数名を解釈するとき、環境変数を無視する
 SetBatchLines, -1			; 自動Sleepなし
 ListLines, Off				; スクリプトの実行履歴を取らない
-;SetKeyDelay, 10, 0			; キーストローク間のディレイを変更
+SetKeyDelay, -1, -1			; キーストローク間のディレイを変更
 ;Process, Priority, , High	; スクリプトを実行するプロセスの優先度を上げる
 #MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
 #UseHook					; ホットキーはすべてフックを使用する
@@ -158,7 +158,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 60
+	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
 ; SpaceKeyRepeat		スペースキーのリピート	0: なし, 1: あり
 	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
@@ -170,7 +170,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 
 ; [ShiftStyle]	文字キーによるシフトの適用範囲
 ; NonSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
-	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 2
+	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 1
 ; WithSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
 	IniRead, WithSpace, %IniFilePath%, ShiftStyle, WithSpace, 1
 ; KeyRelease	0: 全復活, 1: 全解除, 2: そのまま
