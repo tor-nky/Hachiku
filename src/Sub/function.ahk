@@ -349,7 +349,8 @@ SendEachChar(Str1, Delay:=0)
 	global IMESelect
 	static LastTickCount := QPC()
 		, IMEDetectableHwnd := ""
-;	local Hwnd,
+		, spc := 0
+;	local Hwnd
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
@@ -361,11 +362,7 @@ SendEachChar(Str1, Delay:=0)
 
 ;ToolTip, %Str1%
 ;SetTimer, RemoveToolTip, 5000
-	; IME窓が検出できるならウィンドウハンドルを保存
 	WinGet, Hwnd, ID, A
-	if (Hwnd != IMEDetectableHwnd && IME_GetConverting())
-		IMEDetectableHwnd := Hwnd
-
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
@@ -425,10 +422,7 @@ SendEachChar(Str1, Delay:=0)
 				if (IME_GET() && IME_GetSentenceMode() != 0)	; 変換モード(無変換)ではない
 				{
 					if (IME_GetConverting())
-					{
-						IMEDetectableHwnd := Hwnd		; IME窓を検出できたらウィンドウハンドルを保存
 						Str2 := "{Enter}"
-					}
 					else if (Hwnd != IMEDetectableHwnd)	; IME窓を検出可能か不明
 					{
 						Send, :
@@ -488,6 +482,14 @@ SendEachChar(Str1, Delay:=0)
 				PreDelay := 0
 				PostDelay := Delay		; ディレイの初期値
 			}
+
+			; IME窓が検出できるならウィンドウハンドルを保存
+			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
+				spc++
+			else
+				spc := 0
+			if (spc == 1 && Hwnd != IMEDetectableHwnd && IME_GetConverting())
+				IMEDetectableHwnd := Hwnd	; 変換1回目でIME窓が検出出来たら本物
 
 			StrChopped := Str2 := ""
 			LenChopped := 0
