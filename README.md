@@ -2,6 +2,9 @@
 
 [薙刀式 v14集大成版（仮）](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0) 2021年10月4日版を Autohotkey に実装しました。
 
+DvorakJ版からの変更点です。
+編集モードD+F+H、J+K+G、J+K+Vで、変換中の文字があれば確定し、なければそのまま所定の動作をします。
+
 ### Hachiku.ahk
 
 ディレクトリ source の下にあるファイルをすべて保存します。
