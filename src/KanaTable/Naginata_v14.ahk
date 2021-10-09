@@ -437,7 +437,7 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消▼
 	SetKana( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; キャン
+	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}"	)		; キャン
 	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; ⏎End▼
 	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
@@ -453,7 +453,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消▼
 	SetEisu( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; キャン
+	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}"	)		; キャン
 	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; ⏎End▼
 	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
