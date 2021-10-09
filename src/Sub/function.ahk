@@ -431,7 +431,7 @@ SendEachChar(Str1, Delay:=0)
 						Sleep, PostDelay
 						Send, {BS}
 						Sleep, PostDelay
-						LastDelay := Delay	; 今回のディレイの値を保存
+						LastDelay := PostDelay	; 今回のディレイの値を保存
 					}
 				}
 			}
@@ -655,7 +655,7 @@ Convert()
 		, ent		:= 0	; エンター
 		, CombinableBit := -1 ; 次の入力で確定しないキー
 ;	local KeyTime	; キーを押した時間
-;		, Detect
+;		, IMEState, IMEConvMode
 ;		, NowKey, len
 ;		, Term		; 入力の末端2文字
 ;		, nkeys		; 今回は何キー同時押しか
@@ -713,6 +713,19 @@ Convert()
 			NextKey := ""
 		}
 
+		; IME の状態を更新
+		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
+			KanaMode := 0
+		else if (sft && SideShift == 1)	; 左右シフト英数２
+			KanaMode := 0
+		else
+		{
+			IMEState := IME_GET()
+			IMEConvMode := IME_GetConvMode()
+			if (IMEState != "" && IMEConvMode != "")	; 検出に失敗したら書き換えない
+				KanaMode := (IMEState ? IMEConvMode & 1 : 0)
+		}
+
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
@@ -738,16 +751,16 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if (!spc)
-				spc := 1
-			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
+			if (!IMEConvMode	; Firefox と Thunderbird のスクロール対応
+				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
 			{
 				Send, {Space}
 				spc := 3	; リピート中
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
-
+			else if (!spc)
+				spc := 1
 		}
 		else if (NowKey == "sc39 up")
 		{
@@ -793,29 +806,14 @@ Convert()
 		}
 		else if (spc == 3)		; スペースのリピートを止める
 		{
-			NextKey := NowKey
-			NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			if (KanaMode)
+			{
+				NextKey := NowKey
+				NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			}
 			spc := 2
 		}
 
-
-		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
-			KanaMode := 0
-		else if (sft && SideShift == 1)	; 左右シフト英数２
-			KanaMode := 0
-		else
-		{
-			; IME の状態を検出(失敗したら書き換えない)
-			Detect := IME_GET()
-			if (Detect == 0)	; IME OFF の時
-				KanaMode := 0
-			else if (Detect)	; IME ON の時
-			{
-				Detect := IME_GetConvMode()
-				if (Detect != "")
-					KanaMode := Detect & 1
-			}
-		}
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
 		len := StrLen(NowKey)
