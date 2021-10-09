@@ -408,11 +408,11 @@ KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_S		,"（）{↑}"			)		; （）
 	SetKana( KC_J | KC_K | KC_D		,"？"				)		; ？
 	SetKana( KC_J | KC_K | KC_F		,"「」{↑}"			)		; 「」
-	SetKana( KC_J | KC_K | KC_G		,"{改行}{End}{改行}「」{↑}") ; ⏎「」
+	SetKana( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{↑}") ; ⏎「」
 	SetKana( KC_J | KC_K | KC_Z		,"││"				)		; ──
 	SetKana( KC_J | KC_K | KC_X		,"【】{↑}"			)		; 【】
 	SetKana( KC_J | KC_K | KC_C		,"！"				)		; ！
-	SetKana( KC_J | KC_K | KC_V		,"{改行}{↓}"		)		; ⏎↓
+	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"		)		; ⏎↓
 	SetKana( KC_J | KC_K | KC_B		,"《》{↑}"			)		; 《》
 
 	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"			)		; ◀新
@@ -424,11 +424,11 @@ KanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_S		,"（）{↑}"			)		; （）
 	SetEisu( KC_J | KC_K | KC_D		,"？"				)		; ？
 	SetEisu( KC_J | KC_K | KC_F		,"「」{↑}"			)		; 「」
-	SetEisu( KC_J | KC_K | KC_G		,"{改行}{End}{改行}「」{↑}") ; ⏎「」
+	SetEisu( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{↑}") ; ⏎「」
 	SetEisu( KC_J | KC_K | KC_Z		,"││"				)		; ──
 	SetEisu( KC_J | KC_K | KC_X		,"【】{↑}"			)		; 【】
 	SetEisu( KC_J | KC_K | KC_C		,"！"				)		; ！
-	SetEisu( KC_J | KC_K | KC_V		,"{改行}{↓}"		)		; ⏎↓
+	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"		)		; ⏎↓
 	SetEisu( KC_J | KC_K | KC_B		,"《》{↑}"			)		; 《》
 
 ; 右手
@@ -438,7 +438,7 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; キャン
-	SetKana( KC_D | KC_F | KC_H		,"{改行}{End}"		)		; ⏎End▼
+	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; ⏎End▼
 	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
 	SetKana( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
@@ -454,7 +454,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; キャン
-	SetEisu( KC_D | KC_F | KC_H		,"{改行}{End}"		)		; ⏎End▼
+	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; ⏎End▼
 	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
 	SetEisu( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
