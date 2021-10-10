@@ -343,12 +343,38 @@ SettingLayout()
 	return
 }
 
+; 使用しているのが MS-IME で低速ならば 1 を返す
+; 10秒経過していれば再調査する
+DetectSlowIME()
+{
+	static IMESelect, SlowMSIME := 1
+		, LastSearchTime := 0.0
+;	local NowTime
+
+	if (IMESelect)
+		return False	; ATOK を使用
+
+	NowTime := QPC()
+	if (LastSearchTime + 10000.0 < NowTime)
+	{
+		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+		; 新旧MSIMEが選べる環境では、旧MSIMEは低速である
+		; 参考: https://registry.tomoroh.net/archives/11547
+		RegRead, SlowMSIME, HKEY_CURRENT_USER
+			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
+			, NoTsf3Override2
+		SlowMSIME := (ErrorLevel == 1 ? 0 : SlowMSIME)
+		LastSearchTime := NowTime
+	}
+	return SlowMSIME
+}
+
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
 	global IMESelect
 	static LastTickCount := QPC()
-		, IMEDetectableHwnd := ""
+		, GoodHwnd := "", BadHwnd := ""
 		, spc := 0
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
@@ -360,8 +386,6 @@ SendEachChar(Str1, Delay:=0)
 ;		, Slow
 ;		, ClipSaved
 
-;ToolTip, %Str1%
-;SetTimer, RemoveToolTip, 5000
 	WinGet, Hwnd, ID, A
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
@@ -419,19 +443,17 @@ SendEachChar(Str1, Delay:=0)
 			; 出力するキーを変換
 			else if (StrChopped == "{確定}")
 			{
-				if (IME_GET() && IME_GetSentenceMode() != 0)	; 変換モード(無変換)ではない
+				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (IME_GetConverting())
 						Str2 := "{Enter}"
-					else if (Hwnd != IMEDetectableHwnd)	; IME窓を検出可能か不明
+					else if (Hwnd != GoodHwnd)	; IME窓を検出可能か不明
 					{
 						Send, :
 						Sleep, PostDelay
 						Send, {Enter}
 						Sleep, PostDelay
-						Send, {BS}
-						Sleep, PostDelay
-						LastDelay := Delay	; 今回のディレイの値を保存
+						Str2 := "{BS}"
 					}
 				}
 			}
@@ -468,6 +490,16 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped != "{Null}")
 				Str2 := StrChopped
 
+			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
+			{
+				if (Hwnd != BadHwnd && Hwnd != GoodHwnd
+				 && !spc && PostDelay < 40)
+					PostDelay := 40	; 判定は変換1回目で行うが、IME_GetConverting() の変化を待つ
+				spc++
+			}
+			else
+				spc := 0
+
 			; 前回の出力からの時間が短ければ、ディレイを入れる
 			if (LastDelay < PreDelay)
 				Sleep, % PreDelay - LastDelay
@@ -484,12 +516,13 @@ SendEachChar(Str1, Delay:=0)
 			}
 
 			; IME窓が検出できるならウィンドウハンドルを保存
-			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
-				spc++
-			else
-				spc := 0
-			if (spc == 1 && Hwnd != IMEDetectableHwnd && IME_GetConverting())
-				IMEDetectableHwnd := Hwnd	; 変換1回目でIME窓が検出出来たら本物
+			if (spc == 1 && Hwnd != BadHwnd && Hwnd != GoodHwnd)
+			{
+				if (IME_GetConverting())
+					GoodHwnd := Hwnd	; 変換1回目でIME窓が検出出来たら本物
+				else
+					BadHwnd := Hwnd
+			}
 
 			StrChopped := Str2 := ""
 			LenChopped := 0
@@ -530,29 +563,6 @@ SendEachChar(Str1, Delay:=0)
 	return
 }
 
-; MS-IME が低速ならば 1 を返す
-; 10秒経過していれば再調査する
-DetectSlowMSIME()
-{
-	static SlowMSIME := 1
-		, LastSearchTime := 0.0
-;	local NowTime
-
-	NowTime := QPC()
-	if (LastSearchTime + 10000.0 < NowTime)
-	{
-		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
-		; 新旧MSIMEが選べる環境では、旧MSIMEは低速である
-		; 参考: https://registry.tomoroh.net/archives/11547
-		RegRead, SlowMSIME, HKEY_CURRENT_USER
-			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-			, NoTsf3Override2
-		SlowMSIME := (ErrorLevel == 1 ? 0 : SlowMSIME)
-		LastSearchTime := NowTime
-	}
-	return SlowMSIME
-}
-
 ; 仮出力バッファの先頭から i 個出力する
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
@@ -567,7 +577,7 @@ OutBuf(i:=2)
 			Str1 := OutStrs[1]
 			if (InStr(Str1, "{NoIME}"))
 			{
-				if (!IMESelect && DetectSlowMSIME() && InStr(Str1, "{Enter"))
+				if (DetectSlowIME() && InStr(Str1, "{Enter"))
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
 				else
@@ -655,7 +665,7 @@ Convert()
 		, ent		:= 0	; エンター
 		, CombinableBit := -1 ; 次の入力で確定しないキー
 ;	local KeyTime	; キーを押した時間
-;		, Detect
+;		, IMEState, IMEConvMode
 ;		, NowKey, len
 ;		, Term		; 入力の末端2文字
 ;		, nkeys		; 今回は何キー同時押しか
@@ -713,6 +723,19 @@ Convert()
 			NextKey := ""
 		}
 
+		; IME の状態を更新
+		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
+			KanaMode := 0
+		else if (sft && SideShift == 1)	; 左右シフト英数２
+			KanaMode := 0
+		else
+		{
+			IMEState := IME_GET()
+			IMEConvMode := IME_GetConvMode()
+			if (IMEState != "" && IMEConvMode != "")	; 検出に失敗したら書き換えない
+				KanaMode := (IMEState ? IMEConvMode & 1 : 0)
+		}
+
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
@@ -738,16 +761,16 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if (!spc)
-				spc := 1
-			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
+			if (!IMEConvMode	; Firefox と Thunderbird のスクロール対応
+				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
 			{
 				Send, {Space}
 				spc := 3	; リピート中
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
-
+			else if (!spc)
+				spc := 1
 		}
 		else if (NowKey == "sc39 up")
 		{
@@ -793,29 +816,14 @@ Convert()
 		}
 		else if (spc == 3)		; スペースのリピートを止める
 		{
-			NextKey := NowKey
-			NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			if (KanaMode)
+			{
+				NextKey := NowKey
+				NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+			}
 			spc := 2
 		}
 
-
-		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
-			KanaMode := 0
-		else if (sft && SideShift == 1)	; 左右シフト英数２
-			KanaMode := 0
-		else
-		{
-			; IME の状態を検出(失敗したら書き換えない)
-			Detect := IME_GET()
-			if (Detect == 0)	; IME OFF の時
-				KanaMode := 0
-			else if (Detect)	; IME ON の時
-			{
-				Detect := IME_GetConvMode()
-				if (Detect != "")
-					KanaMode := Detect & 1
-			}
-		}
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
 		len := StrLen(NowKey)
