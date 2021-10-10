@@ -453,13 +453,7 @@ SendEachChar(Str1, Delay:=0)
 						Sleep, PostDelay
 						Send, {Enter}
 						Sleep, PostDelay
-<<<<<<< HEAD
 						Str2 := "{BS}"
-=======
-						Send, {BS}
-						Sleep, PostDelay
-						LastDelay := PostDelay	; 今回のディレイの値を保存
->>>>>>> 40fc9c2dee982c7ce982cb781ded45d0822eeb9a
 					}
 				}
 			}
