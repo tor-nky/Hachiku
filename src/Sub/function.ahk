@@ -495,8 +495,8 @@ SendEachChar(Str1, Delay:=0)
 			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
 			{
 				if (Hwnd != BadHwnd && Hwnd != GoodHwnd
-				 && !spc && PostDelay < 40)
-					PostDelay := 40	; 判定は変換1回目で行うが、IME_GetConverting() の変化を待つ
+				 && !spc && PostDelay < 50)
+					PostDelay := 50	; 判定は変換1回目で行うが、IME_GetConverting() の変化を待つ
 				spc++
 			}
 			else
