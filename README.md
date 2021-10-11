@@ -91,18 +91,21 @@ AdvancedMenu=1
 
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 
-Autohotkey の書き方に準じます。
+ASCIIコード文字だけで定義するときは、Autohotkey の書き方に準じます。
 
 http://ahkwiki.net/Send の特殊キー名一覧もご覧ください。
 
 そのまま入力	0〜9 A〜Z -^@[]./ 全角文字
 
-特別な書き方
 {確定}
 {Enter} {Esc} {Space} {Tab} {BS} {Del} {Ins}
 {Up} {Down} {Left} {Right}
 {Home} {End} {PgUp} {PgDn}
 など
+
+ASCIIコード以外の文字があると、そこからは IME をオフにして残りを出力します。
+
+{直接} の後は IME をオフにしてさらに無変換で出力します。これを固有名詞ショートカットの実装に使っています。
 
 ## 動作速度
 
