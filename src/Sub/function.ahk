@@ -157,10 +157,7 @@ Analysis(Str1)
 			|| i == len1 )
 		{
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
-			{
-				Str2 .= SubStr(Str1, i - LenChopped + 1)	; 残り全部を出力
-				break
-			}
+				return Str2 . SubStr(Str1, i - LenChopped + 1)	; 残り全部を出力
 			else if (SubStr(StrChopped, LenChopped - 3, 4) = "{直接}")
 			{
 				if (!NoIME)
@@ -169,19 +166,19 @@ Analysis(Str1)
 						Str2 .= "{確定}"
 					Str2 .= "{NoIME}"
 				}
-				Str2 .= "{Raw}" . SubStr(Str1, i + 1)	; 残り全部を出力
-				break
+				return Str2 . "{Raw}" . SubStr(Str1, i + 1)	; 残り全部を出力
 			}
 
+			StrChopped := ControlReplace(StrChopped)
 			; ASCIIコードでない
-			else if (!NoIME && (Asc(StrChopped) > 127
+			if (!NoIME && (Asc(StrChopped) > 127
 				|| SubStr(StrChopped, 1, 3) = "{U+"
 				|| (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127)))
 			{
 				if (!Kakutei)
 					Str2 .= "{確定}"
 				Str2 .= "{NoIME}" . StrChopped
-				Kakutei := NoIME := True
+				Kakutei := NoIME := True	; ASCIIコード以外の文字は IMEをオフにして出力する
 			}
 			else if (StrChopped = "{確定}")
 			{
@@ -189,9 +186,14 @@ Analysis(Str1)
 					Str2 .= StrChopped
 				Kakutei := True
 			}
+			else if (SubStr(StrChopped, 1, 6) = "{Enter")
+			{
+				Str2 .= StrChopped
+				Kakutei := True	; "{Enter" で確定状態
+			}
 			else
 			{
-				Str2 .= ControlReplace(StrChopped)
+				Str2 .= StrChopped
 				Kakutei := False
 			}
 
@@ -515,11 +517,11 @@ SendEachChar(Str1, Delay:=0)
 				PostDelay := Delay		; ディレイの初期値
 			}
 
-			; IME窓が検出できるならウィンドウハンドルを保存
+			; 変換1回目でIME窓が検出できるのが理想で、できなければIME窓の検出は当てにならない
 			if (spc == 1 && Hwnd != BadHwnd && Hwnd != GoodHwnd)
 			{
 				if (IME_GetConverting())
-					GoodHwnd := Hwnd	; 変換1回目でIME窓が検出出来たら本物
+					GoodHwnd := Hwnd
 				else
 					BadHwnd := Hwnd
 			}
