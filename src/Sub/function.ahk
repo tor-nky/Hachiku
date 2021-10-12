@@ -443,13 +443,20 @@ SendEachChar(Str1, Delay:=0)
 				break
 			}
 			; 出力するキーを変換
+			else if (StrChopped = "{vkF2}" || StrChopped == "{vkF3}")
+			{	; ひらがなキー、半角/全角キー
+				Str2 := StrChopped
+				PostDelay := 10
+			}
 			else if (StrChopped == "{確定}")
 			{
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (IME_GetConverting())
 						Str2 := "{Enter}"
-					else if (Hwnd != GoodHwnd)	; IME窓を検出可能か不明
+					else if (Hwnd != GoodHwnd || LastDelay < (IMESelect ? 100.0 : 30.0))
+						; 文字入力から IME窓出現まで、旧MS-IME は 30ms、ATOK は 100ms 必要
+						; IME窓を検出可能か不明
 					{
 						Send, :
 						Sleep, PostDelay
@@ -479,7 +486,7 @@ SendEachChar(Str1, Delay:=0)
 				clipboard =					;クリップボードを空にする
 			else if (SubStr(StrChopped, 1, 7) = "{C_Wait")
 			{
-				Wait := SubStr(StrChopped, 9)		; {C_Wait 0.5} なら 0.5秒待機
+				Wait := SubStr(StrChopped, 9)		; {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
 				ClipWait, (Wait ? Wait : 0.2), 1
 			}
 			else if (StrChopped = "{C_Bkup}")
@@ -496,7 +503,7 @@ SendEachChar(Str1, Delay:=0)
 			{
 				if (Hwnd != BadHwnd && Hwnd != GoodHwnd
 				 && !spc && PostDelay < 50)
-					PostDelay := 50	; 判定は変換1回目で行うが、IME_GetConverting() の変化を待つ
+					PostDelay := 50	; 変換1回目にIME_GetConverting() の変化を待って判定する
 				spc++
 			}
 			else
@@ -569,7 +576,7 @@ SendEachChar(Str1, Delay:=0)
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
 {
-	global _usc, OutStrs, OutCtrlNos, IMESelect, R
+	global _usc, OutStrs, OutCtrlNos, R
 ;	local Str1, StrBegin, Hwnd
 
 	while (i > 0 && _usc > 0)
