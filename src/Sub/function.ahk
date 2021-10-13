@@ -446,17 +446,16 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "{vkF2}" || StrChopped == "{vkF3}")
 			{	; ひらがなキー、半角/全角キー
 				Str2 := StrChopped
-				PostDelay := 10
+				PostDelay := 30
 			}
 			else if (StrChopped == "{確定}")
 			{
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (IME_GetConverting())
+					if (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting())
+						; 文字確定から IME窓消失まで、旧MS-IME は 40ms、ATOK は 90ms 必要
 						Str2 := "{Enter}"
-					else if (Hwnd != GoodHwnd || LastDelay < (IMESelect ? 100.0 : 30.0))
-						; 文字入力から IME窓出現まで、旧MS-IME は 30ms、ATOK は 100ms 必要
-						; IME窓を検出可能か不明
+					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)	; IME窓を検出可能か不明
 					{
 						Send, :
 						Sleep, PostDelay
@@ -502,8 +501,8 @@ SendEachChar(Str1, Delay:=0)
 			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
 			{
 				if (Hwnd != BadHwnd && Hwnd != GoodHwnd
-				 && !spc && PostDelay < 50)
-					PostDelay := 50	; 変換1回目にIME_GetConverting() の変化を待って判定する
+				 && !spc && PostDelay < 70)
+					PostDelay := 70	; 変換1回目に IME_GetConverting() を確実に変化させるための時間
 				spc++
 			}
 			else
@@ -552,6 +551,8 @@ SendEachChar(Str1, Delay:=0)
 			PreDelay := 50
 			PostDelay := 70	; ATOK 用
 		}
+		else
+			PostDelay := 30	; 新MS-IME用
 		; 前回の出力からの時間が短ければ、ディレイを入れる
 		if (LastDelay < PreDelay)
 			Sleep, % PreDelay - LastDelay
@@ -773,7 +774,7 @@ Convert()
 			if (!IMEConvMode	; Firefox と Thunderbird のスクロール対応
 				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
 			{
-				Send, {Space}
+				Send, {Space down}
 				spc := 3	; リピート中
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
@@ -783,6 +784,8 @@ Convert()
 		}
 		else if (NowKey == "sc39 up")
 		{
+			if (spc == 3)
+				Send, {Space up}
 			if (sft || ent)		; 他のシフトを押している時
 			{
 				if (spc == 1)
@@ -825,6 +828,7 @@ Convert()
 		}
 		else if (spc == 3)		; スペースのリピートを止める
 		{
+			Send, {Space up}
 			if (KanaMode)
 			{
 				NextKey := NowKey
