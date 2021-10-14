@@ -371,6 +371,28 @@ DetectSlowIME()
 	return SlowMSIME
 }
 
+; キーリピート中の押し残したキーを上げる
+SendRest()
+{
+	global RestStr
+
+	if (RestStr != "")
+	{
+		Send, % RestStr
+		RestStr := ""
+	}
+	return
+}
+
+; キーの押し残しを覚えておく
+StoreRest(Str1)
+{
+	global RestStr
+
+	RestStr := Str1
+	return
+}
+
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
@@ -394,7 +416,8 @@ SendEachChar(Str1, Delay:=0)
 		Delay := (Delay < 10 ? 10 : Delay)
 	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
 		Slow := (Slow == 1 ? 0x11 : Slow)
-	SetKeyDelay, -1, -1
+;	SetKeyDelay, -1, -1
+	SendRest()	; キーリピート中の押し残したキーを上げる
 
 	LastDelay := QPC() - LastTickCount
 
@@ -774,8 +797,13 @@ Convert()
 			if (!IMEConvMode	; Firefox と Thunderbird のスクロール対応
 				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
 			{
+				if (spc != 3)
+				{
+					SendRest()	; キーリピート中の押し残したキーを上げる
+					StoreRest("{Space up}")
+					spc := 3	; リピート中
+				}
 				Send, {Space down}
-				spc := 3	; リピート中
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
@@ -784,8 +812,7 @@ Convert()
 		}
 		else if (NowKey == "sc39 up")
 		{
-			if (spc == 3)
-				Send, {Space up}
+			SendRest()	; キーリピート中の押し残したキーを上げる
 			if (sft || ent)		; 他のシフトを押している時
 			{
 				if (spc == 1)
@@ -828,7 +855,7 @@ Convert()
 		}
 		else if (spc == 3)		; スペースのリピートを止める
 		{
-			Send, {Space up}
+;			SendRest()	; キーリピート中の押し残したキーを上げる
 			if (KanaMode)
 			{
 				NextKey := NowKey
