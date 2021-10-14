@@ -1,10 +1,18 @@
 ﻿; **********************************************************************
-; 【薙刀式】v13完成版、発表。
-; http://oookaworks.seesaa.net/article/479173898.html#gsc.tab=0
-; (2020年12月25日)より
+; 【薙刀式】v14（仮）の配列図とDvorakJファイル
+; http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0
+; (2021年10月4日)より
+;
+; 【薙刀式】v14仮のバグフィックス
+; http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0
+; (2021年10月14日)より
 ;
 ; 変更部分：
 ; 記号はすべて全角文字を出力する
+; 編集モードD+F+H、J+K+G、J+K+Vで、変換中の文字があれば確定し、なければそのまま所定の動作をします。
+; 編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
+; 固有名詞ショートカットのシフト面（スペース押下）を追加
+; 固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
@@ -483,8 +491,8 @@ KanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_Z	,"+{PgDn}"							, R)	; ◀+Page
 	SetKana( KC_M | KC_COMM | KC_X	,"^x{BS}{Del}^v"					)		; カッコ外し
 	SetKana( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"			)		; 行頭□□□戻し
-	SetKana( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)		; 行頭□戻し
-	SetKana( KC_M | KC_COMM | KC_B	,"｜{確定}{End}《》{確定}{↑}"		)		; ｜《》
+	SetKana( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"			)		; 行頭□戻し
+	SetKana( KC_M | KC_COMM | KC_B	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}")		; ｜《》
 
 	SetEisu( KC_M | KC_COMM | KC_Q	,"　　　×　　　×　　　×{確定}{改行}") ; x   x   x
 	SetEisu( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"			)		; +『』
@@ -499,8 +507,8 @@ KanaGroup := "2L"
 	SetEisu( KC_M | KC_COMM | KC_Z	,"+{PgDn}"							, R)	; ◀+Page
 	SetEisu( KC_M | KC_COMM | KC_X	,"^x{BS}{Del}^v"					)		; カッコ外し
 	SetEisu( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"			)		; 行頭□□□戻し
-	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)		; 行頭□戻し
-	SetEisu( KC_M | KC_COMM | KC_B	,"｜{確定}{End}《》{確定}{↑}"		)		; ｜《》
+	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"			)		; 行頭□戻し
+	SetEisu( KC_M | KC_COMM | KC_B	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}")		; ｜《》
 
 ; 右手
 KanaGroup := "2R"
