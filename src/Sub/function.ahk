@@ -371,28 +371,6 @@ DetectSlowIME()
 	return SlowMSIME
 }
 
-; キーリピート中の押し残したキーを上げる
-SendRest()
-{
-	global RestStr
-
-	if (RestStr != "")
-	{
-		Send, % RestStr
-		RestStr := ""
-	}
-	return
-}
-
-; キーの押し残しを覚えておく
-StoreRest(Str1)
-{
-	global RestStr
-
-	RestStr := Str1
-	return
-}
-
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
@@ -417,7 +395,6 @@ SendEachChar(Str1, Delay:=0)
 	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
 		Slow := (Slow == 1 ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
-	SendRest()	; キーリピート中の押し残したキーを上げる
 
 	LastDelay := QPC() - LastTickCount
 
@@ -476,7 +453,7 @@ SendEachChar(Str1, Delay:=0)
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting())
-						; 文字確定から IME窓消失まで、旧MS-IME は 40ms、ATOK は 90ms 必要
+						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
 					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)	; IME窓を検出可能か不明
 					{
@@ -523,8 +500,7 @@ SendEachChar(Str1, Delay:=0)
 
 			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
 			{
-				if (Hwnd != BadHwnd && Hwnd != GoodHwnd
-				 && !spc && PostDelay < 70)
+				if (!spc && Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= 30 && IME_GET())
 					PostDelay := 70	; 変換1回目に IME_GetConverting() を確実に変化させるための時間
 				spc++
 			}
@@ -547,7 +523,7 @@ SendEachChar(Str1, Delay:=0)
 			}
 
 			; 変換1回目でIME窓が検出できるのが理想で、できなければIME窓の検出は当てにならない
-			if (spc == 1 && Hwnd != BadHwnd && Hwnd != GoodHwnd)
+			if (spc == 1 && Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= 30 && IME_GET())
 			{
 				if (IME_GetConverting())
 					GoodHwnd := Hwnd
@@ -650,6 +626,29 @@ StoreBuf(nBack, Str1, CtrlNo:=0)
 	return
 }
 
+; キーリピート中の押し残したキーを上げる
+SendKeyUp()
+{
+	global RestStr
+
+	if (RestStr != "")
+	{
+		StoreBuf(0, RestStr)
+		OutBuf()
+		RestStr := ""
+	}
+	return
+}
+
+; キーの押し残しを覚えておく
+StoreKeyUp(Str1)
+{
+	global RestStr
+
+	RestStr := Str1
+	return
+}
+
 ; 出力する文字列を選択
 SelectStr(i)
 {
@@ -681,6 +680,7 @@ Convert()
 		, _usc
 		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat, NonSpace, WithSpace, KeyRelease
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
+		, LastKey	:= ""	; 前回のキー入力
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
 		, LastBit	:= 0	; 前回のキービット
@@ -724,6 +724,12 @@ Convert()
 			; 入力バッファから読み出し
 			NowKey := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
 				, InBufReadPos := ++InBufReadPos & 15, InBufRest++
+			if (NowKey != LastKey)
+			{
+				SendKeyUp()	; キーリピート中の押し残したキーを上げる
+				LastKey := NowKey
+			}
+
 			; 後置シフトの判定期限到来
 			if (NowKey == "PSTimer")
 			{
@@ -799,8 +805,7 @@ Convert()
 			{
 				if (spc != 3)
 				{
-					SendRest()	; キーリピート中の押し残したキーを上げる
-					StoreRest("{Space up}")
+					StoreKeyUp("{Space up}")
 					spc := 3	; リピート中
 				}
 				Send, {Space down}
@@ -812,7 +817,6 @@ Convert()
 		}
 		else if (NowKey == "sc39 up")
 		{
-			SendRest()	; キーリピート中の押し残したキーを上げる
 			if (sft || ent)		; 他のシフトを押している時
 			{
 				if (spc == 1)
@@ -855,22 +859,25 @@ Convert()
 		}
 		else if (spc == 3)		; スペースのリピートを止める
 		{
-;			SendRest()	; キーリピート中の押し残したキーを上げる
 			if (KanaMode)
 			{
-				NextKey := NowKey
+				NextKey := NowKey 
 				NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
 			}
 			spc := 2
 		}
-
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
 		len := StrLen(NowKey)
 		Term := SubStr(NowKey, len - 1)	; Term に入力末尾の2文字を入れる
 		; キーが離れた時
 		if (Term == "up")
-			NowBit := "0x" . SubStr(NowKey, len - 4, 2)
+		{
+			if (SubStr(NowKey, 1, 2) == "sc")
+				NowBit := "0x" . SubStr(NowKey, len - 4, 2)
+			else
+				NowBit := 0
+		}
 		else
 		{
 			; sc** で入力
@@ -1163,6 +1170,15 @@ sc34::	; .
 sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
+Up::	; ※小文字にしてはいけない
+Left::
+Right::
+Down::
+Home::
+End::
+PgUp::
+PgDn::
+Enter::
 ; USキーボードの場合
 #If (USKB)
 sc29::	; (JIS)半角/全角	(US)`
@@ -1218,17 +1234,11 @@ sc29::	; (JIS)半角/全角	(US)`
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
++Up::	; ※小文字にしてはいけない
++Left::
++Right::
++Down::
 #If		; End #If ()
-; SandS 用
-Enter::
-Up::	; ※小文字にしてはいけない
-Left::
-Right::
-Down::
-Home::
-End::
-PgUp::
-PgDn::
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
@@ -1287,6 +1297,10 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
+Up up::	; ※小文字にしてはいけない
+Left up::
+Right up::
+Down up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
@@ -1342,6 +1356,10 @@ sc29 up::	; (JIS)半角/全角	(US)`
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
++Up up::	; ※小文字にしてはいけない
++Left up::
++Right up::
++Down up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
