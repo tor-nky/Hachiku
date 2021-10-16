@@ -861,7 +861,7 @@ Convert()
 		{
 			if (KanaMode)
 			{
-				NextKey := NowKey 
+				NextKey := NowKey
 				NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
 			}
 			spc := 2
@@ -1234,10 +1234,10 @@ sc29::	; (JIS)半角/全角	(US)`
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-+Up::	; ※小文字にしてはいけない
-+Left::
-+Right::
-+Down::
+;+Up::	; ※小文字にしてはいけない
+;+Left::
+;+Right::
+;+Down::
 #If		; End #If ()
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
@@ -1297,10 +1297,10 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
-Up up::	; ※小文字にしてはいけない
-Left up::
-Right up::
-Down up::
+;Up up::	; ※小文字にしてはいけない
+;Left up::
+;Right up::
+;Down up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
@@ -1356,10 +1356,10 @@ sc29 up::	; (JIS)半角/全角	(US)`
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
-+Up up::	; ※小文字にしてはいけない
-+Left up::
-+Right up::
-+Down up::
+;+Up up::	; ※小文字にしてはいけない
+;+Left up::
+;+Right up::
+;+Down up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
