@@ -345,11 +345,37 @@ SettingLayout()
 	return
 }
 
-; 使用しているのが MS-IME で低速ならば 1 を返す
+; 使用しているのが 新MS-IME ならば True を返す
+; 10秒経過していれば再調査する
+DetectNewMSIME()
+{
+	global IMESelect
+	static NewMSIME := False
+		, LastSearchTime := 0.0
+;	local OldMSIME
+
+	if (IMESelect)
+		return False	; ATOK を使用
+
+	NowTime := QPC()
+	if (LastSearchTime + 10000.0 < NowTime)
+	{
+		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+		; 参考: https://registry.tomoroh.net/archives/11547
+		RegRead, OldMSIME, HKEY_CURRENT_USER
+			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
+			, NoTsf3Override2
+		NewMSIME := (ErrorLevel == 1 ? False : !OldMSIME)
+	}
+	return NewMSIME
+}
+
+; 使用しているのが低速な MS-IME 低速ならば True を返す
 ; 10秒経過していれば再調査する
 DetectSlowIME()
 {
-	static IMESelect, SlowMSIME := 1
+	global IMESelect
+	static SlowMSIME := True
 		, LastSearchTime := 0.0
 ;	local NowTime
 
@@ -365,7 +391,7 @@ DetectSlowIME()
 		RegRead, SlowMSIME, HKEY_CURRENT_USER
 			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
 			, NoTsf3Override2
-		SlowMSIME := (ErrorLevel == 1 ? 0 : SlowMSIME)
+		SlowMSIME := (ErrorLevel == 1 ? False : SlowMSIME)
 		LastSearchTime := NowTime
 	}
 	return SlowMSIME
@@ -800,7 +826,7 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if (!IMEConvMode	; Firefox と Thunderbird のスクロール対応
+			if ((!IMEConvMode && !DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
 			{
 				if (spc != 3)
