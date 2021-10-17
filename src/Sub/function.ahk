@@ -127,7 +127,7 @@ ControlReplace(Str1)
 	return Str1
 }
 
-; ASCIIコードでない文字が入っていたら、"{確定}{NoIME}"を書き足す
+; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
 Analysis(Str1)
 {
@@ -222,7 +222,8 @@ SetDefinition(KanaMode, KeyComb, ConvYoko, Str1, Str2, CtrlNo)
 
 	if (!CtrlNo || CtrlNo == R)
 	{
-		; 機能を置き換え、ASCIIコードでない文字が入っていたら、先頭に"{記号}"を書き足す
+		; 機能を置き換え、ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
+		; "{直接}"は"{Raw}"に書き換え
 		Str1 := Analysis(Str1)
 		if (ConvYoko)
 			Str2 := ConvTateYoko(Str1)	; 縦横変換
@@ -292,11 +293,19 @@ SetKana2(KeyComb, Str1, Str2, CtrlNo:=0)
 ; 英数定義登録
 SetEisu(KeyComb, Str1, CtrlNo:=0)	; 横書き用は自動変換
 {
+	global EisuSandS, KC_SPC
+
+	if (!EisuSandS && (KeyComb & KC_SPC))	; 英数入力時のSandSが無効の時
+		Str1 := ""
 	SetDefinition(0, KeyComb, True, Str1, "", CtrlNo)
 	return
 }
 SetEisu2(KeyComb, Str1, Str2, CtrlNo:=0)
 {
+	global EisuSandS, KC_SPC
+
+	if (!EisuSandS && (KeyComb & KC_SPC))	; 英数入力時のSandSが無効の時
+		Str1 := Str2 := ""
 	SetDefinition(0, KeyComb, False, Str1, Str2, CtrlNo)
 	return
 }
@@ -482,13 +491,7 @@ SendEachChar(Str1, Delay:=0)
 						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
 					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)	; IME窓を検出可能か不明
-					{
-						Send, :
-						Sleep, PostDelay
-						Send, {Enter}
-						Sleep, PostDelay
-						Str2 := "{BS}"
-					}
+						Str2 := "={Enter}{BS}"
 				}
 			}
 			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEを一旦オフにして後で元に戻す
@@ -704,7 +707,8 @@ Convert()
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
-		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat, NonSpace, WithSpace, KeyRelease
+		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat
+		, NonSpace, WithSpace, KeyRelease, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, LastKey	:= ""	; 前回のキー入力
 		, NextKey	:= ""	; 次回送りのキー入力
@@ -827,7 +831,8 @@ Convert()
 		else if (NowKey == "sc39")
 		{
 			if ((!IMEConvMode && !DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
-				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーのリピート
+				|| (SpaceKeyRepeat && (spc & 1))	; スペースキーのリピート
+				|| !(EisuSandS || KanaMode))		; 英数入力時でSandSなしの設定時
 			{
 				if (spc != 3)
 				{
@@ -921,7 +926,7 @@ Convert()
 				nkeys := -1	; 後の検索は不要
 			}
 			; スペースキーが押されていたら、シフトを加える(SandSの実装)
-			if (RealBit & KC_SPC)
+			if ((RealBit & KC_SPC) && (KanaMode || EisuSandS))
 				OutStr := "+" . OutStr
 		}
 

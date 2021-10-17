@@ -177,6 +177,10 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; KeyRelease	0: 全復活, 1: 全解除, 2: そのまま
 	IniRead, KeyRelease, %IniFilePath%, ShiftStyle, KeyRelease, 0
 
+; [Advanced]
+; 英数入力時のSandS		0: なし, 1: あり
+	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
+
 ; [test]
 ; DispTime		0: なし, 1: 処理時間表示あり
 	IniRead, INIDispTime, %IniFilePath%, test, DispTime, 0
@@ -286,6 +290,7 @@ ButtonOK:
 	IniWrite, %NonSpace%, %IniFilePath%, ShiftStyle, NonSpace
 	IniWrite, %WithSpace%, %IniFilePath%, ShiftStyle, WithSpace
 	IniWrite, %KeyRelease%, %IniFilePath%, ShiftStyle, KeyRelease
+	IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
 	IniWrite, %INIDispTime%, %IniFilePath%, test, DispTime
 
 	ShiftDelay += 0.0
@@ -399,6 +404,10 @@ PrefMenu:
 			GuiControl, , KeyRelease1, 1
 		else
 			GuiControl, , KeyRelease2, 1
+
+		Gui, Add, Checkbox, xm y+15 vEisuSandS, 英数入力時のSandS
+		if (EisuSandS)
+			GuiControl, , EisuSandS, 1
 
 		Gui, Add, Checkbox, xm y+15 vINIDispTime, 処理時間表示
 		if (INIDispTime)
