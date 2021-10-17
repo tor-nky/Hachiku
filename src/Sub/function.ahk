@@ -865,6 +865,7 @@ Convert()
 		}
 		; エンターキー処理
 		else if (NowKey == "Enter" && EnterShift)
+;		else if (NowKey == "Enter" && EnterShift && (EisuSandS || KanaMode))	; 英数入力のSandSなしでエンターシフトも止めたい時
 		{
 			NowKey := "sc39"	; スペース押す
 			if (!ent)
@@ -926,7 +927,7 @@ Convert()
 				nkeys := -1	; 後の検索は不要
 			}
 			; スペースキーが押されていたら、シフトを加える(SandSの実装)
-			if ((RealBit & KC_SPC) && (KanaMode || EisuSandS))
+			if (RealBit & KC_SPC)
 				OutStr := "+" . OutStr
 		}
 
