@@ -89,7 +89,7 @@ Windows 10 version 2004 以降のバージョンでなければ記号、固有�
 
 [general]
 
-AdvancedMenu=0
+AdvancedMenu=1
 
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 
