@@ -491,7 +491,13 @@ SendEachChar(Str1, Delay:=0)
 						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
 					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)	; IME窓を検出可能か不明
-						Str2 := "={Enter}{BS}"
+					{
+						Send, =
+						Sleep, PostDelay
+						Send, {Enter}
+						Sleep, PostDelay
+						Str2 := "{BS}"
+					}
 				}
 			}
 			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEを一旦オフにして後で元に戻す
