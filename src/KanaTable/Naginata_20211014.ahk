@@ -7,10 +7,6 @@
 ; http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0
 ; (2021年10月14日)より
 ;
-; 【薙刀式】１４仮のカナをひとつ交換
-; http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0
-; (2021年10月23日)より
-;
 ; 変更部分：
 ; 記号はすべて全角文字を出力する
 ; 編集モードD+F+H、J+K+G、J+K+Vで、変換中の文字があれば確定し、なければそのまま所定の動作をします。
@@ -80,7 +76,7 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列v14仮（集大成版）20211023"
+	LayoutName := "薙刀式配列v14仮（集大成版）"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 	; ↑ 無くても動くが、あるほうがわずかに速い
@@ -91,7 +87,7 @@ ReadLayout()
 	AL_小							:= KC_Q
 	AL_き	:= AL_ぬ				:= KC_W
 	AL_て	:= AL_り				:= KC_E
-	AL_し	:= AL_ね				:= KC_R
+	AL_し	:= AL_む				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
 	AL_BS	:= AL_さ				:= KC_U
@@ -117,7 +113,7 @@ ReadLayout()
 	AL_そ	:= AL_み				:= KC_B
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
-	AL_ん	:= AL_む				:= KC_COMM
+	AL_ん	:= AL_ね				:= KC_COMM
 	AL_ら	:= AL_ふ				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
