@@ -570,7 +570,7 @@ SendEachChar(Str1, Delay:=0)
 				if (IME_GetConverting())
 					GoodHwnd := Hwnd
 				else
-					TrayTip, , Bad Window, , 16
+					BadHwnd := Hwnd
 				flag := 0
 			}
 
