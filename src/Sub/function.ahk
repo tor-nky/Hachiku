@@ -412,7 +412,7 @@ SendEachChar(Str1, Delay:=0)
 	global IMESelect
 	static LastTickCount := QPC()
 		, GoodHwnd := "", BadHwnd := ""
-		, spc := 0
+		, flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
@@ -533,14 +533,21 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped != "{Null}")
 				Str2 := StrChopped
 
-			if (StrChopped = "{sc39}" || StrChopped = "{vk20}")	; "{Space}" と " " は使っていない
+			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (!spc && Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= 30 && IME_GET())
+				if (flag
+				 && (StrChopped = "{vk20}"　|| StrChopped = "{Space down}" || StrChopped = "{vk1C}" || StrChopped = "+{vk1C}"))
+				{	; スペースと変換キーを押した初めての変換1回目
 					PostDelay := 70	; 変換1回目に IME_GetConverting() を確実に変化させるための時間
-				spc++
+					flag++
+				}
+				else if (LenChopped == 1)	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
+					flag := 1
+				else
+					flag := 0
 			}
 			else
-				spc := 0
+				flag := 0
 
 			; 前回の出力からの時間が短ければ、ディレイを入れる
 			if (LastDelay < PreDelay)
@@ -558,12 +565,13 @@ SendEachChar(Str1, Delay:=0)
 			}
 
 			; 変換1回目でIME窓が検出できるのが理想で、できなければIME窓の検出は当てにならない
-			if (spc == 1 && Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= 30 && IME_GET())
+			if (flag > 1)
 			{
 				if (IME_GetConverting())
 					GoodHwnd := Hwnd
 				else
-					BadHwnd := Hwnd
+					TrayTip, , Bad Window, , 16
+				flag := 0
 			}
 
 			StrChopped := Str2 := ""
@@ -845,7 +853,8 @@ Convert()
 					StoreKeyUp("{Space up}")
 					spc := 3	; リピート中
 				}
-				Send, {Space down}
+				StoreBuf(0, "{Space down}")
+				OutBuf()
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
@@ -871,7 +880,7 @@ Convert()
 		}
 		; エンターキー処理
 		else if (NowKey == "Enter" && EnterShift)
-;		else if (NowKey == "Enter" && EnterShift && (EisuSandS || KanaMode))	; 英数入力のSandSなしでエンターシフトも止めたい時
+;		else if (NowKey == "Enter" && EnterShift && (EisuSandS || KanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
 			NowKey := "sc39"	; スペース押す
 			if (!ent)
@@ -1217,6 +1226,8 @@ End::
 PgUp::
 PgDn::
 Enter::
+vk1C::	; 変換
++vk1C::	; Shift+変換
 ; USキーボードの場合
 #If (USKB)
 sc29::	; (JIS)半角/全角	(US)`
