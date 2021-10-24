@@ -535,10 +535,9 @@ SendEachChar(Str1, Delay:=0)
 
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (flag
-				 && (StrChopped = "{vk20}"　|| StrChopped = "{Space down}" || StrChopped = "{vk1C}" || StrChopped = "+{vk1C}"))
-				{	; スペースと変換キーを押した初めての変換1回目
-					PostDelay := 70	; 変換1回目に IME_GetConverting() を確実に変化させるための時間
+				if (flag && (StrChopped = "{vk20}"　|| StrChopped = "{Space down}"))
+				{	; 変換1回目
+					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
 				else if (LenChopped == 1)	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
@@ -1226,8 +1225,6 @@ End::
 PgUp::
 PgDn::
 Enter::
-vk1C::	; 変換
-+vk1C::	; Shift+変換
 ; USキーボードの場合
 #If (USKB)
 sc29::	; (JIS)半角/全角	(US)`
