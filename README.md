@@ -1,6 +1,12 @@
-# Hachiku - Windows で薙刀式v14集大成版 を使うスクリプト
+# Hachiku - Windows で薙刀式を使うスクリプト
 
-[薙刀式 v14集大成版（仮）](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0) 2021年10月4日版を Autohotkey に実装しました。
+### 薙刀式v14集大成版 2021年10月23日付
+
+[【薙刀式】v14（仮）の配列図とDvorakJファイル](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0)／
+[【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)／
+[【薙刀式】１４仮のカナをひとつ交換](http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0)
+
+Autohotkey に実装しました。
 
 パソコンの日本語キーボード、英語キーボードの設定に合わせて動作します。
 トレイアイコンを右クリックすると、縦書き・横書きモードを切り替え、設定メニューがあります。
@@ -77,11 +83,13 @@ IME に未確定の文字がないか調べられないときには、＝（イ�
 
 * Windows 10 Home version 21H1 64-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME あるいは ATOK 2017
 
-Windows 10 version 2004 以降のバージョンでなければ記号、固有名詞ショートカットが正しく入力できないと思われます。
+古いIMEでは記号、固有名詞ショートカットが正しく入力できないことがあります。
 
 # 参考
 
 * [薙刀式 v14集大成版（仮）](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0)
+* [【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)
+* [【薙刀式】１４仮のカナをひとつ交換](http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0)
 
 ## 詳細メニューを出現させるには
 
