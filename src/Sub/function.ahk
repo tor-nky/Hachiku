@@ -191,6 +191,13 @@ Analysis(Str1)
 				Str2 .= StrChopped
 				Kakutei := True	; "{Enter" で確定状態
 			}
+			else if (StrChopped == "^v")
+			{
+				if (!NoIME && !Kakutei)
+					Str2 .= "{確定}"
+				Str2 .= StrChopped
+				Kakutei := True
+			}
 			else
 			{
 				Str2 .= StrChopped
@@ -310,7 +317,7 @@ SetEisu2(KeyComb, Str1, Str2, CtrlNo:=0)
 	return
 }
 
-; さらに同時押しができるキーを見つける
+; 押すと同時押しになるキーを探す
 FindCombinableBit(SearchBit, KanaMode, nkeys)
 {
 	global DefsKey, DefsKanaMode, DefBegin, DefEnd
@@ -329,13 +336,12 @@ FindCombinableBit(SearchBit, KanaMode, nkeys)
 			Bit |= DefKeyCopy
 		j++
 	}
-	Bit &= SearchBit ^ (-1)	; 検索中のキーを削除
+;	Bit &= SearchBit ^ (-1)	; 検索中のキーを削除
 
 	return Bit
 }
 
-; さらに同時押しができるキーを見つけて DefsCombinableBit[] に記録
-; 0: 確定しない, 1: 通常シフトのみ確定, 2: 後置シフトでも確定
+; 押すと同時押しになるキーを探して DefsCombinableBit[] に記録
 SettingLayout()
 {
 	global DefsKey, DefsKanaMode, DefsCombinableBit, DefBegin, DefEnd
@@ -423,6 +429,11 @@ SendEachChar(Str1, Delay:=0)
 ;		, Slow
 ;		, ClipSaved
 
+;ToolTip, %Str1%
+;SetTimer, RemoveToolTip, 5000
+	KakuteiIsEnter := False	; 前の文字が1文字なら、確定はエンターのみで良いので True
+							; それ以外は False
+
 	WinGet, Hwnd, ID, A
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
@@ -487,7 +498,10 @@ SendEachChar(Str1, Delay:=0)
 			{
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting())
+					if (PostDelay < 10)
+						PostDelay := 10
+					if (KakuteiIsEnter
+					 || (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting()))
 						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
 					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)	; IME窓を検出可能か不明
@@ -508,9 +522,9 @@ SendEachChar(Str1, Delay:=0)
 				Str2 := "{vkF3}"	; 半角/全角
 				PostDelay := 30
 			}
-			; ATOK+秀丸エディタで、エンターを途中に含む文字列はゆっくり出力する
-			else if (SubStr(Str1, 1, 6) != "{Enter"
-				&& Slow == 0x11 && SubStr(StrChopped, 1, 6) = "{Enter")
+			; ATOK+秀丸エディタで、文字列途中のエンターをゆっくり出力する
+			else if (Slow == 0x11
+			 && i != StrChopped && SubStr(StrChopped, 1, 6) = "{Enter")
 			{
 				Str2 := StrChopped
 				PreDelay := 80
@@ -520,7 +534,7 @@ SendEachChar(Str1, Delay:=0)
 				clipboard =					;クリップボードを空にする
 			else if (SubStr(StrChopped, 1, 7) = "{C_Wait")
 			{
-				Wait := SubStr(StrChopped, 9)		; {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+				Wait := SubStr(StrChopped, 9)		; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
 				ClipWait, (Wait ? Wait : 0.2), 1
 			}
 			else if (StrChopped = "{C_Bkup}")
@@ -573,6 +587,7 @@ SendEachChar(Str1, Delay:=0)
 				flag := 0
 			}
 
+			KakuteiIsEnter := (LenChopped <= 1 ? True : False)
 			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
@@ -619,16 +634,17 @@ SendEachChar(Str1, Delay:=0)
 OutBuf(i:=2)
 {
 	global _usc, OutStrs, OutCtrlNos, R
-;	local Str1, StrBegin, Hwnd
+;	local Str1, EnterPos
 
 	while (i > 0 && _usc > 0)
 	{
 		if (!OutCtrlNos[1] || OutCtrlNos[1] == R)
 		{
 			Str1 := OutStrs[1]
-			if (InStr(Str1, "{NoIME}"))
+			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
+			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
-				if (DetectSlowIME() && InStr(Str1, "{Enter"))
+				if (DetectSlowIME() && EnterPos >= 0)
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
 				else
@@ -1108,7 +1124,7 @@ Convert()
 				CtrlNo := DefsCtrlNo[i]
 			}
 			else if (!nkeys)	; 定義が見つけられなかった時
-				; さらに同時押しができるキーがあるか
+				; 押すと同時押しになるキーを探す
 				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
 			else
 				CombinableBit := 0
