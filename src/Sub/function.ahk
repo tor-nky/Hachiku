@@ -118,7 +118,7 @@ ControlReplace(Str1)
 	StringReplace, Str1, Str1, {削除,		{Del,		A
 	StringReplace, Str1, Str1, {全角,		{vkF3,		A
 	StringReplace, Str1, Str1, {タブ,		{Tab,		A
-	StringReplace, Str1, Str1, {空白		{Space,		A
+	StringReplace, Str1, Str1, {空白,		{vk20,		A
 	StringReplace, Str1, Str1, {メニュー,	{AppsKey,	A
 
 	StringReplace, Str1, Str1, {Caps Lock,	{vkF0,		A
@@ -197,6 +197,11 @@ Analysis(Str1)
 					Str2 .= "{確定}"
 				Str2 .= StrChopped
 				Kakutei := True
+			}
+			else if (StrChopped == " ")
+			{
+				Str2 .= "vk20"
+				Kakutei := False
 			}
 			else
 			{
@@ -385,7 +390,7 @@ DetectNewMSIME()
 	return NewMSIME
 }
 
-; 使用しているのが低速な MS-IME 低速ならば True を返す
+; 使用しているのが低速な MS-IME ならば True を返す
 ; 10秒経過していれば再調査する
 DetectSlowIME()
 {
@@ -587,15 +592,18 @@ SendEachChar(Str1, Delay:=0)
 				flag := 0
 			}
 
-			KakuteiIsEnter := (LenChopped <= 1 ? True : False)
+			if (LenChopped == 1 || (LenChopped == 3 && Asc(StrChopped) == 123))
+				KakuteiIsEnter := True	; 1文字、または { で始まる3文字
+			else
+				KakuteiIsEnter := False
 			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
 		i++
 	}
 
-	; IME ON
-	if (NoIME)
+	; IME の状態を元に戻す
+	if (NoIME && !IME_GET())
 	{
 		if (Slow == 0x11)
 		{
@@ -824,7 +832,7 @@ Convert()
 		; IME の状態を更新
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if (sft && SideShift == 1)	; 左右シフト英数２
+		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
 		else
 		{
