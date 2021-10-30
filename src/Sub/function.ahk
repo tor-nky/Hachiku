@@ -112,6 +112,7 @@ ControlReplace(Str1)
 	StringReplace, Str1, Str1, {無変換,		{vk1D,		A
 	StringReplace, Str1, Str1, {変換,		{vk1C,		A
 	StringReplace, Str1, Str1, {ひらがな,	{vkF2,		A
+	StringReplace, Str1, Str1, {カタカナ,	{vkF1,		A
 	StringReplace, Str1, Str1, {改行,		{Enter,		A
 	StringReplace, Str1, Str1, {後退,		{BS,		A
 	StringReplace, Str1, Str1, {取消,		{Esc,		A
@@ -200,7 +201,7 @@ Analysis(Str1)
 			}
 			else if (StrChopped == " ")
 			{
-				Str2 .= "vk20"
+				Str2 .= "{vk20}"
 				Kakutei := False
 			}
 			else
@@ -603,7 +604,7 @@ SendEachChar(Str1, Delay:=0)
 	}
 
 	; IME の状態を元に戻す
-	if (NoIME && !IME_GET())
+	if (NoIME)
 	{
 		if (Slow == 0x11)
 		{
