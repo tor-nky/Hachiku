@@ -213,7 +213,8 @@ Analysis(Str1)
 					Str2 .= "{UndoIME}"
 				NoIME := False
 			}
-			else if (StrChopped == "{全英}" || StrChopped == "{半ｶﾅ}")
+			else if (StrChopped = "{IMEOFF}" || StrChopped = "{IMEON}"
+				|| StrChopped == "{全英}" || StrChopped == "{半ｶﾅ}")
 			{
 				Str2 .= StrChopped
 				NoIME := False
@@ -569,12 +570,12 @@ SendEachChar(Str1, Delay:=0)
 				else
 					StrChopped := ""
 			}
-			else if (StrChopped == "{IMEOFF}")
+			else if (StrChopped = "{IMEOFF}")
 			{
 				NoIME := False
 				IME_SET(0)			; IMEオフ
 			}
-			else if (StrChopped == "{IMEON}")
+			else if (StrChopped = "{IMEON}")
 			{
 				NoIME := False
 				IME_SET(1)			; IMEオン
