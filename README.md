@@ -80,6 +80,12 @@ IME に未確定の文字がないか調べられないときには、＝（イ�
 
 新MS-IME の仕様です。
 
+* (新MS-IME) 「英数」「英数2(詳細メニュー内にあり)」とも、かな入力中に右の小指シフトで2文字以上続いて英数入力して、シフトなし文字を押すと英数が入力されない。
+
+たとえば、かな入力中に右シフトを押しながら re、シフトを離して a を押すと、REa となるはずですが……
+
+これは、Hachiku を終了しても起きる現象です。
+
 # 動作確認
 
 * Windows 10 Home version 21H1 64-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME あるいは ATOK 2017
@@ -91,6 +97,7 @@ IME に未確定の文字がないか調べられないときには、＝（イ�
 * [薙刀式 v14集大成版（仮）](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0)
 * [【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)
 * [【薙刀式】１４仮のカナをひとつ交換](http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0)
+* [【薙刀式】同手シフトのR](http://oookaworks.seesaa.net/article/484110925.html#gsc.tab=0)
 
 ## 詳細メニューを出現させるには
 
@@ -108,7 +115,7 @@ http://ahkwiki.net/Send の特殊キー名一覧もご覧ください。
 
 そのまま入力	0〜9 A〜Z -^@[]./ 全角文字
 
-{確定}
+{確定} {UndoIME} {IMEOFF} {IMEON} {全英} {半ｶﾅ}
 {Enter} {Esc} {Space} {Tab} {BS} {Del} {Ins}
 {Up} {Down} {Left} {Right}
 {Home} {End} {PgUp} {PgDn}

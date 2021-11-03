@@ -160,7 +160,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
 	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
-; SpaceKeyRepeat		スペースキーのリピート	0: なし, 1: あり
+; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
 	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
 ;[Naginata]
@@ -169,21 +169,27 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; 固有名詞ショートカットの選択
 	IniRead, KoyuNumber, %IniFilePath%, Naginata, KoyuNumber, 1
 
-; [ShiftStyle]	文字キーによるシフトの適用範囲
-; NonSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
-	IniRead, NonSpace, %IniFilePath%, ShiftStyle, NonSpace, 1
-; WithSpace		0: ずっと, 1: 1回のみ, 2: 途切れるまで
-	IniRead, WithSpace, %IniFilePath%, ShiftStyle, WithSpace, 1
-; KeyRelease	0: 全復活, 1: 全解除, 2: そのまま
-	IniRead, KeyRelease, %IniFilePath%, ShiftStyle, KeyRelease, 0
-
 ; [Advanced]
+;	通常時
+;		同時打鍵の判定期限	0: なし, 1: あり
+		IniRead, CombEnableN, %IniFilePath%, Advanced, CombEnableN, 0
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+		IniRead, CombStyleN, %IniFilePath%, Advanced, CombStyleN, 3
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
+		IniRead, CombKeyUpN, %IniFilePath%, Advanced, CombKeyUpN, 0
+;	スペース押下時
+;		同時打鍵の判定期限	0: なし, 1: あり
+		IniRead, CombEnableS, %IniFilePath%, Advanced, CombEnableS, 1
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+		IniRead, CombStyleS, %IniFilePath%, Advanced, CombStyleS, 3
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
+		IniRead, CombKeyUpS, %IniFilePath%, Advanced, CombKeyUpS, 2
+; 出力が済んだキーを上げた時	0: 何もしない, 1: 全出力
+	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0: なし, 1: あり
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
-
-; [test]
-; DispTime		0: なし, 1: 処理時間表示あり
-	IniRead, INIDispTime, %IniFilePath%, test, DispTime, 0
+; 処理時間表示	0: なし, 1: 処理時間表示あり
+	IniRead, INIDispTime, %IniFilePath%, Advanced, DispTime, 0
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
@@ -199,15 +205,25 @@ SideShift1 := (SideShift == 1 ? 1 : 0)
 SideShift2 := (SideShift == 2 ? 1 : 0)
 EnterShift0 := (EnterShift == 0 ? 1 : 0)
 EnterShift1 := (EnterShift == 1 ? 1 : 0)
-NonSpace0 := (NonSpace == 0 ? 1 : 0)
-NonSpace1 := (NonSpace == 1 ? 1 : 0)
-NonSpace2 := (NonSpace == 2 ? 1 : 0)
-WithSpace0 := (WithSpace == 0 ? 1 : 0)
-WithSpace1 := (WithSpace == 1 ? 1 : 0)
-WithSpace2 := (WithSpace == 2 ? 1 : 0)
-KeyRelease0 := (KeyRelease == 0 ? 1 : 0)
-KeyRelease1 := (KeyRelease == 1 ? 1 : 0)
-KeyRelease2 := (KeyRelease == 2 ? 1 : 0)
+SpaceKeyRepeat0 := (SpaceKeyRepeat == 0 ? 1 : 0)
+SpaceKeyRepeat1 := (SpaceKeyRepeat == 1 ? 1 : 0)
+if (AdvancedMenu)
+{
+	CombStyleN0 := (CombStyleN == 0 ? 1 : 0)
+	CombStyleN1 := (CombStyleN == 1 ? 1 : 0)
+	CombStyleN2 := (CombStyleN == 2 ? 1 : 0)
+	CombStyleN3 := (CombStyleN == 3 ? 1 : 0)
+	CombKeyUpN0 := (CombKeyUpN == 0 ? 1 : 0)
+	CombKeyUpN1 := (CombKeyUpN == 1 ? 1 : 0)
+	CombKeyUpN2 := (CombKeyUpN == 2 ? 1 : 0)
+	CombStyleS0 := (CombStyleS == 0 ? 1 : 0)
+	CombStyleS1 := (CombStyleS == 1 ? 1 : 0)
+	CombStyleS2 := (CombStyleS == 2 ? 1 : 0)
+	CombStyleS3 := (CombStyleS == 3 ? 1 : 0)
+	CombKeyUpS0 := (CombKeyUpS == 0 ? 1 : 0)
+	CombKeyUpS1 := (CombKeyUpS == 1 ? 1 : 0)
+	CombKeyUpS2 := (CombKeyUpS == 2 ? 1 : 0)
+}
 
 ; ----------------------------------------------------------------------
 ; メニュー表示
@@ -270,11 +286,15 @@ ButtonOK:
 	Gui, Submit
 	INIVersion := Version
 	SideShift := (SideShift0 ? 0 : (SideShift1 ? 1 : 2))
-	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
 	EnterShift := (EnterShift0 == 1 ? 0 : 1)
-	NonSpace := (NonSpace0 ? 0 : (NonSpace1 ? 1 : 2))
-	WithSpace := (WithSpace0 ? 0 : (WithSpace1 ? 1 : 2))
-	KeyRelease := (KeyRelease0 ? 0 : (KeyRelease1 ? 1 : 2))
+	SpaceKeyRepeat := (SpaceKeyRepeat0 ? 0 : (SpaceKeyRepeat1 ? 1 : 2))
+	if (AdvancedMenu)
+	{
+		CombStyleN := (CombStyleN0 ? 0 : (CombStyleN1 ? 1 : (CombStyleN2 ? 2 : 3)))
+		CombKeyUpN := (CombKeyUpN0 ? 0 : (CombKeyUpN1 ? 1 : 2))
+		CombStyleS := (CombStyleS0 ? 0 : (CombStyleS1 ? 1 : (CombStyleS2 ? 2 : 3)))
+		CombKeyUpS := (CombKeyUpS0 ? 0 : (CombKeyUpS1 ? 1 : 2))
+	}
 	; 設定ファイル書き込み
 	IniWrite, %INIVersion%, %IniFilePath%, general, Version
 	IniWrite, %AdvancedMenu%, %IniFilePath%, general, AdvancedMenu
@@ -287,12 +307,20 @@ ButtonOK:
 	IniWrite, %SpaceKeyRepeat%, %IniFilePath%, Basic, SpaceKeyRepeat
 	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
 	IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
-	IniWrite, %NonSpace%, %IniFilePath%, ShiftStyle, NonSpace
-	IniWrite, %WithSpace%, %IniFilePath%, ShiftStyle, WithSpace
-	IniWrite, %KeyRelease%, %IniFilePath%, ShiftStyle, KeyRelease
-	IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
-	IniWrite, %INIDispTime%, %IniFilePath%, test, DispTime
+	if (AdvancedMenu)
+	{
+		IniWrite, %CombEnableN%, %IniFilePath%, Advanced, CombEnableN
+		IniWrite, %CombStyleN%, %IniFilePath%, Advanced, CombStyleN
+		IniWrite, %CombKeyUpN%, %IniFilePath%, Advanced, CombKeyUpN
+		IniWrite, %CombEnableS%, %IniFilePath%, Advanced, CombEnableS
+		IniWrite, %CombStyleS%, %IniFilePath%, Advanced, CombStyleS
+		IniWrite, %CombKeyUpS%, %IniFilePath%, Advanced, CombKeyUpS
+		IniWrite, %KeyUpToOutputAll%, %IniFilePath%, Advanced, KeyUpToOutputAll
+		IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
+		IniWrite, %INIDispTime%, %IniFilePath%, Advanced, DispTime
+	}
 
+	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
 	ShiftDelay += 0.0
 	CombDelay += 0.0
 	ReadLayout()	; かな配列読み込み
@@ -311,12 +339,12 @@ PrefMenu:
 
 	if (AdvancedMenu)	; 詳細メニュー
 	{
-		Gui, Add, Text, x+70 W190 Right, %Version%
-		Gui, Add, Tab2, xm+95 y+0 Section W120 Buttons Center, 基本|詳細
+		Gui, Add, Text, x+200 W180 Right, %Version%
+		Gui, Add, Tab2, xm+168 y+0 Section W120 Buttons Center, 基本|詳細
 		Gui, Tab, 基本
 	}
 	else	; 詳細メニュー不要の時
-		Gui, Add, Text, x+0 W180 Right Section, %Version%
+		Gui, Add, Text, x+0 W230 Right Section, %Version%
 
 	Gui, Add, Checkbox, xm ys+25 vIMESelect, ATOK対応
 	if (IMESelect)
@@ -352,75 +380,106 @@ PrefMenu:
 		GuiControl, , EnterShift1, 1
 
 	Gui, Add, Text, xm y+15, 後置シフトの待ち時間
-	Gui, Add, Edit, xm+128 yp-3 W45
+	Gui, Add, Edit, xm+132 yp-3 W45
 	Gui, Add, UpDown, vShiftDelay Range0-200, %ShiftDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 
-	Gui, Add, Text, xm y+15, シフト中の同時打鍵判定
-	Gui, Add, Edit, xm+128 yp-3 W45
+	Gui, Add, Text, xm y+15, 同時打鍵判定
+	Gui, Add, Edit, xm+132 yp-3 W45
 	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
 
-	Gui, Add, Checkbox, xm y+10 vSpaceKeyRepeat, スペースキーのリピート
-	if (SpaceKeyRepeat)
-		GuiControl, , SpaceKeyRepeat, 1
+	Gui, Add, Text, xm y+10, スペースキーの長押し
+	Gui, Add, Radio, xm+18 y+3 Group vSpaceKeyRepeat0, 何もしない
+	Gui, Add, Radio, x+0 vSpaceKeyRepeat1, 空白キャンセル
+	Gui, Add, Radio, x+0 vSpaceKeyRepeat2, 空白リピート
+	if (SpaceKeyRepeat0)
+		GuiControl, , SpaceKeyRepeat0, 1
+	else
+		GuiControl, , SpaceKeyRepeat1, 1
 
 	if (AdvancedMenu)	; 詳細メニュー
 	{
 		Gui, Tab, 詳細
 
-		Gui, Add, Text, xm ys+30, 文字キーによるシフトの適用範囲
+		Gui, Add, Text, xm ys+20, 同時打鍵
+			Gui, Add, Text, xm+10 y+5, 通常
+				Gui, Add, Checkbox, xm+95 yp+0 vCombEnableN, 判定期限
+				if (CombEnableN)
+					GuiControl, , CombEnableN, 1
 
-		Gui, Add, Text, xm+10 y+5, 通常
-		Gui, Add, Radio, xm+100 yp+0 Group vNonSpace0, ずっと
-		Gui, Add, Radio, x+0 vNonSpace1, 1回のみ
-		Gui, Add, Radio, x+0 vNonSpace2, 途切れるまで
-		if (NonSpace0)
-			GuiControl, , NonSpace0, 1
-		else if (NonSpace1)
-			GuiControl, , NonSpace1, 1
-		else
-			GuiControl, , NonSpace2, 1
+				Gui, Add, Text, xm+20 y+5, 文字キーシフト
+				Gui, Add, Radio, xm+105 yp+0 Group vCombStyleN0, ずっと
+				Gui, Add, Radio, x+0 vCombStyleN1, 途切れるまで
+				Gui, Add, Radio, x+0 vCombStyleN2, 同グループのみ継続
+				Gui, Add, Radio, x+0 vCombStyleN3, 1回のみ
+				if (CombStyleN0)
+					GuiControl, , CombStyleN0, 1
+				else if (CombStyleN1)
+					GuiControl, , CombStyleN1, 1
+				else if (CombStyleN2)
+					GuiControl, , CombStyleN2, 1
+				else
+					GuiControl, , CombStyleN3, 1
 
-		Gui, Add, Text, xm+10 y+5, スペース押下時
-		Gui, Add, Radio, xm+100 yp+0 Group vWithSpace0, ずっと
-		Gui, Add, Radio, x+0 vWithSpace1, 1回のみ
-		Gui, Add, Radio, x+0 vWithSpace2, 途切れるまで
-		if (WithSpace0)
-			GuiControl, , WithSpace0, 1
-		else if (WithSpace1)
-			GuiControl, , WithSpace1, 1
-		else
-			GuiControl, , WithSpace2, 1
+				Gui, Add, Text, xm+20 y+5, キーを離すと
+				Gui, Add, Radio, xm+105 yp+0 Group vCombKeyUpN0, 全復活
+				Gui, Add, Radio, x+0 vCombKeyUpN1, そのまま
+				Gui, Add, Radio, x+0 vCombKeyUpN2, 全解除
+				if (CombKeyUpN0)
+					GuiControl, , CombKeyUpN0, 1
+				else if (CombKeyUpN1)
+					GuiControl, , CombKeyUpN1, 1
+				else
+					GuiControl, , CombKeyUpN2, 1
+			Gui, Add, Text, xm+10 y+5, スペース押下時
+				Gui, Add, Checkbox, xm+95 yp+0 vCombEnableS, 判定期限
+				if (CombEnableS)
+					GuiControl, , CombEnableS, 1
 
-		Gui, Add, Text, xm+10 y+5, キーを離したとき
-		Gui, Add, Radio, xm+100 yp+0 Group vKeyRelease0, 全復活
-		Gui, Add, Radio, x+0 vKeyRelease1, 全解除
-		Gui, Add, Radio, x+0 vKeyRelease2, そのまま
-		if (KeyRelease0)
-			GuiControl, , KeyRelease0, 1
-		else if (KeyRelease1)
-			GuiControl, , KeyRelease1, 1
-		else
-			GuiControl, , KeyRelease2, 1
+				Gui, Add, Text, xm+20 y+5, 文字キーシフト
+				Gui, Add, Radio, xm+105 yp+0 Group vCombStyleS0, ずっと
+				Gui, Add, Radio, x+0 vCombStyleS1, 途切れるまで
+				Gui, Add, Radio, x+0 vCombStyleS2, 同グループのみ継続
+				Gui, Add, Radio, x+0 vCombStyleS3, 1回のみ
+				if (CombStyleS0)
+					GuiControl, , CombStyleS0, 1
+				else if (CombStyleS1)
+					GuiControl, , CombStyleS1, 1
+				else if (CombStyleS2)
+					GuiControl, , CombStyleS2, 1
+				else
+					GuiControl, , CombStyleS3, 1
 
-		Gui, Add, Checkbox, xm y+15 vEisuSandS, 英数入力時のSandS
+				Gui, Add, Text, xm+20 y+5, キーを離すと
+				Gui, Add, Radio, xm+105 yp+0 Group vCombKeyUpS0, 全復活
+				Gui, Add, Radio, x+0 vCombKeyUpS1, そのまま
+				Gui, Add, Radio, x+0 vCombKeyUpS2, 全解除
+				if (CombKeyUpS0)
+					GuiControl, , CombKeyUpS0, 1
+				else if (CombKeyUpS1)
+					GuiControl, , CombKeyUpS1, 1
+				else
+					GuiControl, , CombKeyUpS2, 1
+		Gui, Add, Checkbox, xm y+10 vKeyUpToOutputAll, 出力済みのキーを上げても全部出力する
+		if (KeyUpToOutputAll)
+			GuiControl, , KeyUpToOutputAll, 1
+		Gui, Add, Checkbox, xm y+10 vEisuSandS, 英数入力時のSandS
 		if (EisuSandS)
 			GuiControl, , EisuSandS, 1
-
-		Gui, Add, Checkbox, xm y+15 vINIDispTime, 処理時間表示
+		Gui, Add, Checkbox, xm y+10 vINIDispTime, 処理時間表示
 		if (INIDispTime)
 			GuiControl, , INIDispTime, 1
 
 		Gui, Tab
-		Gui, Add, Button, W60 xm+80 ys+222 Default, OK
+		Gui, Add, Button, W60 xm+146 ys+240 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 		Gui, Show
 	}
 	else	; 詳細メニュー不要の時
 	{
-		Gui, Add, Button, W60 xm+45 y+10 Default, OK
+		Gui, Add, Button, W60 xm+71 y+10 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 		Gui, Show
 	}
