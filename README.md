@@ -1,10 +1,11 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
 
-### 薙刀式v14集大成版 2021年10月23日付
+### 薙刀式v14集大成版 2021年10月29日付
 
 [【薙刀式】v14（仮）の配列図とDvorakJファイル](http://oookaworks.seesaa.net/article/483714452.html#comment&gsc.tab=0)／
 [【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)／
-[【薙刀式】１４仮のカナをひとつ交換](http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0)
+[【薙刀式】１４仮のカナをひとつ交換](http://oookaworks.seesaa.net/article/484030707.html#gsc.tab=0)／
+[【薙刀式】同手シフトのR](http://oookaworks.seesaa.net/article/484110925.html#gsc.tab=0)
 
 Autohotkey に実装しました。
 
