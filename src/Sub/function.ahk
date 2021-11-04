@@ -911,7 +911,7 @@ Convert()
 		{
 			IMEState := IME_GET()
 			IMEConvMode := IME_GetConvMode()
-			if (IMEState != "" || IMEConvMode != "")	; 検出に失敗したら書き換えない
+			if (IMEState != "" && IMEConvMode != "")	; 検出に失敗したら書き換えない
 				KanaMode := (IMEState ? IMEConvMode & 1 : 0)
 		}
 
