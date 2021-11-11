@@ -824,7 +824,6 @@ Convert()
 		, RealBit	:= 0	; 今押している全部のキービットの集合
 		, LastBit	:= 0	; 前回のキービット
 		, Last2Bit	:= 0	; 前々回のキービット
-		, ReturnBit	:= 0	; 復活したキービット
 		, LastKeyTime := 0	; 有効なキーを押した時間
 		, KanaMode	:= 0	; 0: 英数入力, 1: かな入力
 		, OutStr	:= ""	; 出力する文字列
@@ -843,6 +842,7 @@ Convert()
 ;		, Term		; 入力の末端2文字
 ;		, nkeys		; 今回は何キー同時押しか
 ;		, NowBit	; 今回のキービット
+;		, BitMask
 ;		, nBack
 ;		, SearchBit	; いま検索しようとしているキーの集合
 ;		, ShiftStyle
@@ -1058,27 +1058,30 @@ Convert()
 		; キーリリース時
 		if (Term == "up")
 		{
-			if (KeyUpToOutputAll
-				|| (LastBit & NowBit)
-				|| (_lks >= 2 && (Last2Bit | LastBit) & NowBit))
+			if (KeyUpToOutputAll || (LastBit & NowBit))
 			{
 				OutBuf()
 				LastStr := ""
 				_lks := 0
-				RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では32ビット計算になることがあるので
 				; 文字キーによるシフトの適用範囲
 				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
 				if (!ShiftStyle)			; シフト全復活
-					ReturnBit := RealBit
+					LastBit := RealBit
 				else if (ShiftStyle >= 2)	; シフト全解除
 					Last2Bit := LastBit := 0
 				RepeatBit := 0
 				CombinableBit := -1 ; 次の入力で確定しないキー
 			}
-			RealBit &= NowBit ^ (-1)	; RealBit &= ~NowBit では32ビット計算になることがあるので
-			Last2Bit &= NowBit ^ (-1)
-			LastBit &= NowBit ^ (-1)
-			ReturnBit &= NowBit ^ (-1)
+			else if (_usc == 2 && _lks == 1 && (Last2Bit & NowBit))
+			{				; 1キー入力の連続で、最後に押したキーとは違うキーを離した時
+				OutBuf(1)	; 1個出力
+				Last2Bit := 0
+				CombinableBit |= NowBit ; 次の入力で確定しないキー
+			}
+			BitMask := NowBit ^ (-1)
+			RealBit &= BitMask	; RealBit &= ~NowBit では32ビット計算になることがあるので
+			Last2Bit &= BitMask
+			LastBit &= BitMask
 			LastKeyTime += 60000	; 同時押しの判定期限を60秒先送り
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
@@ -1089,7 +1092,7 @@ Convert()
 			OutBuf()
 			CombinableBit := -1 ; 次の入力で確定しないキー
 			RealBit |= KC_SPC
-			RepeatBit := 0
+			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
@@ -1102,7 +1105,7 @@ Convert()
 				OutBuf()
 				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) >= 2		; 文字キーシフト 1回のみ
 				 || ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN) >= 2)	; または、キーを離すと 全解除
-					Last2Bit := LastBit := ReturnBit := 0
+					Last2Bit := LastBit := 0
 			}
 			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
 				OutBuf()
@@ -1113,11 +1116,11 @@ Convert()
 			while (!nkeys)
 			{
 				; 3キー入力を検索
-				if (Last2Bit | ReturnBit)
+				if (Last2Bit)
 				{
 					i := DefBegin[3]
 					imax := DefEnd[3]	; 検索場所の設定
-					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit | ReturnBit)
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
 						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
@@ -1131,7 +1134,7 @@ Convert()
 							if ((!LastGroup || ShiftStyle > 2)
 								&& ShiftStyle >= 2 && _lks >= 3 && NowBit != KC_SPC)
 							{
-								LastBit := ReturnBit := 0	; 1キー入力の検索へ
+								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							nBack := (_lks >= 2 ? 1 : 2)
@@ -1144,11 +1147,11 @@ Convert()
 					}
 				}
 				; 2キー入力を検索
-				if (LastBit | ReturnBit)
+				if (LastBit)
 				{
 					i := DefBegin[2]
 					imax := DefEnd[2]	; 検索場所の設定
-					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | ReturnBit)
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
 						; 文字キーによるシフトの適用範囲
 					while (i < imax)
 					{
@@ -1162,7 +1165,7 @@ Convert()
 							if ((!LastGroup || ShiftStyle > 2)
 								&& ShiftStyle >= 2 && _lks >= 2 && NowBit != KC_SPC)
 							{
-								LastBit := ReturnBit := 0	; 1キー入力の検索へ
+								LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							nBack := 1
@@ -1231,12 +1234,11 @@ Convert()
 			_lks := nkeys			; 何キー同時押しだったかを保存
 			if (nkeys >= 2)	; 2、3キー入力のときは今回のキービットを保存
 				Last2Bit := LastBit := DefsKey[i]
-			else	; 現在のを繰り上げ
+			else if (!nBack)		; 現在のを繰り上げ
 			{
 				Last2Bit := LastBit
 				LastBit := SearchBit
 			}
-			ReturnBit := 0
 			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
 			if (CtrlNo == R)
 				RepeatBit := NowBit		; キーリピートする
