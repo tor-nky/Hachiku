@@ -501,10 +501,10 @@ KanaGroup := 0	; 0 はグループAll
 ; ひらがなカタカナキー：IME ON、無変換キー：IME OFFに設定のこと
 ; HJ: ON / FG: OFF
 
-	SetKana( KC_H | KC_J			,"{vkF2 2}"		)	; IME ON
-	SetEisu( KC_H | KC_J			,"{vkF2 2}"		)
-	SetKana( KC_F | KC_G			,"{vkF2}{vkF3}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{vkF2}{vkF3}"	)
+	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
+	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
+	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)
 
 ; Enter
 ; VとMの同時押し
