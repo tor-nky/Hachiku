@@ -213,7 +213,13 @@ Analysis(Str1)
 					Str2 .= "{UndoIME}"
 				NoIME := False
 			}
-			else if (StrChopped = "{IMEOFF}" || StrChopped = "{IMEON}"
+			else if (StrChopped = "{IMEOFF}")
+			{
+				Str2 .= StrChopped
+				Kakutei := True
+				NoIME := False
+			}
+			else if (StrChopped = "{IMEON}"
 				|| StrChopped == "{全英}" || StrChopped == "{半ｶﾅ}")
 			{
 				Str2 .= StrChopped
@@ -1063,12 +1069,6 @@ Convert()
 				OutBuf()
 				LastStr := ""
 				_lks := 0
-				; 文字キーによるシフトの適用範囲
-				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
-				if (!ShiftStyle)			; シフト全復活
-					LastBit := RealBit
-				else if (ShiftStyle >= 2)	; シフト全解除
-					Last2Bit := LastBit := 0
 				RepeatBit := 0
 				CombinableBit := -1 ; 次の入力で確定しないキー
 			}
@@ -1083,6 +1083,12 @@ Convert()
 			Last2Bit &= BitMask
 			LastBit &= BitMask
 			LastKeyTime += 60000	; 同時押しの判定期限を60秒先送り
+			; 文字キーによるシフトの適用範囲
+			ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
+			if (!ShiftStyle)			; シフト全復活
+				LastBit := RealBit
+			else if (ShiftStyle >= 2)	; シフト全解除
+				Last2Bit := LastBit := 0
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
