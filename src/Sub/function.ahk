@@ -950,7 +950,8 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if (!(EisuSandS || KanaMode))	; SandSなしの設定で英数入力時
+			if ((!IMEConvMode && !DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
 				StoreKeyUp("{Space up}")
 				StoreBuf(0, "{Space down}")
@@ -958,8 +959,7 @@ Convert()
 				spc := 2
 				continue
 			}
-			else if (!(IMEConvMode || DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
-				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーの長押し
+			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーの長押し
 			{
 				if (SpaceKeyRepeat == 1)	; スペースキーの長押し	1: 空白キャンセル
 				{
