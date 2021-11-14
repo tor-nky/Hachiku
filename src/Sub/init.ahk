@@ -184,7 +184,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 		IniRead, CombStyleS, %IniFilePath%, Advanced, CombStyleS, 3
 ;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
 		IniRead, CombKeyUpS, %IniFilePath%, Advanced, CombKeyUpS, 2
-; 出力が済んだキーを上げた時	0: 何もしない, 1: 全出力
+; キーを離せば常に全部出力する	0: いいえ, 1: はい
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0: なし, 1: あり
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
@@ -207,6 +207,7 @@ EnterShift0 := (EnterShift == 0 ? 1 : 0)
 EnterShift1 := (EnterShift == 1 ? 1 : 0)
 SpaceKeyRepeat0 := (SpaceKeyRepeat == 0 ? 1 : 0)
 SpaceKeyRepeat1 := (SpaceKeyRepeat == 1 ? 1 : 0)
+SpaceKeyRepeat2 := (SpaceKeyRepeat == 2 ? 1 : 0)
 if (AdvancedMenu)
 {
 	CombStyleN0 := (CombStyleN == 0 ? 1 : 0)
@@ -396,8 +397,10 @@ PrefMenu:
 	Gui, Add, Radio, x+0 vSpaceKeyRepeat2, 空白リピート
 	if (SpaceKeyRepeat0)
 		GuiControl, , SpaceKeyRepeat0, 1
-	else
+	else if (SpaceKeyRepeat1)
 		GuiControl, , SpaceKeyRepeat1, 1
+	else
+		GuiControl, , SpaceKeyRepeat2, 1
 
 	if (AdvancedMenu)	; 詳細メニュー
 	{
@@ -462,7 +465,7 @@ PrefMenu:
 					GuiControl, , CombKeyUpS1, 1
 				else
 					GuiControl, , CombKeyUpS2, 1
-		Gui, Add, Checkbox, xm y+10 vKeyUpToOutputAll, 出力済みのキーを上げても全部出力する
+		Gui, Add, Checkbox, xm y+10 vKeyUpToOutputAll, キーを離せば常に全部出力する
 		if (KeyUpToOutputAll)
 			GuiControl, , KeyUpToOutputAll, 1
 		Gui, Add, Checkbox, xm y+10 vEisuSandS, 英数入力時のSandS

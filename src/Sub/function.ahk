@@ -841,7 +841,7 @@ Convert()
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左右シフト
 		, ent		:= 0	; エンター
-		, CombinableBit := -1 ; 次の入力で確定しないキー
+		, CombinableBit := -1 ; 押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local KeyTime	; キーを押した時間
 ;		, IMEState, IMEConvMode
 ;		, NowKey, len
@@ -946,9 +946,16 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if ((!IMEConvMode && !DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
-				|| (SpaceKeyRepeat && (spc & 1))	; スペースキーの長押し
-				|| !(EisuSandS || KanaMode))		; 英数入力時でSandSなしの設定時
+			if (!(EisuSandS || KanaMode))	; SandSなしの設定で英数入力時
+			{
+				StoreKeyUp("{Space up}")
+				StoreBuf(0, "{Space down}")
+				OutBuf()
+				spc := 2
+				continue
+			}
+			else if (!(IMEConvMode || DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+				|| (SpaceKeyRepeat && (spc & 1)))	; スペースキーの長押し
 			{
 				if (SpaceKeyRepeat == 1)	; スペースキーの長押し	1: 空白キャンセル
 				{
@@ -1064,31 +1071,31 @@ Convert()
 		; キーリリース時
 		if (Term == "up")
 		{
-			if (KeyUpToOutputAll || (LastBit & NowBit))
-			{
+			BitMask := NowBit ^ (-1)	; RealBit &= ~NowBit では32ビット計算になることがあるので
+			RealBit &= BitMask
+			ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)	; 文字キーによるシフトの適用範囲
+			if (KeyUpToOutputAll || (LastBit & NowBit))	; 「キーを離せば常に全部出力する」がオン
+			{											; または直近の入力文字のキーを離した
 				OutBuf()
 				LastStr := ""
 				_lks := 0
 				RepeatBit := 0
-				CombinableBit := -1 ; 次の入力で確定しないキー
+				CombinableBit := -1 ; 次の入力で即確定しない
+				if (ShiftStyle >= 2)	; シフト全解除
+					Last2Bit := LastBit := 0
 			}
 			else if (_usc == 2 && _lks == 1 && (Last2Bit & NowBit))
 			{				; 1キー入力の連続で、最後に押したキーとは違うキーを離した時
 				OutBuf(1)	; 1個出力
 				Last2Bit := 0
-				CombinableBit |= NowBit ; 次の入力で確定しないキー
+				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
 			}
-			BitMask := NowBit ^ (-1)
-			RealBit &= BitMask	; RealBit &= ~NowBit では32ビット計算になることがあるので
 			Last2Bit &= BitMask
 			LastBit &= BitMask
-			LastKeyTime += 60000	; 同時押しの判定期限を60秒先送り
-			; 文字キーによるシフトの適用範囲
-			ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
-			if (!ShiftStyle)			; シフト全復活
+			if (!ShiftStyle)	; シフト全復活
 				LastBit := RealBit
-			else if (ShiftStyle >= 2)	; シフト全解除
-				Last2Bit := LastBit := 0
+			if (ShiftStyle < 2)	; シフト全解除でない
+				LastKeyTime += 60000	; 同時押しの判定期限を60秒先送り
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
@@ -1096,7 +1103,7 @@ Convert()
 			&& (!_usc || LastKeyTime + ShiftDelay <= KeyTime))
 		{
 			OutBuf()
-			CombinableBit := -1 ; 次の入力で確定しないキー
+			CombinableBit := -1 ; 次の入力で即確定しない
 			RealBit |= KC_SPC
 			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
