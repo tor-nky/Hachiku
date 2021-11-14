@@ -503,8 +503,8 @@ KanaGroup := 0	; 0 はグループAll
 
 	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
-	SetKana( KC_F | KC_G			,"{IMEOFF}"			)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{IMEOFF}"			)
+	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)
 
 ; Enter
 ; VとMの同時押し
