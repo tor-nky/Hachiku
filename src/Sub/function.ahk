@@ -544,6 +544,7 @@ SendEachChar(Str1, Delay:=0)
 						Send, {Enter}
 						Sleep, PostDelay
 						Str2 := "{BS}"
+						PostDelay := 0
 					}
 				}
 			}
@@ -579,6 +580,9 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "{IMEOFF}")
 			{
 				NoIME := False
+				PreDelay := 20
+				if (LastDelay < PreDelay)
+					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
 			}
 			else if (StrChopped = "{IMEON}")
