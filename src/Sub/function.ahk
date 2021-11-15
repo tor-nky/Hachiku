@@ -580,7 +580,7 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "{IMEOFF}")
 			{
 				NoIME := False
-				PreDelay := 20
+				PreDelay := 50
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
@@ -956,28 +956,24 @@ Convert()
 				StoreKeyUp("{Space up}")
 				StoreBuf(0, "{Space down}")
 				OutBuf()
-				spc := 2
 				continue
 			}
 			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーの長押し
 			{
 				if (SpaceKeyRepeat == 1)	; スペースキーの長押し	1: 空白キャンセル
+					spc := 2	; シフト継続中
+				else
 				{
-					spc := 2
-					continue
-				}
-				if (spc != 3)
-				{
-					StoreKeyUp("{Space up}")
 					spc := 3	; 空白をリピート中
+					StoreKeyUp("{Space up}")
+					StoreBuf(0, "{Space down}")
+					OutBuf()
 				}
-				StoreBuf(0, "{Space down}")
-				OutBuf()
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
 			else if (!spc)
-				spc := 1
+				spc := 1	; 単独押し
 		}
 		else if (NowKey == "sc39 up")
 		{
@@ -1029,7 +1025,7 @@ Convert()
 				NextKey := NowKey
 				NowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
 			}
-			spc := 2
+			spc := 2	; シフト継続中
 		}
 
 		nkeys := 0	; 何キー同時押しか、を入れる変数
