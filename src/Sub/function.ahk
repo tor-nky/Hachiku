@@ -826,7 +826,7 @@ Convert()
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc
 		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat
-		, CombEnableN, CombStyleN, CombKeyUpN, CombEnableS, CombStyleS, CombKeyUpS
+		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, LastKey	:= ""	; 前回のキー入力
@@ -896,7 +896,7 @@ Convert()
 			if (NowKey == "CombTimer")
 			{
 				if (LastKeyTime + CombDelay <= KeyTime
-				 && ((CombEnableN && !(RealBit & KC_SPC)) || (CombEnableS && (RealBit & KC_SPC))))
+				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 				{
 					OutBuf()
 					DispTime(LastKeyTime, "`n同時押し期限")		; キー変化からの経過時間を表示
@@ -1114,17 +1114,20 @@ Convert()
 		{
 			; 同時押しの判定期限到来
 			if (CombDelay > 0.0 && LastKeyTime + CombDelay <= KeyTime
-				&& ((CombEnableN && !(RealBit & KC_SPC)) || (CombEnableS && (RealBit & KC_SPC))))
+				&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 			{
 				OutBuf()
-				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) > 2		; 文字キーシフト 1回のみ
-				 || ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN) >= 2)	; または、キーを離すと 全解除
+				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) > 2	; 文字キーシフト 1回のみ
+				 || ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN) >= 2	; または、キーを離すと 全解除
+				 || (CombLimitE && !KanaMode))	; 英数時の同時打鍵期限を強制するなら、文字キーシフトは1回のみ
 					Last2Bit := LastBit := 0
 			}
 			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
 				OutBuf()
 
 			ShiftStyle := ((RealBit & KC_SPC) ? CombStyleS : CombStyleN)	; 文字キーによるシフトの適用範囲
+			if (CombLimitE && !KanaMode)
+				ShiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
 			RealBit |= NowBit
 			nBack := 0
 			while (!nkeys)
@@ -1266,7 +1269,7 @@ Convert()
 			{
 				; 同時押しの判定期限タイマー起動(シフト時のみ)
 				if (CombDelay > 0.0
-				 && ((CombEnableN && !(RealBit & KC_SPC)) || (CombEnableS && (RealBit & KC_SPC))))
+				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
 				if (CombinableBit == KC_SPC)

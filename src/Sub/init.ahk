@@ -172,18 +172,20 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 ; [Advanced]
 ;	通常時
 ;		同時打鍵の判定期限	0: なし, 1: あり
-		IniRead, CombEnableN, %IniFilePath%, Advanced, CombEnableN, 0
+		IniRead, CombLimitN, %IniFilePath%, Advanced, CombLimitN, 0
 ;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
 		IniRead, CombStyleN, %IniFilePath%, Advanced, CombStyleN, 3
 ;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
 		IniRead, CombKeyUpN, %IniFilePath%, Advanced, CombKeyUpN, 0
 ;	スペース押下時
 ;		同時打鍵の判定期限	0: なし, 1: あり
-		IniRead, CombEnableS, %IniFilePath%, Advanced, CombEnableS, 1
+		IniRead, CombLimitS, %IniFilePath%, Advanced, CombLimitS, 1
 ;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
 		IniRead, CombStyleS, %IniFilePath%, Advanced, CombStyleS, 3
 ;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
 		IniRead, CombKeyUpS, %IniFilePath%, Advanced, CombKeyUpS, 2
+;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
+		IniRead, CombLimitE, %IniFilePath%, Advanced, CombLimitE, 0
 ; キーを離せば常に全部出力する	0: いいえ, 1: はい
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0: なし, 1: あり
@@ -310,12 +312,13 @@ ButtonOK:
 	IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
 	if (AdvancedMenu)
 	{
-		IniWrite, %CombEnableN%, %IniFilePath%, Advanced, CombEnableN
+		IniWrite, %CombLimitN%, %IniFilePath%, Advanced, CombLimitN
 		IniWrite, %CombStyleN%, %IniFilePath%, Advanced, CombStyleN
 		IniWrite, %CombKeyUpN%, %IniFilePath%, Advanced, CombKeyUpN
-		IniWrite, %CombEnableS%, %IniFilePath%, Advanced, CombEnableS
+		IniWrite, %CombLimitS%, %IniFilePath%, Advanced, CombLimitS
 		IniWrite, %CombStyleS%, %IniFilePath%, Advanced, CombStyleS
 		IniWrite, %CombKeyUpS%, %IniFilePath%, Advanced, CombKeyUpS
+		IniWrite, %CombLimitE%, %IniFilePath%, Advanced, CombLimitE
 		IniWrite, %KeyUpToOutputAll%, %IniFilePath%, Advanced, KeyUpToOutputAll
 		IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
 		IniWrite, %INIDispTime%, %IniFilePath%, Advanced, DispTime
@@ -408,9 +411,9 @@ PrefMenu:
 
 		Gui, Add, Text, xm ys+20, 同時打鍵
 			Gui, Add, Text, xm+10 y+5, 通常
-				Gui, Add, Checkbox, xm+95 yp+0 vCombEnableN, 判定期限
-				if (CombEnableN)
-					GuiControl, , CombEnableN, 1
+				Gui, Add, Checkbox, xm+95 yp+0 vCombLimitN, 判定期限
+				if (CombLimitN)
+					GuiControl, , CombLimitN, 1
 
 				Gui, Add, Text, xm+20 y+5, 文字キーシフト
 				Gui, Add, Radio, xm+105 yp+0 Group vCombStyleN0, ずっと
@@ -437,9 +440,9 @@ PrefMenu:
 				else
 					GuiControl, , CombKeyUpN2, 1
 			Gui, Add, Text, xm+10 y+5, スペース押下時
-				Gui, Add, Checkbox, xm+95 yp+0 vCombEnableS, 判定期限
-				if (CombEnableS)
-					GuiControl, , CombEnableS, 1
+				Gui, Add, Checkbox, xm+95 yp+0 vCombLimitS, 判定期限
+				if (CombLimitS)
+					GuiControl, , CombLimitS, 1
 
 				Gui, Add, Text, xm+20 y+5, 文字キーシフト
 				Gui, Add, Radio, xm+105 yp+0 Group vCombStyleS0, ずっと
@@ -465,6 +468,10 @@ PrefMenu:
 					GuiControl, , CombKeyUpS1, 1
 				else
 					GuiControl, , CombKeyUpS2, 1
+			Gui, Add, Text, xm+10 y+5, 英数入力時
+				Gui, Add, Checkbox, xm+95 yp+0 vCombLimitE, 判定期限ありを強制する ※文字キーシフトは1回のみとなる
+				if (CombLimitE)
+					GuiControl, , CombLimitE, 1
 		Gui, Add, Checkbox, xm y+10 vKeyUpToOutputAll, キーを離せば常に全部出力する
 		if (KeyUpToOutputAll)
 			GuiControl, , KeyUpToOutputAll, 1
