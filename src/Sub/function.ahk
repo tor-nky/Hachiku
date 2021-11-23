@@ -956,6 +956,7 @@ Convert()
 				StoreKeyUp("{Space up}")
 				StoreBuf(0, "{Space down}")
 				OutBuf()
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
 			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーの長押し
@@ -1116,7 +1117,7 @@ Convert()
 				&& ((CombEnableN && !(RealBit & KC_SPC)) || (CombEnableS && (RealBit & KC_SPC))))
 			{
 				OutBuf()
-				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) >= 2		; 文字キーシフト 1回のみ
+				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) > 2		; 文字キーシフト 1回のみ
 				 || ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN) >= 2)	; または、キーを離すと 全解除
 					Last2Bit := LastBit := 0
 			}
