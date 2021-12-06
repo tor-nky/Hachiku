@@ -392,64 +392,46 @@ SettingLayout()
 	return
 }
 
-; 使用しているのが 新MS-IME ならば True を返す
-; 10秒経過していれば再調査する
-DetectNewMSIME()
+; 使用している MS-IME を調べる。10秒経過していれば再調査。
+; 戻り値	"MSIME": 新MS-IME登場以前のもの,
+;			"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
+;			"ATOK": ATOK
+DetectMSIME()
 {
-	global IMESelect
-	static NewMSIME := False
+	global IMESelect, GoodHwnd, BadHwnd
+	static IMEName := ""
 		, LastSearchTime := 0.0
-;	local OldMSIME
+;	local Value, NowIME
+
+	NowIME := IMEName
 
 	if (IMESelect)
-		return False	; ATOK を使用
-
-	NowTime := QPC()
-	if (LastSearchTime + 10000.0 < NowTime)
+		NowIME := "ATOK"
+	else
 	{
-		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
-		; 参考: https://registry.tomoroh.net/archives/11547
-		RegRead, OldMSIME, HKEY_CURRENT_USER
-			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-			, NoTsf3Override2
-		NewMSIME := (ErrorLevel == 1 ? False : !OldMSIME)
+		NowTime := QPC()
+		if (LastSearchTime + 10000.0 < NowTime)
+		{
+			LastSearchTime := NowTime
+			; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+			; 参考: https://registry.tomoroh.net/archives/11547
+			RegRead, Value, HKEY_CURRENT_USER
+				, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
+				, NoTsf3Override2
+			NowIME := (ErrorLevel == 1 ? "MSIME" : (Value ? "OldMSIME" : "NewMSIME"))
+		}
 	}
-	return NewMSIME
-}
 
-; 使用しているのが低速な MS-IME ならば True を返す
-; 10秒経過していれば再調査する
-DetectSlowIME()
-{
-	global IMESelect
-	static SlowMSIME := True
-		, LastSearchTime := 0.0
-;	local NowTime
-
-	if (IMESelect)
-		return False	; ATOK を使用
-
-	NowTime := QPC()
-	if (LastSearchTime + 10000.0 < NowTime)
-	{
-		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
-		; 新旧MSIMEが選べる環境では、旧MSIMEは低速である
-		; 参考: https://registry.tomoroh.net/archives/11547
-		RegRead, SlowMSIME, HKEY_CURRENT_USER
-			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-			, NoTsf3Override2
-		SlowMSIME := (ErrorLevel == 1 ? False : SlowMSIME)
-		LastSearchTime := NowTime
-	}
-	return SlowMSIME
+	if (NowIME != IMEName)
+		GoodHwnd := BadHwnd := ""
+	return (IMEName := NowIME)
 }
 
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
-	global IMESelect
+	global IMESelect, GoodHwnd, BadHwnd
 	static LastTickCount := QPC()
-		, GoodHwnd := "", BadHwnd := ""
 		, flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
@@ -460,25 +442,23 @@ SendEachChar(Str1, Delay:=0)
 ;		, LastDelay					; 前回出力時のディレイの値
 ;		, Slow
 ;		, ClipSaved
+;		, KakuteiIsEnter	; 文字確定させるのにエンターのみで良ければ True
 
 ;ToolTip, %Str1%
 ;SetTimer, RemoveToolTip, 5000
-	KakuteiIsEnter := False	; 前の文字が1文字なら、確定はエンターのみで良いので True
-							; それ以外は False
+	KakuteiIsEnter := False
 
 	WinGet, Hwnd, ID, A
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
 	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
-		Slow := (Slow == 1 ? 0x11 : Slow)
+		Slow := (Slow ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
 	LastDelay := QPC() - LastTickCount
 
 	; 文字列を細切れにして出力
-	PreDelay := 0
-	PostDelay := Delay	; ディレイの初期値
 	NoIME := False
 	StrChopped := Str2 := ""
 	LenChopped := 0
@@ -487,6 +467,10 @@ SendEachChar(Str1, Delay:=0)
 	len1 := StrLen(Str1)
 	while (i <= len1)
 	{
+		; ディレイの初期値
+		PreDelay := 0
+		PostDelay := Delay
+
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
 			bracket := 0
@@ -497,7 +481,7 @@ SendEachChar(Str1, Delay:=0)
 		if (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i == len1 )
 		{
-			; "{Raw}"からの残りを全部出力する
+			; "{Raw}"からの残りは全部出力する
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
 				i++
@@ -518,11 +502,12 @@ SendEachChar(Str1, Delay:=0)
 					if (PostDelay > 0)
 						Sleep, PostDelay
 				}
-				break
+				StrChopped := ""	; 後で誤作動しないように消去
+				LastDelay := (PostDelay > 0 ? PostDelay : 0)
 			}
 
 			; 出力するキーを変換
-			if (StrChopped = "{vkF2}" || StrChopped == "{vkF3}")
+			else if (StrChopped = "{vkF2}" || StrChopped == "{vkF3}")
 			{	; ひらがなキー、半角/全角キー
 				Str2 := StrChopped
 				PostDelay := 30
@@ -533,7 +518,7 @@ SendEachChar(Str1, Delay:=0)
 				{
 					if (PostDelay < 10)
 						PostDelay := 10
-					if (KakuteiIsEnter
+					if (KakuteiIsEnter	; 文字確定させるのにエンターのみで良い
 					 || (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting()))
 						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
@@ -554,28 +539,6 @@ SendEachChar(Str1, Delay:=0)
 				IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
 				Str2 := "{vkF3}"	; 半角/全角
 				PostDelay := 30
-			}
-			else if (StrChopped = "{UndoIME}")	; IME の状態を元に戻す
-			{
-				if (NoIME)
-				{
-					NoIME := False
-					Str2 := "{vkF3}"	; 半角/全角
-					if (Slow == 0x11)
-					{
-						PreDelay := 70
-						PostDelay := 90	; 秀丸エディタ + ATOK 用
-					}
-					else if (Slow == 1)
-					{
-						PreDelay := 50
-						PostDelay := 70	; ATOK 用
-					}
-					else
-						PostDelay := 30	; 新MS-IME用
-				}
-				else
-					StrChopped := ""
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
@@ -624,12 +587,13 @@ SendEachChar(Str1, Delay:=0)
 				Clipboard := ClipSaved		;クリップボードの内容を復元
 				ClipSaved =					;保存用変数に使ったメモリを開放
 			}
-			else if (StrChopped != "{Null}")
+			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
 				Str2 := StrChopped
 
+			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (flag && (StrChopped = "{vk20}"　|| StrChopped = "{Space down}"))
+				if (flag && (Str2 = "{vk20}"　|| Str2 = "{Space down}"))
 				{	; 変換1回目
 					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
@@ -642,28 +606,20 @@ SendEachChar(Str1, Delay:=0)
 			else
 				flag := 0
 
-			; 前回の出力からの時間が短ければ、ディレイを入れる
-			if (LastDelay < PreDelay)
-				Sleep, % PreDelay - LastDelay
 			; キー出力
 			if (Str2)
 			{
+				; 前回の出力からの時間が短ければ、ディレイを入れる
+				if (LastDelay < PreDelay)
+					Sleep, % PreDelay - LastDelay
 				Send, % Str2
 				; 出力直後のディレイ
 				if (PostDelay > 0)
 					Sleep, PostDelay
-				; 必要ならIME入力モードを回復する
-				if (StrChopped = "{UndoIME}" && IMEConvMode)
-				{
-					IME_SetConvMode(IMEConvMode)
-					Sleep, Delay
-				}
 				LastDelay := PostDelay	; 今回のディレイの値を保存
-				PreDelay := 0
-				PostDelay := Delay		; ディレイの初期値
 			}
 
-			; 変換1回目でIME窓が検出できるのが理想で、できなければIME窓の検出は当てにならない
+			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
 			if (flag > 1)
 			{
 				if (IME_GetConverting())
@@ -673,48 +629,48 @@ SendEachChar(Str1, Delay:=0)
 				flag := 0
 			}
 
-			if (LenChopped == 1 || (LenChopped == 3 && Asc(StrChopped) == 123))
-				KakuteiIsEnter := True	; 1文字、または { で始まる3文字
+			; 文字確定させるのにエンターのみで良いか検出
+			if (LenChopped == 1 || (LenChopped == 3 && Asc(Str2) == 123))
+				KakuteiIsEnter := True	; 1文字、または { で始まる3文字ならエンターのみで良い
 			else
 				KakuteiIsEnter := False
+
+			; 必要なら IME の状態を元に戻す
+			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
+			{
+				NoIME := False
+				if (Slow == 0x11)
+				{
+					PreDelay := 70
+					PostDelay := 90	; 秀丸エディタ + ATOK 用
+				}
+				else if (Slow == 1)
+				{
+					PreDelay := 50
+					PostDelay := 70	; ATOK 用
+				}
+				else
+					PostDelay := 30	; 新MS-IME用
+				; 前回の出力からの時間が短ければ、ディレイを入れる
+				if (LastDelay < PreDelay)
+					Sleep, % PreDelay - LastDelay
+				Send, {vkF3}	; 半角/全角
+				Sleep, % (LastDelay := PostDelay)
+				; IME入力モードを回復する
+				if (IMEConvMode)
+				{
+					IME_SetConvMode(IMEConvMode)
+					Sleep, % (LastDelay := Delay)
+				}
+			}
+
 			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
 		i++
 	}
 
-	; IME の状態を元に戻す
-	if (NoIME)
-	{
-		if (Slow == 0x11)
-		{
-			PreDelay := 70
-			PostDelay := 90	; 秀丸エディタ + ATOK 用
-		}
-		else if (Slow == 1)
-		{
-			PreDelay := 50
-			PostDelay := 70	; ATOK 用
-		}
-		else
-			PostDelay := 30	; 新MS-IME用
-		; 前回の出力からの時間が短ければ、ディレイを入れる
-		if (LastDelay < PreDelay)
-			Sleep, % PreDelay - LastDelay
-		; キー出力
-		Send, {vkF3}	; 半角/全角
-		; 出力直後のディレイ
-		if (PostDelay > 0)
-			Sleep, PostDelay
-		; IME入力モードを回復する
-		if (IMEConvMode)
-		{
-			IME_SetConvMode(IMEConvMode)
-			Sleep, Delay
-		}
-	}
-
-	LastTickCount := QPC()	; 最後に出力した時間を記録
+	LastTickCount := QPC() - LastDelay	; 最後に出力した時間を記録
 	return
 }
 
@@ -733,7 +689,7 @@ OutBuf(i:=2)
 			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
 			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
-				if (DetectSlowIME() && EnterPos >= 0)
+				if (DetectMSIME() = "OldMSIME" && EnterPos >= 0)
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
 				else
@@ -950,7 +906,7 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if ((!IMEConvMode && !DetectNewMSIME())	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+			if ((!IMEConvMode && DetectMSIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
 				StoreKeyUp("{Space up}")

@@ -3,19 +3,31 @@
 ; http://oookaworks.seesaa.net/article/479173898.html#gsc.tab=0
 ; (2020年12月25日)より
 ;
-; 変更部分：
+; DvorakJ版からの変更部分：
 ; 記号はすべて全角文字を出力する
+;	一太郎で編集モードD+F+Pの入力キャンセルを押しても、ESCメニューを残さない
+;	固有名詞ショートカットのシフト面（スペース押下）を追加
+;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
+
 
 ; 特別出力
 SendSP(Str1, CtrlNo)
 {
 	global KoyuNumber, Version, LayoutName, IniFilePath
 
+	if (CtrlNo == "ESCx3")
+	{
+		SendEachChar(Str1)
+		Sleep, % (IMESelect ? 140 : (DetectMSIME() = "OldMSIME" ? 150 : 80))
+			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
+		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
+			Send, a
+	}
 	; 固有名詞ショートカットを切り替える
-	if (CtrlNo == "KoyuChange")
+	else if (CtrlNo == "KoyuChange")
 	{
 		if (Str1 == KoyuNumber)	; 番号が変わらない
 		{
@@ -35,6 +47,8 @@ SendSP(Str1, CtrlNo)
 		KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
 		SettingLayout()					; 出力確定する定義に印をつける
 	}
+
+	return
 }
 
 ; ----------------------------------------------------------------------
@@ -108,8 +122,6 @@ ReadLayout()
 	; -----------------------------------------
 
 
-KanaGroup := 0	; 0 はグループAll
-
 ;**********************************************
 ;**********************************************
 ; メイン部分; 単打とシフト
@@ -117,6 +129,7 @@ KanaGroup := 0	; 0 はグループAll
 ;**********************************************
 
 ; 単打
+KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -474,10 +487,10 @@ KanaGroup := 0	; 0 はグループAll
 ; ひらがなカタカナキー：IME ON、無変換キー：IME OFFに設定のこと
 ; HJ: ON / FG: OFF
 
-	SetKana( KC_H | KC_J			,"{vkF2 2}"		)	; IME ON
-	SetEisu( KC_H | KC_J			,"{vkF2 2}"		)
-	SetKana( KC_F | KC_G			,"{vkF2}{vkF3}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{vkF2}{vkF3}"	)
+	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
+	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
+	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)
 
 ; Enter
 ; VとMの同時押し
@@ -529,14 +542,13 @@ KanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_C		,"！"				)		; ！
 	SetEisu( KC_J | KC_K | KC_V		,"」"				)		; 」
 	SetEisu( KC_J | KC_K | KC_B		,"）"				)		; ）
-
 ; 右手
 KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ▲Home
 	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消
 	SetKana( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再変換
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}"	, "ESCx3") ; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_H		,"{Enter}{End}"		)		; 確定End▼
 	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 選択↑
@@ -552,7 +564,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消
 	SetEisu( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再変換
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}"	, "ESCx3") ; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_H		,"{Enter}{End}"		)		; 確定End▼
 	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 選択↑
@@ -634,6 +646,7 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"							, R)	; ←5選択
 	SetEisu( KC_C | KC_V | KC_DOT	,"^{PgDn}"							, R)	; 次◀ページ先頭
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^{PgDn 5}"						, R)	; 次 5◀ページ先頭
+
 KanaGroup := 0	; 0 はグループAll
 
 	; 固有名詞ショートカット(U+I)を押し続けて
@@ -886,6 +899,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
+	KanaGroup := 0	; 0 はグループAll
 	return
 }
 

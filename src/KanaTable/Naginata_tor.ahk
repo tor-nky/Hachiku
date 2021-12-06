@@ -36,7 +36,7 @@ SendSP(Str1, CtrlNo)
 	if (CtrlNo == "ESCx3")
 	{
 		SendEachChar(Str1)
-		Sleep, % (IMESelect ? 140 : (DetectSlowIME() ? 150 : 80))
+		Sleep, % (IMESelect ? 140 : (DetectMSIME() = "OldMSIME" ? 150 : 80))
 			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
 		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
 			Send, a
@@ -137,8 +137,6 @@ ReadLayout()
 	; -----------------------------------------
 
 
-KanaGroup := 0	; 0 はグループAll
-
 ;**********************************************
 ;**********************************************
 ; メイン部分; 単打とシフト
@@ -146,6 +144,7 @@ KanaGroup := 0	; 0 はグループAll
 ;**********************************************
 
 ; 単打
+KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -589,6 +588,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; +↓
 	SetEisu( KC_D | KC_F | KC_DOT	,"{↓ 5}"			, R)	; 5↓
 	SetEisu( KC_D | KC_F | KC_SLSH	,"+{↓ 5}"			, R)	; +5↓
+
 ; 編集モード２
 ; 下段人差指＋中指
 
@@ -625,6 +625,7 @@ KanaGroup := "2L"
 	SetEisu( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"			)		; 行頭□□□戻し
 	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"			)		; 行頭□戻し
 	SetEisu( KC_M | KC_COMM | KC_B	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}")		; ｜《》
+
 ; 右手
 KanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_Y		,"+{Home}"							)		; ▲+Home
@@ -658,6 +659,7 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_COMM	,"+{←}"							, R)	; +←
 	SetEisu( KC_C | KC_V | KC_DOT	,"{← 5}"							, R)	; ←5
 	SetEisu( KC_C | KC_V | KC_SLSH	,"+{← 5}"							, R)	; +←5
+
 KanaGroup := 0	; 0 はグループAll
 
 	; 固有名詞ショートカット(U+I)を押し続けて
@@ -898,6 +900,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
+	KanaGroup := 0	; 0 はグループAll
 	return
 }
 

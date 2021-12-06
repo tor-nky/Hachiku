@@ -124,8 +124,6 @@ ReadLayout()
 	; -----------------------------------------
 
 
-KanaGroup := 0	; 0 はグループAll
-
 ;**********************************************
 ;**********************************************
 ; メイン部分; 単打とシフト
@@ -133,6 +131,7 @@ KanaGroup := 0	; 0 はグループAll
 ;**********************************************
 
 ; 単打
+KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -443,7 +442,6 @@ KanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"		)		; ！
 	SetEisu( KC_J | KC_K | KC_V		,"{改行}{↓}"		)		; ⏎↓
 	SetEisu( KC_J | KC_K | KC_B		,"《》{確定}{↑}"	)		; 《》
-
 ; 右手
 KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ▲Home
@@ -789,6 +787,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
+	KanaGroup := 0	; 0 はグループAll
 	return
 }
 

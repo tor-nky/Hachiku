@@ -35,7 +35,7 @@ SendSP(Str1, CtrlNo)
 	if (CtrlNo == "ESCx3")
 	{
 		SendEachChar(Str1)
-		Sleep, % (IMESelect ? 140 : (DetectSlowIME() ? 150 : 80))
+		Sleep, % (IMESelect ? 140 : (DetectMSIME() = "OldMSIME" ? 150 : 80))
 			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
 		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
 			Send, a
@@ -136,8 +136,6 @@ ReadLayout()
 	; -----------------------------------------
 
 
-KanaGroup := 0	; 0 はグループAll
-
 ;**********************************************
 ;**********************************************
 ; メイン部分; 単打とシフト
@@ -145,6 +143,7 @@ KanaGroup := 0	; 0 はグループAll
 ;**********************************************
 
 ; 単打
+KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -455,7 +454,6 @@ KanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_C		,"！{確定}"			)		; ！
 	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"		)		; ⏎↓
 	SetEisu( KC_J | KC_K | KC_B		,"《》{確定}{↑}"	)		; 《》
-
 ; 右手
 KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ▲Home
@@ -801,6 +799,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
+	KanaGroup := 0	; 0 はグループAll
 	return
 }
 

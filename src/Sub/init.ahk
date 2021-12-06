@@ -125,6 +125,9 @@ OutStrs := []
 OutCtrlNos := []
 _usc := 0			; 保存されている文字数
 RestStr := ""
+; IME窓の検出可否
+GoodHwnd := ""		; 可能
+BadHwnd := ""		; 不可
 
 ; キーボードドライバを調べて KeyDriver に格納する
 ; 参考: https://ixsvr.dyndns.org/blog/764
@@ -147,7 +150,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, AdvancedMenu, %IniFilePath%, general, AdvancedMenu, 0
 
 ; [Basic]
-; IMESelect		0: MS-IME専用, 1: ATOK対応
+; IMESelect		0: MS-IME専用, 1: ATOK使用
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
 ; USLike		0: 英数表記通り, 1: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
@@ -329,6 +332,7 @@ ButtonOK:
 	CombDelay += 0.0
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
+	GoodHwnd := BadHwnd := ""	; IME窓の検出可否をリセット
 GuiEscape:
 ButtonCancel:
 GuiClose:
@@ -350,7 +354,7 @@ PrefMenu:
 	else	; 詳細メニュー不要の時
 		Gui, Add, Text, x+0 W230 Right Section, %Version%
 
-	Gui, Add, Checkbox, xm ys+25 vIMESelect, ATOK対応
+	Gui, Add, Checkbox, xm ys+25 vIMESelect, ATOK用
 	if (IMESelect)
 		GuiControl, , IMESelect, 1
 
