@@ -785,6 +785,7 @@ Convert()
 		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
+		, DisableCombLimit := False	; 同時押しの判定期限を一時無効にするか
 		, LastKey	:= ""	; 前回のキー入力
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
@@ -1051,6 +1052,8 @@ Convert()
 			LastBit &= BitMask
 			if (!ShiftStyle)	; シフト全復活
 				LastBit := RealBit
+			if (ShiftStyle < 2)	; シフト全解除でない
+				DisableCombLimit := True	; 同時押しの判定期限を一時無効
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
@@ -1067,7 +1070,7 @@ Convert()
 		else if !(RealBit & NowBit)
 		{
 			; 同時押しの判定期限到来
-			if (CombDelay > 0.0 && LastKeyTime + CombDelay <= KeyTime
+			if (CombDelay > 0.0 && !DisableCombLimit && LastKeyTime + CombDelay <= KeyTime
 				&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 			{
 				OutBuf()
@@ -1200,6 +1203,7 @@ Convert()
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
 			; 次回の検索用に変数を更新
+			DisableCombLimit := False	; 同時押しの判定期限を無効にしない
 			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
 			_lks := nkeys			; 何キー同時押しだったかを保存
