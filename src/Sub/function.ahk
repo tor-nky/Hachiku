@@ -200,7 +200,7 @@ Analysis(Str1)
 				Str2 .= StrChopped
 				Kakutei := True	; "{Enter" で確定状態
 			}
-			else if (StrChopped == "^v")
+			else if (Str1 != "^v" && StrChopped == "^v")	; "^v" 単独は除外
 			{
 				if (!NoIME && !Kakutei)
 					Str2 .= "{確定}"
@@ -453,7 +453,7 @@ SendEachChar(Str1, Delay:=0)
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
 	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
-		Slow := (Slow ? 0x11 : Slow)
+		Slow := (IMESelect ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
 	LastDelay := QPC() - LastTickCount
