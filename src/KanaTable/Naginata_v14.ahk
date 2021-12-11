@@ -4,8 +4,6 @@
 ; (2021年12月10日)より
 ;
 ; DvorakJ版からの変更部分：
-;	冗長シフトを加えた
-;	IME OFF、新(J+K+Q)は確定してから
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中の文字があれば確定し、なければそのまま所定の動作をします。
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
@@ -211,49 +209,28 @@ KanaGroup := 0	; 0 はグループAll
 
 ; 右手の濁音
 	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
-	SetKana( AL_左濁 | AL_さ | KC_SPC	,"za"	)
 	SetKana( AL_左濁 | AL_す			,"zu"	)	; ず
-	SetKana( AL_左濁 | AL_す | KC_SPC	,"zu"	)
 	SetKana( AL_左濁 | AL_へ			,"be"	)	; べ
-	SetKana( AL_左濁 | AL_へ | KC_SPC	,"be"	)
 	SetKana( AL_左濁 | AL_く			,"gu"	)	; ぐ
-	SetKana( AL_左濁 | AL_く | KC_SPC	,"gu"	)
 	SetKana( AL_左濁 | AL_う			,"vu"	)	; ヴ
-	SetKana( AL_左濁 | AL_う | KC_SPC	,"vu"	)
 	SetKana( AL_左濁 | AL_つ			,"du"	)	; づ
-	SetKana( AL_左濁 | AL_つ | KC_SPC	,"du"	)
 	SetKana( AL_左濁 | AL_た			,"da"	)	; だ
-	SetKana( AL_左濁 | AL_た | KC_SPC	,"da"	)
 	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
-	SetKana( AL_左濁 | AL_ふ | KC_SPC	,"bu"	)
 
 ; 左手の濁音
 	SetKana( AL_右濁 | AL_き			,"gi"	)	; ぎ
-	SetKana( AL_右濁 | AL_き | KC_SPC	,"gi"	)
 	SetKana( AL_右濁 | AL_て			,"de"	)	; で
-	SetKana( AL_右濁 | AL_て | KC_SPC	,"de"	)
 	SetKana( AL_右濁 | AL_し			,"zi"	)	; じ
-	SetKana( AL_右濁 | AL_し | KC_SPC	,"zi"	)
 	SetKana( AL_右濁 | AL_せ			,"ze"	)	; ぜ
-	SetKana( AL_右濁 | AL_せ | KC_SPC	,"ze"	)
 	SetKana( AL_右濁 | AL_け			,"ge"	)	; げ
-	SetKana( AL_右濁 | AL_け | KC_SPC	,"ge"	)
 	SetKana( AL_右濁 | AL_と			,"do"	)	; ど
-	SetKana( AL_右濁 | AL_と | KC_SPC	,"do"	)
 	SetKana( AL_右濁 | AL_か			,"ga"	)	; が
-	SetKana( AL_右濁 | AL_か | KC_SPC	,"ga"	)
 	SetKana( AL_右濁 | AL_ち			,"di"	)	; ぢ
-	SetKana( AL_右濁 | AL_ち | KC_SPC	,"di"	)
 	SetKana( AL_右濁 | AL_ほ			,"bo"	)	; ぼ
-	SetKana( AL_右濁 | AL_ほ | KC_SPC	,"bo"	)
 	SetKana( AL_右濁 | AL_ひ			,"bi"	)	; び
-	SetKana( AL_右濁 | AL_ひ | KC_SPC	,"bi"	)
 	SetKana( AL_右濁 | AL_は			,"ba"	)	; ば
-	SetKana( AL_右濁 | AL_は | KC_SPC	,"ba"	)
 	SetKana( AL_右濁 | AL_こ			,"go"	)	; ご
-	SetKana( AL_右濁 | AL_こ | KC_SPC	,"go"	)
 	SetKana( AL_右濁 | AL_そ			,"zo"	)	; ぞ
-	SetKana( AL_右濁 | AL_そ | KC_SPC	,"zo"	)
 
 ;****************************
 ; 半濁音： 逆手の下段人差し指
@@ -261,17 +238,12 @@ KanaGroup := 0	; 0 はグループAll
 
 ; 右の半濁音
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
-	SetKana( AL_左半 | AL_へ | KC_SPC	,"pe"	)
 	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
-	SetKana( AL_左半 | AL_ふ | KC_SPC	,"pu"	)
 
 ; 左の半濁音
 	SetKana( AL_右半 | AL_ほ			,"po"	)	; ぽ
-	SetKana( AL_右半 | AL_ほ | KC_SPC	,"po"	)
 	SetKana( AL_右半 | AL_ひ			,"pi"	)	; ぴ
-	SetKana( AL_右半 | AL_ひ | KC_SPC	,"pi"	)
 	SetKana( AL_右半 | AL_は			,"pa"	)	; ぱ
-	SetKana( AL_右半 | AL_は | KC_SPC	,"pa"	)
 
 ;****************************
 ; 小書き： Qと同時押し
@@ -299,87 +271,51 @@ KanaGroup := 0	; 0 はグループAll
 ;****************************
 ; 清音拗音; やゆよと同時押しで、ゃゅょが付く
 	SetKana( AL_き | AL_や				,"kya"	)	; きゃ
-	SetKana( AL_き | AL_や | KC_SPC		,"kya"	)
 	SetKana( AL_り | AL_や				,"rya"	)	; りゃ
-	SetKana( AL_り | AL_や | KC_SPC		,"rya"	)
 	SetKana( AL_し | AL_や				,"sya"	)	; しゃ
-	SetKana( AL_し | AL_や | KC_SPC		,"sya"	)
 	SetKana( AL_に | AL_や				,"nya"	)	; にゃ
-	SetKana( AL_に | AL_や | KC_SPC		,"nya"	)
 	SetKana( AL_ち | AL_や				,"tya"	)	; ちゃ
-	SetKana( AL_ち | AL_や | KC_SPC		,"tya"	)
 	SetKana( AL_ひ | AL_や				,"hya"	)	; ひゃ
-	SetKana( AL_ひ | AL_や | KC_SPC		,"hya"	)
 	SetKana( AL_み | AL_や				,"mya"	)	; みゃ
-	SetKana( AL_み | AL_や | KC_SPC		,"mya"	)
 
 	SetKana( AL_き | AL_ゆ				,"kyu"	)	; きゅ
-	SetKana( AL_き | AL_ゆ | KC_SPC		,"kyu"	)
 	SetKana( AL_り | AL_ゆ				,"ryu"	)	; りゅ
-	SetKana( AL_り | AL_ゆ | KC_SPC		,"ryu"	)
 	SetKana( AL_し | AL_ゆ				,"syu"	)	; しゅ
-	SetKana( AL_し | AL_ゆ | KC_SPC		,"syu"	)
 	SetKana( AL_に | AL_ゆ				,"nyu"	)	; にゅ
-	SetKana( AL_に | AL_ゆ | KC_SPC		,"nyu"	)
 	SetKana( AL_ち | AL_ゆ				,"tyu"	)	; ちゅ
-	SetKana( AL_ち | AL_ゆ | KC_SPC		,"tyu"	)
 	SetKana( AL_ひ | AL_ゆ				,"hyu"	)	; ひゅ
-	SetKana( AL_ひ | AL_ゆ | KC_SPC		,"hyu"	)
 	SetKana( AL_み | AL_ゆ				,"myu"	)	; みゅ
-	SetKana( AL_み | AL_ゆ | KC_SPC		,"myu"	)
 
 	SetKana( AL_き | AL_よ				,"kyo"	)	; きょ
-	SetKana( AL_き | AL_よ | KC_SPC		,"kyo"	)
 	SetKana( AL_り | AL_よ				,"ryo"	)	; りょ
-	SetKana( AL_り | AL_よ | KC_SPC		,"ryo"	)
 	SetKana( AL_し | AL_よ				,"syo"	)	; しょ
-	SetKana( AL_し | AL_よ | KC_SPC		,"syo"	)
 	SetKana( AL_に | AL_よ				,"nyo"	)	; にょ
-	SetKana( AL_に | AL_よ | KC_SPC		,"nyo"	)
 	SetKana( AL_ち | AL_よ				,"tyo"	)	; ちょ
-	SetKana( AL_ち | AL_よ | KC_SPC		,"tyo"	)
 	SetKana( AL_ひ | AL_よ				,"hyo"	)	; ひょ
-	SetKana( AL_ひ | AL_よ | KC_SPC		,"hyo"	)
 	SetKana( AL_み | AL_よ				,"myo"	)	; みょ
-	SetKana( AL_み | AL_よ | KC_SPC		,"myo"	)
 
 ;****************************
 ; 濁音拗音
 	SetKana( AL_右濁 | AL_き | AL_や			,"gya"		)	; ぎゃ
-	SetKana( AL_右濁 | AL_き | AL_や | KC_SPC	,"gya"		)
 	SetKana( AL_右濁 | AL_し | AL_や			,"ja"		)	; じゃ
-	SetKana( AL_右濁 | AL_し | AL_や | KC_SPC	,"ja"		)
 	SetKana( AL_右濁 | AL_ち | AL_や			,"dya"		)	; ぢゃ
-	SetKana( AL_右濁 | AL_ち | AL_や | KC_SPC	,"dya"		)
 	SetKana( AL_右濁 | AL_ひ | AL_や			,"bya"		)	; びゃ
-	SetKana( AL_右濁 | AL_ひ | AL_や | KC_SPC	,"bya"		)
 
 	SetKana( AL_右濁 | AL_き | AL_ゆ			,"gyu"		)	; ぎゅ
-	SetKana( AL_右濁 | AL_き | AL_ゆ | KC_SPC	,"gyu"		)
 	SetKana( AL_右濁 | AL_し | AL_ゆ			,"ju"		)	; じゅ
-	SetKana( AL_右濁 | AL_し | AL_ゆ | KC_SPC	,"ju"		)
 	SetKana( AL_右濁 | AL_ち | AL_ゆ			,"dyu"		)	; ぢゅ
-	SetKana( AL_右濁 | AL_ち | AL_ゆ | KC_SPC	,"dyu"		)
 	SetKana( AL_右濁 | AL_ひ | AL_ゆ			,"byu"		)	; びゅ
-	SetKana( AL_右濁 | AL_ひ | AL_ゆ | KC_SPC	,"byu"		)
 
 	SetKana( AL_右濁 | AL_き | AL_よ			,"gyo"		)	; ぎょ
-	SetKana( AL_右濁 | AL_き | AL_よ | KC_SPC	,"gyo"		)
 	SetKana( AL_右濁 | AL_し | AL_よ			,"jo"		)	; じょ
-	SetKana( AL_右濁 | AL_し | AL_よ | KC_SPC	,"jo"		)
 	SetKana( AL_右濁 | AL_ち | AL_よ			,"dyo"		)	; ぢょ
-	SetKana( AL_右濁 | AL_ち | AL_よ | KC_SPC	,"dyo"		)
 	SetKana( AL_右濁 | AL_ひ | AL_よ			,"byo"		)	; びょ
-	SetKana( AL_右濁 | AL_ひ | AL_よ | KC_SPC	,"byo"		)
 
 ;****************************
 ; 半濁音拗音
 	SetKana( AL_右半 | AL_ひ | AL_よ			,"pyo"		)	; ぴょ
-	SetKana( AL_右半 | AL_ひ | AL_よ | KC_SPC	,"pyo"		)
 	SetKana( AL_右半 | AL_ひ | AL_ゆ			,"pyu"		)	; ぴゅ
-	SetKana( AL_右半 | AL_ひ | AL_ゆ | KC_SPC	,"pyu"		)
 	SetKana( AL_右半 | AL_ひ | AL_や			,"pya"		)	; ぴゃ
-	SetKana( AL_右半 | AL_ひ | AL_や | KC_SPC	,"pya"		)
 
 ;*************************************
 ; 外来音は3キー同時押しに統一しました
@@ -390,100 +326,62 @@ KanaGroup := 0	; 0 はグループAll
 
 ; テ; ティテュディデュ
 	SetKana( AL_右半 | AL_て | AL_ゆ			,"thu"		)	; てゅ
-	SetKana( AL_右半 | AL_て | AL_ゆ | KC_SPC	,"thu"		)
 	SetKana( AL_右半 | AL_て | AL_い			,"thi"		)	; てぃ
-	SetKana( AL_右半 | AL_て | AL_い | KC_SPC	,"thi"		)
 
 	SetKana( AL_右濁 | AL_て | AL_ゆ			,"dhu"		)	; でゅ
-	SetKana( AL_右濁 | AL_て | AL_ゆ | KC_SPC	,"dhu"		)
 	SetKana( AL_右濁 | AL_て | AL_い			,"dhi"		)	; でぃ
-	SetKana( AL_右濁 | AL_て | AL_い | KC_SPC	,"dhi"		)
 
 ; ト; トゥドゥ
 	SetKana( AL_右半 | AL_と | AL_う			,"twu"		)	; とぅ
-	SetKana( AL_右半 | AL_と | AL_う | KC_SPC	,"twu"		)
 	SetKana( AL_右濁 | AL_と | AL_う			,"dwu"		)	; どぅ
-	SetKana( AL_右濁 | AL_と | AL_う | KC_SPC	,"dwu"		)
 
 ; シチ ェ; シェジェチェヂェ
 	SetKana( AL_右半 | AL_し | AL_え			,"sye"		)	; しぇ
-	SetKana( AL_右半 | AL_し | AL_え | KC_SPC	,"sye"		)
 	SetKana( AL_右半 | AL_ち | AL_え			,"tye"		)	; ちぇ
-	SetKana( AL_右半 | AL_ち | AL_え | KC_SPC	,"tye"		)
 	SetKana( AL_右濁 | AL_し | AL_え			,"je"		)	; じぇ
-	SetKana( AL_右濁 | AL_し | AL_え | KC_SPC	,"je"		)
 	SetKana( AL_右濁 | AL_ち | AL_え			,"dye"		)	; ぢぇ
-	SetKana( AL_右濁 | AL_ち | AL_え | KC_SPC	,"dye"		)
 
 ;****************************
 ; フ; ファフィフェフォフュ
 	SetKana( AL_左半 | AL_ふ | AL_え			,"fe"		)	; ふぇ
-	SetKana( AL_左半 | AL_ふ | AL_え | KC_SPC	,"fe"		)
 	SetKana( AL_左半 | AL_ふ | AL_ゆ			,"fyu"		)	; ふゅ
-	SetKana( AL_左半 | AL_ふ | AL_ゆ | KC_SPC	,"fyu"		)
 	SetKana( AL_左半 | AL_ふ | AL_あ			,"fa"		)	; ふぁ
-	SetKana( AL_左半 | AL_ふ | AL_あ | KC_SPC	,"fa"		)
 	SetKana( AL_左半 | AL_ふ | AL_い			,"fi"		)	; ふぃ
-	SetKana( AL_左半 | AL_ふ | AL_い | KC_SPC	,"fi"		)
 	SetKana( AL_左半 | AL_ふ | AL_お			,"fo"		)	; ふぉ
-	SetKana( AL_左半 | AL_ふ | AL_お | KC_SPC	,"fo"		)
 
 ; ヴ; ヴァヴィヴェヴォヴュ
 	SetKana( AL_左濁 | AL_う | AL_え			,"ve"		)	; ヴぇ
-	SetKana( AL_左濁 | AL_う | AL_え | KC_SPC	,"ve"		)
 	SetKana( AL_左濁 | AL_う | AL_ゆ			,"vuxyu"	)	; ヴゅ
-	SetKana( AL_左濁 | AL_う | AL_ゆ | KC_SPC	,"vuxyu"	)
 	SetKana( AL_左濁 | AL_う | AL_あ			,"va"		)	; ヴぁ
-	SetKana( AL_左濁 | AL_う | AL_あ | KC_SPC	,"va"		)
 	SetKana( AL_左濁 | AL_う | AL_い			,"vi"		)	; ヴぃ
-	SetKana( AL_左濁 | AL_う | AL_い | KC_SPC	,"vi"		)
 	SetKana( AL_左濁 | AL_う | AL_お			,"vo"		)	; ヴぉ
-	SetKana( AL_左濁 | AL_う | AL_お | KC_SPC	,"vo"		)
 
 ; う; ウィウェウォ　い；イェ
 	SetKana( AL_左半 | AL_う | AL_え			,"we"		)	; うぇ
-	SetKana( AL_左半 | AL_う | AL_え | KC_SPC	,"we"		)
 	SetKana( AL_左半 | AL_う | AL_い			,"wi"		)	; うぃ
-	SetKana( AL_左半 | AL_う | AL_い | KC_SPC	,"wi"		)
 	SetKana( AL_左半 | AL_う | AL_お			,"uxo"		)	; うぉ
-	SetKana( AL_左半 | AL_う | AL_お | KC_SPC	,"uxo"		)
 
 	SetKana( AL_左半 | AL_い | AL_え			,"ye"		)	; いぇ
-	SetKana( AL_左半 | AL_い | AL_え | KC_SPC	,"ye"		)
 
 ; ク; クァクィクェクォ
 	SetKana( AL_左半 | AL_く | AL_え			,"kuxe"		)	; くぇ
-	SetKana( AL_左半 | AL_く | AL_え | KC_SPC	,"kuxe"		)
 	SetKana( AL_左半 | AL_く | AL_あ			,"kuxa"		)	; くぁ
-	SetKana( AL_左半 | AL_く | AL_あ | KC_SPC	,"kuxa"		)
 	SetKana( AL_左半 | AL_く | AL_い			,"kuxi"		)	; くぃ
-	SetKana( AL_左半 | AL_く | AL_い | KC_SPC	,"kuxi"		)
 	SetKana( AL_左半 | AL_く | AL_う			,"kuxwa"	)	; くゎ
-	SetKana( AL_左半 | AL_く | AL_う | KC_SPC	,"kuxwa"	)
 	SetKana( AL_左半 | AL_く | AL_お			,"kuxo"		)	; くぉ
-	SetKana( AL_左半 | AL_く | AL_お | KC_SPC	,"kuxo"		)
 
 ; グ; グァグィグェグォ
 	SetKana( AL_左濁 | AL_く | AL_え			,"guxe"		)	; ぐぇ
-	SetKana( AL_左濁 | AL_く | AL_え | KC_SPC	,"guxe"		)
 	SetKana( AL_左濁 | AL_く | AL_あ			,"gwa"		)	; ぐぁ
-	SetKana( AL_左濁 | AL_く | AL_あ | KC_SPC	,"gwa"		)
 	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
-	SetKana( AL_左濁 | AL_く | AL_い | KC_SPC	,"guxi"		)
 	SetKana( AL_左濁 | AL_く | AL_う			,"guxwa"	)	; ぐゎ
-	SetKana( AL_左濁 | AL_く | AL_う | KC_SPC	,"guxwa"	)
 	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
-	SetKana( AL_左濁 | AL_く | AL_お | KC_SPC	,"guxo"		)
 
 ; ツ; ツァツィツェツォ
 	SetKana( AL_左半 | AL_つ | AL_え			,"tse"		)	; つぇ
-	SetKana( AL_左半 | AL_つ | AL_え | KC_SPC	,"tse"		)
 	SetKana( AL_左半 | AL_つ | AL_あ			,"tsa"		)	; つぁ
-	SetKana( AL_左半 | AL_つ | AL_あ | KC_SPC	,"tsa"		)
 	SetKana( AL_左半 | AL_つ | AL_い			,"tsi"		)	; つぃ
-	SetKana( AL_左半 | AL_つ | AL_い | KC_SPC	,"tsi"		)
 	SetKana( AL_左半 | AL_つ | AL_お			,"tso"		)	; つぉ
-	SetKana( AL_左半 | AL_つ | AL_お | KC_SPC	,"tso"		)
 
 ; IME ON/OFF
 ; 事前に、MS-IMEのプロパティで、
@@ -492,8 +390,8 @@ KanaGroup := 0	; 0 はグループAll
 
 	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
-	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)
+	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)
 
 ; Enter
 ; VとMの同時押し
@@ -514,7 +412,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ; 左手
 KanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetKana( KC_J | KC_K | KC_Z		,"││{確定}"						)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -530,7 +428,7 @@ KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{確定}{↑}"	)	; ⏎「」
 	SetKana( KC_J | KC_K | KC_B		,"{確定}{End}{改行}　"				)	; ⏎□
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetEisu( KC_J | KC_K | KC_Z		,"││{確定}"						)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』

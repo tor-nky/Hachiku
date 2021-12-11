@@ -5,7 +5,6 @@
 ;
 ; DvorakJ版からの変更部分：
 ; 記号はすべて全角文字を出力する
-;	一太郎で編集モードD+F+Pの入力キャンセルを押しても、ESCメニューを残さない
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
 ; **********************************************************************
@@ -17,11 +16,13 @@
 SendSP(Str1, CtrlNo)
 {
 	global KoyuNumber, Version, LayoutName, IniFilePath
+;	local IMEName
 
 	if (CtrlNo == "ESCx3")
 	{
-		SendEachChar(Str1)
-		Sleep, % (IMESelect ? 140 : (DetectMSIME() = "OldMSIME" ? 150 : 80))
+		SendEachChar(Str1)				; "+{Esc}{Esc 2}" を出力
+		IMEName := DetectMSIME()
+		Sleep, % (IMEName = "ATOK" ? 140 : (IMEName = "OldMSIME" ? 150 : 80))
 			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
 		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
 			Send, a
@@ -166,6 +167,8 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
 	SetKana( AL_り | KC_SPC		,"ri"		)		; り
 	SetKana( AL_め | KC_SPC		,"me"		)		; め
+	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
+	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
 	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
 	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
@@ -180,18 +183,16 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
+	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
+	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
 	SetKana( AL_、 | KC_SPC		,","		)		; 、
 	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
+	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
 	SetKana( AL_む | KC_SPC		,"mu"		)		; む
 	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
-	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
-	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
-	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
-	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
-	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
 	SetKana( KC_RBRC | KC_SPC	,"『"		)		; 『
 	SetKana( KC_NUHS | KC_SPC	,"』"		)		; 』
 
