@@ -456,7 +456,7 @@ SendEachChar(Str1, Delay:=0)
 		Slow := (IMESelect ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
-	LastDelay := QPC() - LastTickCount
+	LastDelay := Floor(QPC() - LastTickCount)
 
 	; 文字列を細切れにして出力
 	NoIME := False
@@ -519,10 +519,10 @@ SendEachChar(Str1, Delay:=0)
 					if (PostDelay < 10)
 						PostDelay := 10
 					if (KakuteiIsEnter	; 文字確定させるのにエンターのみで良い
-					 || (LastDelay >= (IMESelect ? 90.0 : 40.0) && IME_GetConverting()))
+					 || (LastDelay >= (IMESelect ? 90 : 40) && IME_GetConverting()))
 						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
 						Str2 := "{Enter}"
-					else if (LastDelay < (IMESelect ? 90.0 : 40.0) || Hwnd != GoodHwnd)
+					else if (LastDelay < (IMESelect ? 90 : 40) || Hwnd != GoodHwnd)
 					{	; IME窓を検出可能か不明
 						Send, =
 						Sleep, PostDelay
@@ -593,7 +593,7 @@ SendEachChar(Str1, Delay:=0)
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (flag && (Str2 = "{vk20}"　|| Str2 = "{Space down}"))
+				if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
 					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
@@ -615,8 +615,7 @@ SendEachChar(Str1, Delay:=0)
 				Send, % Str2
 				; 出力直後のディレイ
 				if (PostDelay > 0)
-					Sleep, PostDelay
-				LastDelay := PostDelay	; 今回のディレイの値を保存
+					Sleep, % (LastDelay := PostDelay)
 			}
 
 			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
