@@ -784,7 +784,6 @@ Convert()
 		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
-		, DisableCombLimit := False	; 同時押しの判定期限を一時無効にするか
 		, LastKey	:= ""	; 前回のキー入力
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
@@ -793,7 +792,7 @@ Convert()
 		, LastKeyTime := 0	; 有効なキーを押した時間
 		, KanaMode	:= 0	; 0: 英数入力, 1: かな入力
 		, OutStr	:= ""	; 出力する文字列
-		, LastStr	:= ""	; 前回、出力した文字列
+		, LastStr	:= ""	; 前回、出力した文字列(リピート、後置シフト用)
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
 		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループAll
 		, RepeatBit	:= 0	; リピート中のキーのビット
@@ -1012,7 +1011,7 @@ Convert()
 				OutStr := "{" . NowKey . "}"
 				nkeys := -1	; 後の検索は不要
 			}
-			; スペースキーが押されていたら、シフトを加える(SandSの実装)
+			; スペースキーが押されていたら、シフトを加えておく(SandSの実装)
 			if (RealBit & KC_SPC)
 				OutStr := "+" . OutStr
 		}
@@ -1034,25 +1033,25 @@ Convert()
 			if (KeyUpToOutputAll || (LastBit & NowBit))	; 「キーを離せば常に全部出力する」がオン
 			{											; または直近の入力文字のキーを離した
 				OutBuf()
-				LastStr := ""
+;				CombinableBit := -1 ; 次の入力で即確定しない
+;				LastStr := ""
 				_lks := 0
-				RepeatBit := 0
-				CombinableBit := -1 ; 次の入力で即確定しない
-				if (ShiftStyle >= 2)	; シフト全解除
-					Last2Bit := LastBit := 0
 			}
 			else if (_usc == 2 && _lks == 1 && (Last2Bit & NowBit))
 			{				; 1キー入力の連続で、最後に押したキーとは違うキーを離した時
 				OutBuf(1)	; 1個出力
-				Last2Bit := 0
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
 			}
-			Last2Bit &= BitMask
-			LastBit &= BitMask
-			if (!ShiftStyle)	; シフト全復活
-				LastBit := RealBit
-			if (ShiftStyle < 2)	; シフト全解除でない
-				DisableCombLimit := True	; 同時押しの判定期限を一時無効
+			RepeatBit := 0
+			if (!ShiftStyle)			; 文字キーシフト全復活
+				Last2Bit := LastBit := RealBit
+			else if (ShiftStyle >= 2)	; 全解除
+				Last2Bit := LastBit := 0
+			else						; そのまま
+			{
+				Last2Bit &= BitMask
+				LastBit &= BitMask
+			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
@@ -1060,7 +1059,7 @@ Convert()
 			&& (!_usc || LastKeyTime + ShiftDelay <= KeyTime))
 		{
 			OutBuf()
-			CombinableBit := -1 ; 次の入力で即確定しない
+;			CombinableBit := -1 ; 次の入力で即確定しない
 			RealBit |= KC_SPC
 			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
@@ -1068,23 +1067,26 @@ Convert()
 		; 押されていなかったキー、sc**以外のキー
 		else if !(RealBit & NowBit)
 		{
+			RealBit |= NowBit
+			; 文字キーによるシフトの適用範囲
+			if (CombLimitE && !KanaMode)
+				ShiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
+			else
+				ShiftStyle := ((RealBit & KC_SPC) ? CombStyleS : CombStyleN)
+
 			; 同時押しの判定期限到来
-			if (CombDelay > 0.0 && !DisableCombLimit && LastKeyTime + CombDelay <= KeyTime
-				&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
+			if (CombDelay > 0.0 && LastKeyTime + CombDelay <= KeyTime
+			 && ((CombLimitN && !(RealBit & KC_SPC))
+			  || (CombLimitS && (RealBit & KC_SPC))
+			  || (CombLimitE && !KanaMode)))
 			{
 				OutBuf()
-				if (((RealBit & KC_SPC) ? CombStyleS : CombStyleN) > 2	; 文字キーシフト 1回のみ
-				 || ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN) >= 2	; または、キーを離すと 全解除
-				 || (CombLimitE && !KanaMode))	; 英数時の同時打鍵期限を強制するなら、文字キーシフトは1回のみ
+				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
 					Last2Bit := LastBit := 0
 			}
 			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
 				OutBuf()
 
-			ShiftStyle := ((RealBit & KC_SPC) ? CombStyleS : CombStyleN)	; 文字キーによるシフトの適用範囲
-			if (CombLimitE && !KanaMode)
-				ShiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
-			RealBit |= NowBit
 			nBack := 0
 			while (!nkeys)
 			{
@@ -1104,17 +1106,16 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if ((!LastGroup || ShiftStyle > 2)
-								&& ShiftStyle >= 2 && _lks >= 3 && NowBit != KC_SPC)
+							if (ShiftStyle >= 3 && _lks >= 3 && NowBit != KC_SPC)
 							{
-								LastBit := 0	; 1キー入力の検索へ
+								Last2Bit := LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							nBack := (_lks >= 2 ? 1 : 2)
 								; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
 								; 前回が1キー入力だったら、2文字消して仮出力バッファへ
 							nkeys := 3
-							break, 2
+							break, 2	; 検索完了
 						}
 						i++
 					}
@@ -1135,15 +1136,14 @@ Convert()
 							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							if ((!LastGroup || ShiftStyle > 2)
-								&& ShiftStyle >= 2 && _lks >= 2 && NowBit != KC_SPC)
+							if (ShiftStyle >= 3 && _lks >= 2 && NowBit != KC_SPC)
 							{
-								LastBit := 0	; 1キー入力の検索へ
+								Last2Bit := LastBit := 0	; 1キー入力の検索へ
 								break
 							}
 							nBack := 1
 							nkeys := 2
-							break, 2
+							break, 2	; 検索完了
 						}
 						i++
 					}
@@ -1164,7 +1164,7 @@ Convert()
 						if (NowBit == KC_SPC)
 							nBack := 1
 						nkeys := 1
-						break, 2
+						break, 2	; 検索完了
 					}
 					i++
 				}
@@ -1202,7 +1202,6 @@ Convert()
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
 			; 次回の検索用に変数を更新
-			DisableCombLimit := False	; 同時押しの判定期限を無効にしない
 			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
 			_lks := nkeys			; 何キー同時押しだったかを保存
@@ -1224,7 +1223,7 @@ Convert()
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{
-				; 同時押しの判定期限タイマー起動(シフト時のみ)
+				; 同時押しの判定期限タイマー起動
 				if (CombDelay > 0.0
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					SetTimer, CombTimer, % - CombDelay
