@@ -1171,9 +1171,6 @@ Convert()
 				if (!LastGroup)
 					break
 				LastGroup := 0	; 今の検索がグループありだったので、グループなしで再度検索
-				if (ShiftStyle == 2)	; (同グループのみ継続)同グループで見つからなかった
-					Last2Bit := LastBit := 0
-
 			}
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)
