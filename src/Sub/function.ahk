@@ -794,7 +794,7 @@ Convert()
 		, OutStr	:= ""	; 出力する文字列
 		, LastStr	:= ""	; 前回、出力した文字列(リピート、後置シフト用)
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
-		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループAll
+		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループなし
 		, RepeatBit	:= 0	; リピート中のキーのビット
 		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, spc		:= 0	; スペースキー
@@ -1082,99 +1082,114 @@ Convert()
 			{
 				OutBuf()
 				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
-					Last2Bit := LastBit := 0	; (同グループのみ継続)グループAllのとき。または(1回のみ)
+					Last2Bit := LastBit := 0	; (同グループのみ継続)グループなしのとき。または(1回のみ)
 			}
 			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
 				OutBuf()
 
 			nBack := 0
-			; 3キー入力を検索
-			if (Last2Bit)
+			while (!nkeys)
 			{
-				i := DefBegin[3]
-				imax := DefEnd[3]	; 検索場所の設定
-				SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
-					; 文字キーによるシフトの適用範囲
-				while (i < imax)
+				; 3キー入力を検索
+				if (Last2Bit)
 				{
-					DefKeyCopy := DefsKey[i]
-					if ((DefKeyCopy & NowBit) ; 今回のキーを含み
-						&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
-						&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
-						&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
+					i := DefBegin[3]
+					imax := DefEnd[3]	; 検索場所の設定
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit | Last2Bit)
+						; 文字キーによるシフトの適用範囲
+					while (i < imax)
 					{
-						; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
-						if (ShiftStyle >= 3 && _lks >= 3 && NowBit != KC_SPC)
+						DefKeyCopy := DefsKey[i]
+						if ((DefKeyCopy & NowBit) ; 今回のキーを含み
+							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
+							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							Last2Bit := LastBit := 0
-							break
+							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
+							if (ShiftStyle >= 3 && _lks >= 3 && NowBit != KC_SPC)
+							{
+								Last2Bit := LastBit := 0
+								break
+							}
+							; 見つかった!
+							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
+							{
+								; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
+								; 前回が1キー入力だったら、2文字消して仮出力バッファへ
+								nBack := (_lks >= 2 ? 1 : 2)
+								nkeys := 3
+								break
+							}
+							; 文字キーシフト「同グループのみ継続」で同グループでなければ次を検索する
 						}
-						;
-						else if (ShiftStyle != 2 || _usc || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
-						{
-							; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
-							; 前回が1キー入力だったら、2文字消して仮出力バッファへ
-							nBack := (_lks >= 2 ? 1 : 2)
-							nkeys := 3
-							break
-						}
-						; 文字キーシフト「同グループのみ継続」で同グループでなければ次を検索する
+						i++
 					}
-					i++
 				}
-			}
-			; 2キー入力を検索
-			if (LastBit && !nkeys)
-			{
-				i := DefBegin[2]
-				imax := DefEnd[2]	; 検索場所の設定
-				SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
-					; 文字キーによるシフトの適用範囲
-				while (i < imax)
+				; 2キー入力を検索
+				if (LastBit && !nkeys)
 				{
-					DefKeyCopy := DefsKey[i]
-					if ((DefKeyCopy & NowBit) ; 今回のキーを含み
-						&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
-						&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
-						&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
+					i := DefBegin[2]
+					imax := DefEnd[2]	; 検索場所の設定
+					SearchBit := (!ShiftStyle ? RealBit : (RealBit & KC_SPC) | NowBit | LastBit)
+						; 文字キーによるシフトの適用範囲
+					while (i < imax)
 					{
-						; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
-						if (ShiftStyle >= 3 && _lks >= 2 && NowBit != KC_SPC)
+						DefKeyCopy := DefsKey[i]
+						if ((DefKeyCopy & NowBit) ; 今回のキーを含み
+							&& (DefKeyCopy & SearchBit) == DefKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (DefKeyCopy & KC_SPC) == (SearchBit & KC_SPC) ; シフトの相違はなく
+							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							Last2Bit := LastBit := 0
-							break
+							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
+							if (ShiftStyle >= 3 && _lks >= 2 && NowBit != KC_SPC)
+							{
+								Last2Bit := LastBit := 0
+								break
+							}
+							; 見つかった!
+							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
+							{
+								nBack := 1
+								nkeys := 2
+								break
+							}
+							; 文字キーシフト「同グループのみ継続」で同グループでなければ次を検索する
 						}
-						else if (ShiftStyle != 2 || _usc || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
-						{
-							nBack := 1
-							nkeys := 2
-							break
-						}
-						; 文字キーシフト「同グループのみ継続」で同グループでなければ次を検索する
+						i++
 					}
-					i++
 				}
-			}
-			; 1キー入力を検索
-			if (!nkeys)
-			{
-				i := DefBegin[1]
-				imax := DefEnd[1]	; 検索場所の設定
-				if (NowBit == KC_SPC)
-					SearchBit := KC_SPC | LastBit
-				else
-					SearchBit := (RealBit & KC_SPC) | NowBit
-				while (i < imax)
+				; 1キー入力を検索
+				if (!nkeys)
 				{
-					if (SearchBit == DefsKey[i] && KanaMode == DefsKanaMode[i])
+					i := DefBegin[1]
+					imax := DefEnd[1]	; 検索場所の設定
+					if (NowBit == KC_SPC)
+						SearchBit := KC_SPC | LastBit
+					else
+						SearchBit := (RealBit & KC_SPC) | NowBit
+					while (i < imax)
 					{
-						if (NowBit == KC_SPC)
-							nBack := 1
-						nkeys := 1
-						break
+						if (SearchBit == DefsKey[i] && KanaMode == DefsKanaMode[i])
+						{
+							; 見つかった!
+							if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
+							{
+								if (NowBit == KC_SPC)
+									nBack := 1
+								nkeys := 1
+								break
+							}
+						}
+						i++
 					}
-					i++
 				}
+				if (!LastGroup || nkeys)	; 検索終了
+					break
+
+				; グループなしで再度検索
+				LastGroup := 0
+				if (ShiftStyle == 2)	; (同グループのみ継続)同グループが見つからなかった
+					Last2Bit := LastBit := 0
 			}
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)

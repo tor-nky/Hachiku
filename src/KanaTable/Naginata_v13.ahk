@@ -49,6 +49,8 @@ SendSP(Str1, CtrlNo)
 		KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
 		SettingLayout()					; 出力確定する定義に印をつける
 	}
+;	else	; その他、未定義のもの。念のため。
+;		SendEachChar(Str1, 30)
 
 	return
 }
@@ -131,7 +133,7 @@ ReadLayout()
 ;**********************************************
 
 ; 単打
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -209,6 +211,7 @@ KanaGroup := 0	; 0 はグループAll
 ; 連続シフト中も有効
 
 ; 右手の濁音
+KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
 	SetKana( AL_左濁 | AL_さ | KC_SPC	,"za"	)
 	SetKana( AL_左濁 | AL_す			,"zu"	)	; ず
@@ -259,6 +262,7 @@ KanaGroup := 0	; 0 はグループAll
 ; 連続シフト中も有効
 
 ; 右の半濁音
+KanaGroup := "HA"
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
 	SetKana( AL_左半 | AL_へ | KC_SPC	,"pe"	)
 	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
@@ -274,6 +278,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ;****************************
 ; 小書き： Qと同時押し
+KanaGroup := "KO"
 	SetKana( AL_小 | AL_よ				,"xyo"	)	; (ょ)
 	SetKana( AL_小 | AL_よ | KC_SPC		,"xyo"	)
 	SetKana( AL_小 | AL_え				,"xe"	)	; (ぇ)
@@ -297,6 +302,7 @@ KanaGroup := 0	; 0 はグループAll
 ;**********************************************
 ;****************************
 ; 清音拗音; やゆよと同時押しで、ゃゅょが付く
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_き | AL_や				,"kya"	)	; きゃ
 	SetKana( AL_き | AL_や | KC_SPC		,"kya"	)
 	SetKana( AL_り | AL_や				,"rya"	)	; りゃ
@@ -344,6 +350,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ;****************************
 ; 濁音拗音
+KanaGroup := "DA"
 	SetKana( AL_右濁 | AL_き | AL_や			,"gya"		)	; ぎゃ
 	SetKana( AL_右濁 | AL_き | AL_や | KC_SPC	,"gya"		)
 	SetKana( AL_右濁 | AL_し | AL_や			,"ja"		)	; じゃ
@@ -373,6 +380,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ;****************************
 ; 半濁音拗音
+KanaGroup := "HA"
 	SetKana( AL_右半 | AL_ひ | AL_よ			,"pyo"		)	; ぴょ
 	SetKana( AL_右半 | AL_ひ | AL_よ | KC_SPC	,"pyo"		)
 	SetKana( AL_右半 | AL_ひ | AL_ゆ			,"pyu"		)	; ぴゅ
@@ -388,27 +396,33 @@ KanaGroup := 0	; 0 はグループAll
 ;****************************
 
 ; テ; ティテュディデュ
+KanaGroup := "HA"
 	SetKana( AL_右半 | AL_て | AL_ゆ			,"thu"		)	; てゅ
 	SetKana( AL_右半 | AL_て | AL_ゆ | KC_SPC	,"thu"		)
 	SetKana( AL_右半 | AL_て | AL_い			,"thi"		)	; てぃ
 	SetKana( AL_右半 | AL_て | AL_い | KC_SPC	,"thi"		)
 
+KanaGroup := "DA"
 	SetKana( AL_右濁 | AL_て | AL_ゆ			,"dhu"		)	; でゅ
 	SetKana( AL_右濁 | AL_て | AL_ゆ | KC_SPC	,"dhu"		)
 	SetKana( AL_右濁 | AL_て | AL_い			,"dhi"		)	; でぃ
 	SetKana( AL_右濁 | AL_て | AL_い | KC_SPC	,"dhi"		)
 
 ; ト; トゥドゥ
+KanaGroup := "HA"
 	SetKana( AL_右半 | AL_と | AL_う			,"twu"		)	; とぅ
 	SetKana( AL_右半 | AL_と | AL_う | KC_SPC	,"twu"		)
+KanaGroup := "DA"
 	SetKana( AL_右濁 | AL_と | AL_う			,"dwu"		)	; どぅ
 	SetKana( AL_右濁 | AL_と | AL_う | KC_SPC	,"dwu"		)
 
 ; シチ ェ; シェジェチェヂェ
+KanaGroup := "HA"
 	SetKana( AL_右半 | AL_し | AL_え			,"sye"		)	; しぇ
 	SetKana( AL_右半 | AL_し | AL_え | KC_SPC	,"sye"		)
 	SetKana( AL_右半 | AL_ち | AL_え			,"tye"		)	; ちぇ
 	SetKana( AL_右半 | AL_ち | AL_え | KC_SPC	,"tye"		)
+KanaGroup := "DA"
 	SetKana( AL_右濁 | AL_し | AL_え			,"je"		)	; じぇ
 	SetKana( AL_右濁 | AL_し | AL_え | KC_SPC	,"je"		)
 	SetKana( AL_右濁 | AL_ち | AL_え			,"dye"		)	; ぢぇ
@@ -416,6 +430,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ;****************************
 ; フ; ファフィフェフォフュ
+KanaGroup := "HA"
 	SetKana( AL_左半 | AL_ふ | AL_え			,"fe"		)	; ふぇ
 	SetKana( AL_左半 | AL_ふ | AL_え | KC_SPC	,"fe"		)
 	SetKana( AL_左半 | AL_ふ | AL_ゆ			,"fyu"		)	; ふゅ
@@ -428,6 +443,7 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_左半 | AL_ふ | AL_お | KC_SPC	,"fo"		)
 
 ; ヴ; ヴァヴィヴェヴォヴュ
+KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_う | AL_え			,"ve"		)	; ヴぇ
 	SetKana( AL_左濁 | AL_う | AL_え | KC_SPC	,"ve"		)
 	SetKana( AL_左濁 | AL_う | AL_ゆ			,"vuxyu"	)	; ヴゅ
@@ -440,6 +456,7 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_左濁 | AL_う | AL_お | KC_SPC	,"vo"		)
 
 ; う; ウィウェウォ　い；イェ
+KanaGroup := "HA"
 	SetKana( AL_左半 | AL_う | AL_え			,"we"		)	; うぇ
 	SetKana( AL_左半 | AL_う | AL_え | KC_SPC	,"we"		)
 	SetKana( AL_左半 | AL_う | AL_い			,"wi"		)	; うぃ
@@ -463,6 +480,7 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_左半 | AL_く | AL_お | KC_SPC	,"kuxo"		)
 
 ; グ; グァグィグェグォ
+KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_く | AL_え			,"guxe"		)	; ぐぇ
 	SetKana( AL_左濁 | AL_く | AL_え | KC_SPC	,"guxe"		)
 	SetKana( AL_左濁 | AL_く | AL_あ			,"gwa"		)	; ぐぁ
@@ -475,6 +493,7 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_左濁 | AL_く | AL_お | KC_SPC	,"guxo"		)
 
 ; ツ; ツァツィツェツォ
+KanaGroup := "HA"
 	SetKana( AL_左半 | AL_つ | AL_え			,"tse"		)	; つぇ
 	SetKana( AL_左半 | AL_つ | AL_え | KC_SPC	,"tse"		)
 	SetKana( AL_左半 | AL_つ | AL_あ			,"tsa"		)	; つぁ
@@ -489,6 +508,7 @@ KanaGroup := 0	; 0 はグループAll
 ; ひらがなカタカナキー：IME ON、無変換キー：IME OFFに設定のこと
 ; HJ: ON / FG: OFF
 
+KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
 	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
@@ -496,6 +516,7 @@ KanaGroup := 0	; 0 はグループAll
 
 ; Enter
 ; VとMの同時押し
+KanaGroup := "HA"
 	SetKana( KC_V | KC_M			,"{Enter}"		)	; 行送り
 	SetKana( KC_V | KC_M | KC_SPC	,"{Enter}"		)
 	SetEisu( KC_V | KC_M			,"{Enter}"		)	; 行送り
@@ -649,7 +670,7 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SCLN	,"^{PgUp 5}"						, R)	; 前 5ページ▶先頭
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^{PgDn 5}"						, R)	; 次 5◀ページ先頭
 
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 
 	; 固有名詞ショートカット(U+I)を押し続けて
 	; 前文字削除(U)のリピートが起きる場合があるので対策
@@ -692,7 +713,7 @@ USLikeLayout()
 	if (KeyDriver = "kbd101.dll")
 		return
 
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
 	SetEisu( KC_LBRC			,"{sc1B}"	)	; [
 	SetEisu( KC_RBRC			,"{sc2B}"	)	; ]
@@ -901,7 +922,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
-	KanaGroup := 0	; 0 はグループAll
+	KanaGroup := 0	; 0 はグループなし
 	return
 }
 

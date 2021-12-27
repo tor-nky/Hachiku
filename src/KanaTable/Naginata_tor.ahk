@@ -136,7 +136,7 @@ ReadLayout()
 ;**********************************************
 
 ; 単打
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -184,12 +184,12 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
 KanaGroup := "DA"
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
 	SetKana( AL_や | KC_SPC		,"ya"		)		; や
 KanaGroup := "DA"
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
@@ -307,7 +307,7 @@ KanaGroup := "KO"
 ;**********************************************
 ;****************************
 ; 清音拗音; やゆよと同時押しで、ゃゅょが付く
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_き | AL_や				,"kya"	)	; きゃ
 	SetKana( AL_き | AL_や | KC_SPC		,"kya"	)
 	SetKana( AL_り | AL_や				,"rya"	)	; りゃ
@@ -513,7 +513,7 @@ KanaGroup := "HA"
 ; ひらがなカタカナキー：IME ON、無変換キー：IME OFFに設定のこと
 ; HJ: ON / FG: OFF
 
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
 	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
@@ -675,7 +675,7 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SCLN	,"^i"		)		; カタカナ
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^u"		)		; ひらがな
 
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 
 	; 固有名詞ショートカット(U+I)を押し続けて
 	; 前文字削除(U)のリピートが起きる場合があるので対策
@@ -712,7 +712,7 @@ USLikeLayout()
 	if (KeyDriver = "kbd101.dll")
 		return
 
-KanaGroup := 0	; 0 はグループAll
+KanaGroup := 0	; 0 はグループなし
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
 	SetEisu( KC_LBRC			,"{sc1B}"	)	; [
 	SetEisu( KC_RBRC			,"{sc2B}"	)	; ]
@@ -915,7 +915,7 @@ KoyuRegist()
 		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
 
-	KanaGroup := 0	; 0 はグループAll
+	KanaGroup := 0	; 0 はグループなし
 	return
 }
 

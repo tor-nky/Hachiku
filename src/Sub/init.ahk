@@ -101,11 +101,11 @@ R := 1
 ; ----------------------------------------------------------------------
 ; 共用変数(メニュー用は別途)
 ; ----------------------------------------------------------------------
-KanaGroup := 0		; かな配列定義のグループ。0 はグループAll
+KanaGroup := 0		; かな配列定義のグループ。0 はグループなし
 LayoutName := ""	; かな配列の名前
 ; かな配列の入れ物
 DefsKey := []		; キービットの集合
-DefsGroup := []		; 定義のグループ番号 ※0はグループAll
+DefsGroup := []		; 定義のグループ番号 ※0はグループなし
 DefsKanaMode := []	; 0: 英数入力用, 1: かな入力用
 DefsTateStr := []	; 縦書き用定義
 DefsYokoStr := []	; 横書き用定義
@@ -332,10 +332,10 @@ ButtonOK:
 	CombDelay += 0.0
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
-	GoodHwnd := BadHwnd := ""	; IME窓の検出可否をリセット
 GuiEscape:
 ButtonCancel:
 GuiClose:
+	GoodHwnd := BadHwnd := ""	; IME窓の検出可否をリセット
 	Gui, Destroy
 	return
 
