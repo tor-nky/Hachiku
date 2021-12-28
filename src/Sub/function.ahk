@@ -814,6 +814,7 @@ Convert()
 ;		, i, imax, j, jmax	; カウンタ用
 ;		, DefKeyCopy
 ;		, CtrlNo
+;		, OutOfCombDelay
 
 	if (ConvRest || NextKey != "")
 		return	; 多重起動防止で戻る
@@ -1037,7 +1038,7 @@ Convert()
 ;				LastStr := ""
 				_lks := 0
 			}
-			else if (_usc == 2 && _lks == 1)	; && (Last2Bit & NowBit))
+			else if (_usc == 2 && _lks == 1)
 			{				; 1キー入力の連続で、最後に押したキーとは違うキーを離した時
 				OutBuf(1)	; 1個出力
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
@@ -1073,6 +1074,7 @@ Convert()
 				ShiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
 			else
 				ShiftStyle := ((RealBit & KC_SPC) ? CombStyleS : CombStyleN)
+;			LastGroup := (ShiftStyle == 0 ? 0 : LastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 同時押しの判定期限到来
 			if (CombDelay > 0.0 && LastKeyTime + CombDelay <= KeyTime
@@ -1081,10 +1083,14 @@ Convert()
 			  || (CombLimitE && !KanaMode)))
 			{
 				OutBuf()
+				OutOfCombDelay := True
 				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
 					Last2Bit := LastBit := 0	; (同グループのみ継続)グループなしのとき。または(1回のみ)
 			}
-			else if !(CombinableBit & NowBit)	; 今押したキーで同時押しにならない
+			else
+				OutOfCombDelay := False
+			; 今押したキーで同時押しにならない
+			if !(CombinableBit & NowBit)
 				OutBuf()
 
 			nBack := 0
@@ -1112,7 +1118,8 @@ Convert()
 								break
 							}
 							; 見つかった!
-							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
+							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC
+								|| (_lks < 3 && !OutOfCombDelay))
 							{
 								; 前回が2キー、3キー同時押しだったら、1文字消して仮出力バッファへ
 								; 前回が1キー入力だったら、2文字消して仮出力バッファへ
@@ -1147,7 +1154,8 @@ Convert()
 								break
 							}
 							; 見つかった!
-							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC)
+							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC
+								|| (_lks < 2 && !OutOfCombDelay))
 							{
 								nBack := 1
 								nkeys := 2
@@ -1183,9 +1191,9 @@ Convert()
 						i++
 					}
 				}
-				if (!LastGroup || nkeys)	; 検索終了
+				; 検索終了
+				if (!LastGroup || nkeys)
 					break
-
 				; グループなしで再度検索
 				LastGroup := 0
 				if (ShiftStyle == 2)	; (同グループのみ継続)同グループが見つからなかった
