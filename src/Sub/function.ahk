@@ -1263,7 +1263,8 @@ Convert()
 		; リピートできるキー
 		else if (NowBit == RepeatBit)
 		{	; 前回の文字列を出力
-			StoreBuf(0, LastStr)
+			if (!_usc)
+				StoreBuf(0, LastStr)
 			OutBuf()
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
