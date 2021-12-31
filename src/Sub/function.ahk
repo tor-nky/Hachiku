@@ -1157,6 +1157,8 @@ Convert()
 							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC
 								|| (_lks < 2 && !OutOfCombDelay))
 							{
+								if (_usc == 2)
+									OutBuf(1)	; 3キー前の入力は出力決定
 								nBack := 1
 								nkeys := 2
 								break
