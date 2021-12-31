@@ -1157,6 +1157,8 @@ Convert()
 							else if (!LastGroup || LastGroup == DefsGroup[i] || NowBit == KC_SPC
 								|| (_lks < 2 && !OutOfCombDelay))
 							{
+								if (_usc == 2)
+									OutBuf(1)	; 3キー前の入力は出力決定
 								nBack := 1
 								nkeys := 2
 								break
@@ -1252,7 +1254,7 @@ Convert()
 			{
 				; 同時押しの判定期限タイマー起動
 				if (CombDelay > 0.0
-				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
+				&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
 				if (CombinableBit == KC_SPC)
