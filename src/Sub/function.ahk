@@ -349,7 +349,7 @@ SetEisu2(KeyComb, Str1, Str2, CtrlNo:=0)
 	return
 }
 
-; 押すと同時押しになるキーを探す
+; 一緒に押すと同時押しになるキーを探す
 FindCombinableBit(SearchBit, KanaMode, nkeys)
 {
 	global DefsKey, DefsKanaMode, DefBegin, DefEnd
@@ -373,7 +373,7 @@ FindCombinableBit(SearchBit, KanaMode, nkeys)
 	return Bit
 }
 
-; 押すと同時押しになるキーを探して DefsCombinableBit[] に記録
+; 一緒に押すと同時押しになるキーを DefsCombinableBit[] に記録
 SettingLayout()
 {
 	global DefsKey, DefsKanaMode, DefsCombinableBit, DefBegin, DefEnd
@@ -811,7 +811,7 @@ Convert()
 ;		, nBack
 ;		, SearchBit	; いま検索しようとしているキーの集合
 ;		, ShiftStyle
-;		, i, imax, j, jmax	; カウンタ用
+;		, i, imax		; カウンタ用
 ;		, DefKeyCopy
 ;		, CtrlNo
 ;		, OutOfCombDelay
@@ -1008,7 +1008,7 @@ Convert()
 			; sc** 以外で入力
 			else
 			{
-				NowBit := 0
+				NowBit := SearchBit := 0
 				OutStr := "{" . NowKey . "}"
 				nkeys := -1	; 後の検索は不要
 			}
@@ -1218,18 +1218,17 @@ Convert()
 			if (nkeys > 0)	; 定義が見つかった時
 			{
 				OutStr := SelectStr(i)					; 出力する文字列
-				CombinableBit := DefsCombinableBit[i]	; さらに同時押しができるキーがあるか
+				CombinableBit := DefsCombinableBit[i]	; 一緒に押すと同時押しになるキーを探す
 				CtrlNo := DefsCtrlNo[i]
 			}
 			else if (!nkeys)	; 定義が見つけられなかった時
-				; 押すと同時押しになるキーを探す
+				; 一緒に押すと同時押しになるキーを探す
 				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
 			else
 				CombinableBit := 0
-			CombinableBit &= RealBit ^ (-1)	; 現在押されているキーは入れない
-
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
+
 			; 次回の検索用に変数を更新
 			LastStr := OutStr		; 今回の文字列を保存
 			LastKeyTime := KeyTime	; 有効なキーを押した時間を保存
@@ -1248,6 +1247,9 @@ Convert()
 				RepeatBit := 0
 
 			; 出力確定文字か？
+			CombinableBit &= (KeyUpToOutputAll ? RealBit : LastBit) ^ (-1)
+				; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
+				; オフなら、いま検索したキーを除外
 			if (CombinableBit == 0 || (ShiftDelay <= 0.0 && CombinableBit == KC_SPC))
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
