@@ -1075,7 +1075,7 @@ Convert()
 ;			LastGroup := (ShiftStyle == 0 ? 0 : LastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 同時押しの判定期限到来
-			if (CombDelay > 0.0 && LastKeyTime + CombDelay <= KeyTime
+			if (CombDelay > 0 && LastKeyTime + CombDelay <= KeyTime
 			 && ((CombLimitN && !(RealBit & KC_SPC))
 			  || (CombLimitS && (RealBit & KC_SPC))
 			  || (CombLimitE && !KanaMode)))
@@ -1260,15 +1260,15 @@ Convert()
 			CombinableBit &= (KeyUpToOutputAll ? RealBit : LastBit) ^ (-1)
 				; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
 				; オフなら、いま検索したキーを除外
-			if (CombinableBit == 0 || (ShiftDelay <= 0.0 && CombinableBit == KC_SPC))
+			if (CombinableBit == 0 || (ShiftDelay <= 0 && CombinableBit == KC_SPC))
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{
 				; 同時押しの判定期限タイマー起動
-				if (CombDelay > 0.0
+				if (CombDelay > 0
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					; 1回のみのタイマー。後置シフトの待ち時間のほうが長ければ、それに合わせる。
-					SetTimer, CombTimer, % - (CombDelay >= ShiftDelay ? CombDelay : ShiftDelay)
+					SetTimer, CombTimer, % - CombDelay
 				; 後置シフトの判定期限タイマー起動
 				if (CombinableBit == KC_SPC)
 					SetTimer, PSTimer, % - ShiftDelay	; 1回のみのタイマー

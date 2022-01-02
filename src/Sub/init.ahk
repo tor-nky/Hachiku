@@ -162,7 +162,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
+	IniRead, INICombDelay, %IniFilePath%, Basic, CombDelay, 40
 ; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
 	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
@@ -195,6 +195,8 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
 ; 処理時間表示	0: なし, 1: 処理時間表示あり
 	IniRead, INIDispTime, %IniFilePath%, Advanced, DispTime, 0
+
+	CombDelay := (INICombDelay >= ShiftDelay ? INICombDelay : ShiftDelay)	; 長い方を使う
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
@@ -309,7 +311,7 @@ ButtonOK:
 	IniWrite, %SideShift%, %IniFilePath%, Basic, SideShift
 	IniWrite, %EnterShift%, %IniFilePath%, Basic, EnterShift
 	IniWrite, %ShiftDelay%, %IniFilePath%, Basic, ShiftDelay
-	IniWrite, %CombDelay%, %IniFilePath%, Basic, CombDelay
+	IniWrite, %INICombDelay%, %IniFilePath%, Basic, CombDelay
 	IniWrite, %SpaceKeyRepeat%, %IniFilePath%, Basic, SpaceKeyRepeat
 	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
 	IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
@@ -327,9 +329,8 @@ ButtonOK:
 		IniWrite, %INIDispTime%, %IniFilePath%, Advanced, DispTime
 	}
 
+	CombDelay := (INICombDelay >= ShiftDelay ? INICombDelay : ShiftDelay)	; 長い方を使う
 	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
-	ShiftDelay += 0.0
-	CombDelay += 0.0
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
 GuiEscape:
@@ -394,7 +395,7 @@ PrefMenu:
 
 	Gui, Add, Text, xm y+15, 同時打鍵判定
 	Gui, Add, Edit, xm+132 yp-3 W45
-	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
+	Gui, Add, UpDown, vINICombDelay Range0-200, %INICombDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
 	Gui, Add, Text, xm+18 y+7, ※ 0 は無制限／上2つの時間が長い方を使います
 
