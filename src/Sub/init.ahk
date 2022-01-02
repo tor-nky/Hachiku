@@ -396,7 +396,7 @@ PrefMenu:
 	Gui, Add, Edit, xm+132 yp-3 W45
 	Gui, Add, UpDown, vCombDelay Range0-200, %CombDelay%
 	Gui, Add, Text, x+5 yp+3, ミリ秒
-	Gui, Add, Text, xm+18 y+1, ※ 0 は無制限
+	Gui, Add, Text, xm+18 y+7, ※ 0 は無制限／上2つの時間が長い方を使います
 
 	Gui, Add, Text, xm y+10, スペースキーの長押し
 	Gui, Add, Radio, xm+18 y+3 Group vSpaceKeyRepeat0, 何もしない

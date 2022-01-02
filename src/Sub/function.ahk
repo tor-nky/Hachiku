@@ -927,7 +927,7 @@ Convert()
 					StoreBuf(0, "{Space down}")
 					OutBuf()
 				}
-				DispTime(KeyTime)	; キー変化からの経過時間を表示
+				DispTime(KeyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
 				continue
 			}
 			else if (!spc)
@@ -1202,8 +1202,17 @@ Convert()
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)
 			{
-				OutStr := "+" . LastStr	; 後置シフト
-				nBack := 1
+				if (!_usc)	; 仮出力バッファが空の時
+				{
+					RepeatBit := 0		; リピート解除
+					DispTime(KeyTime)	; キー変化からの経過時間を表示
+					continue
+				}
+				else
+				{
+					OutStr := "+" . LastStr	; 後置シフト
+					nBack := 1
+				}
 			}
 
 			if (spc == 1)
@@ -1234,7 +1243,9 @@ Convert()
 			ReuseBit := 0	; 復活したキービットを消去
 			if (nkeys >= 2)	; 2、3キー入力のときは今回のキービットを保存
 				Last2Bit := LastBit := DefsKey[i]
-			else if (!nBack)		; 現在のを繰り上げ
+			else if (nBack)	; 1キー入力で今はスペースキーを押した
+				LastBit := SearchBit
+			else			; 繰り上げ
 			{
 				Last2Bit := LastBit
 				LastBit := SearchBit
@@ -1256,10 +1267,11 @@ Convert()
 				; 同時押しの判定期限タイマー起動
 				if (CombDelay > 0.0
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
-					SetTimer, CombTimer, % - CombDelay
+					; 1回のみのタイマー。後置シフトの待ち時間のほうが長ければ、それに合わせる。
+					SetTimer, CombTimer, % - (CombDelay >= ShiftDelay ? CombDelay : ShiftDelay)
 				; 後置シフトの判定期限タイマー起動
 				if (CombinableBit == KC_SPC)
-					SetTimer, PSTimer, % - ShiftDelay
+					SetTimer, PSTimer, % - ShiftDelay	; 1回のみのタイマー
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
@@ -1269,7 +1281,7 @@ Convert()
 			if (!_usc)
 				StoreBuf(0, LastStr)
 			OutBuf()
-			DispTime(KeyTime)	; キー変化からの経過時間を表示
+			DispTime(KeyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
 	}
 
