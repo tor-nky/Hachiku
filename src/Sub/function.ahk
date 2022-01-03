@@ -1058,10 +1058,8 @@ Convert()
 
 			; 同時押しの判定期限到来
 			EnableComb := True
-			if (CombDelay > 0 && LastKeyTime + CombDelay <= KeyTime
-			 && ((CombLimitN && !(RealBit & KC_SPC))
-			  || (CombLimitS && (RealBit & KC_SPC))
-			  || (CombLimitE && !KanaMode)))
+			if (NowBit != KC_SPC && CombDelay > 0 && LastKeyTime + CombDelay <= KeyTime
+			 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 			{
 				OutOfCombDelay := True
 				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
@@ -1139,7 +1137,7 @@ Convert()
 							{
 								if (_usc == 2)
 									OutBuf(1)	; 3キー前の入力は出力決定
-								nBack := (_lks >= 2 ? 0 : 1)
+								nBack := 1
 								nkeys := 2
 								break
 							}
@@ -1181,7 +1179,6 @@ Convert()
 				if (ShiftStyle == 2)	; (同グループのみ継続)同グループが見つからなかった
 					EnableComb := False
 			}
-
 			if (!EnableComb)	; 同時押しを一時停止中
 				ReuseBit := Last2Bit := LastBit := 0
 
@@ -1200,7 +1197,6 @@ Convert()
 					nBack := 1
 				}
 			}
-
 			if (spc == 1)
 				spc := 2	; 単独スペースではない
 			if (ent == 1)
