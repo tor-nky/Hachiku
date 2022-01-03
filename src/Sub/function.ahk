@@ -1181,6 +1181,10 @@ Convert()
 				if (ShiftStyle == 2)	; (同グループのみ継続)同グループが見つからなかった
 					EnableComb := False
 			}
+
+			if (!EnableComb)	; 同時押しを一時停止中
+				ReuseBit := Last2Bit := LastBit := 0
+
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)
 			{
@@ -1252,7 +1256,7 @@ Convert()
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					EndOfTime := KeyTime + CombDelay	; 期限の時間
 				; 後置シフトの判定期限
-				if ((CombinableBit & KC_SPC) && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
+				if (CombinableBit == KC_SPC && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
 					EndOfTime := KeyTime + ShiftDelay
 				; タイマー起動
 				if (EndOfTime != 0.0)
