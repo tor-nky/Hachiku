@@ -21,17 +21,9 @@
 ; サブルーチン
 ; ----------------------------------------------------------------------
 
-PSTimer:	; 後置シフトの判定期限タイマー
+KeyTimer:	; 後置シフトの判定期限タイマー
 	; 入力バッファが空の時、保存
-	InBufsKey[InBufWritePos] := "PSTimer", InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest == 15 ? ++InBufWritePos & 15 : InBufWritePos)
-		, (InBufRest == 15 ? InBufRest-- : )
-	Convert()	; 変換ルーチン
-	return
-
-CombTimer:	; 同時押しの判定期限タイマー
-	; 入力バッファが空の時、保存
-	InBufsKey[InBufWritePos] := "CombTimer", InBufsTime[InBufWritePos] := QPC()
+	InBufsKey[InBufWritePos] := "KeyTimer", InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest == 15 ? ++InBufWritePos & 15 : InBufWritePos)
 		, (InBufRest == 15 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
@@ -791,6 +783,7 @@ Convert()
 		, Last2Bit	:= 0	; 前々回のキービット
 		, ReuseBit	:= 0	; 復活したキービット
 		, LastKeyTime := 0	; 有効なキーを押した時間
+		, EndOfTime := 0.0	; タイマーを止めたい時間
 		, KanaMode	:= 0	; 0: 英数入力, 1: かな入力
 		, OutStr	:= ""	; 出力する文字列
 		, LastStr	:= ""	; 前回、出力した文字列(リピート、後置シフト用)
@@ -816,6 +809,7 @@ Convert()
 ;		, DefKeyCopy
 ;		, CtrlNo
 ;		, OutOfCombDelay
+;		, EnableComb
 
 	if (ConvRest || NextKey != "")
 		return	; 多重起動防止で戻る
@@ -823,8 +817,7 @@ Convert()
 	; 入力バッファが空になるまで
 	while (ConvRest := 15 - InBufRest || NextKey != "")
 	{
-		SetTimer, PSTimer, Off		; 後置シフトの判定期限タイマー停止
-		SetTimer, CombTimer, Off	; 同時押しの判定期限タイマー停止
+		SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 
 		if (NextKey == "")
 		{
@@ -837,29 +830,18 @@ Convert()
 				LastKey := NowKey
 			}
 
-			; 後置シフトの判定期限到来
-			if (NowKey == "PSTimer")
+			; 判定期限到来
+			if (NowKey == "KeyTimer")
 			{
-				if (LastKeyTime + ShiftDelay <= KeyTime)
+				if (InBufRest != 15)	; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
+					continue
+				if (KeyTime >= EndOfTime)
 				{
 					OutBuf()
-					DispTime(LastKeyTime, "`n後置シフト期限")	; キー変化からの経過時間を表示
+					DispTime(LastKeyTime, "`n判定期限")	; キー変化からの経過時間を表示
 				}
 				else
-					SetTimer, PSTimer, -10	; 10ミリ秒後に再判定
-				continue
-			}
-			; 同時押しの判定期限到来
-			if (NowKey == "CombTimer")
-			{
-				if (LastKeyTime + CombDelay <= KeyTime
-				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
-				{
-					OutBuf()
-					DispTime(LastKeyTime, "`n同時押し期限")		; キー変化からの経過時間を表示
-				}
-				else
-					SetTimer, CombTimer, -10	; 10ミリ秒後に再判定
+					SetTimer, KeyTimer, -10	; 10ミリ秒後に再判定
 				continue
 			}
 		}
@@ -1075,19 +1057,19 @@ Convert()
 ;			LastGroup := (ShiftStyle == 0 ? 0 : LastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 同時押しの判定期限到来
+			EnableComb := True
 			if (CombDelay > 0 && LastKeyTime + CombDelay <= KeyTime
 			 && ((CombLimitN && !(RealBit & KC_SPC))
 			  || (CombLimitS && (RealBit & KC_SPC))
 			  || (CombLimitE && !KanaMode)))
 			{
-				OutBuf()
 				OutOfCombDelay := True
 				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
-					ReuseBit := Last2Bit := LastBit := 0	; (同グループのみ継続)グループなしのとき。または(1回のみ)
+					EnableComb := False	; 同時押しを一時停止
 			}
 			else
 				OutOfCombDelay := False
-			; 今押したキーで同時押しにならない
+			; 今押したキーで同時押しにならない	
 			if !(CombinableBit & NowBit)
 				OutBuf()
 
@@ -1095,7 +1077,7 @@ Convert()
 			while (!nkeys)
 			{
 				; 3キー入力を検索
-				if (Last2Bit | ReuseBit)
+				if ((Last2Bit | ReuseBit) && EnableComb)
 				{
 					i := DefBegin[3]
 					imax := DefEnd[3]	; 検索場所の設定
@@ -1112,7 +1094,7 @@ Convert()
 							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
 							if (ShiftStyle >= 3 && _lks >= 3 && NowBit != KC_SPC)
 							{
-								ReuseBit := Last2Bit := LastBit := 0
+								EnableComb := False
 								break
 							}
 							; 見つかった!
@@ -1131,7 +1113,7 @@ Convert()
 					}
 				}
 				; 2キー入力を検索
-				if ((LastBit | ReuseBit) && !nkeys)
+				if (!nkeys && (LastBit | ReuseBit) && EnableComb)
 				{
 					i := DefBegin[2]
 					imax := DefEnd[2]	; 検索場所の設定
@@ -1148,7 +1130,7 @@ Convert()
 							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
 							if (ShiftStyle >= 3 && _lks >= 2 && NowBit != KC_SPC)
 							{
-								ReuseBit := Last2Bit := LastBit := 0
+								EnableComb := False
 								break
 							}
 							; 見つかった!
@@ -1197,7 +1179,7 @@ Convert()
 				; グループなしで再度検索
 				LastGroup := 0
 				if (ShiftStyle == 2)	; (同グループのみ継続)同グループが見つからなかった
-					ReuseBit := Last2Bit := LastBit := 0
+					EnableComb := False
 			}
 			; スペースを押したが、定義がなかった時
 			if (NowBit == KC_SPC && !nkeys)
@@ -1264,14 +1246,17 @@ Convert()
 				OutBuf()	; 出力確定
 			else if (InBufRest == 15 && NextKey == "")
 			{
-				; 同時押しの判定期限タイマー起動
+				EndOfTime := 0.0
+				; 同時押しの判定期限
 				if (CombDelay > 0
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
-					; 1回のみのタイマー。後置シフトの待ち時間のほうが長ければ、それに合わせる。
-					SetTimer, CombTimer, % - CombDelay
-				; 後置シフトの判定期限タイマー起動
-				if (CombinableBit == KC_SPC)
-					SetTimer, PSTimer, % - ShiftDelay	; 1回のみのタイマー
+					EndOfTime := KeyTime + CombDelay	; 期限の時間
+				; 後置シフトの判定期限
+				if ((CombinableBit & KC_SPC) && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
+					EndOfTime := KeyTime + ShiftDelay
+				; タイマー起動
+				if (EndOfTime != 0.0)
+					SetTimer, KeyTimer, % QPC() - EndOfTime	; 1回のみのタイマー
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
