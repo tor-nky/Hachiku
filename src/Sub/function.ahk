@@ -1252,7 +1252,7 @@ Convert()
 				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 					EndOfTime := KeyTime + CombDelay	; 期限の時間
 				; 後置シフトの判定期限
-				if (CombinableBit == KC_SPC && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
+				if ((CombinableBit & KC_SPC) && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
 					EndOfTime := KeyTime + ShiftDelay
 				; タイマー起動
 				if (EndOfTime != 0.0)
