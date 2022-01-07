@@ -521,7 +521,6 @@ SendEachChar(Str1, Delay:=0)
 						Send, {Enter}
 						Sleep, PostDelay
 						Str2 := "{BS}"
-						PostDelay := 0
 					}
 				}
 			}
