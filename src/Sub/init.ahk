@@ -328,6 +328,7 @@ ButtonOK:
 	}
 
 	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
+	DeleteDefs()	; 配列定義をすべて消去する
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
 GuiEscape:

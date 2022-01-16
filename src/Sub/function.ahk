@@ -50,6 +50,25 @@ QPC() {	; ミリ秒単位
 	Return Count * Coefficient
 }
 
+; 配列定義をすべて消去する
+DeleteDefs()
+{
+	global DefsKey, DefsGroup, DefsKanaMode, DefsTateStr, DefsYokoStr, DefsCtrlNo
+		, DefBegin, DefEnd
+
+	; かな配列の入れ物
+	DefsKey := []		; キービットの集合
+	DefsGroup := []		; 定義のグループ番号 ※0はグループなし
+	DefsKanaMode := []	; 0: 英数入力用, 1: かな入力用
+	DefsTateStr := []	; 縦書き用定義
+	DefsYokoStr := []	; 横書き用定義
+	DefsCtrlNo := []	; 0: なし, 1: リピートできる, 2以上: 特別出力(かな定義ファイルで操作)
+	DefsCombinableBit := []	; 0: 出力確定しない,
+						; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
+	DefBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
+	DefEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
+}
+
 ; 何キー同時か数える
 CountBit(KeyComb)
 {
