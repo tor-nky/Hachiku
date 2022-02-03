@@ -119,7 +119,7 @@ InBufsKey := []
 InBufsTime := []	; 入力の時間
 InBufReadPos := 0	; 読み出し位置
 InBufWritePos := 0	; 書き込み位置
-InBufRest := 15
+InBufRest := 31
 ; 仮出力バッファ
 OutStrs := []
 OutCtrlNos := []
@@ -193,8 +193,8 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0: なし, 1: あり
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
-; 処理時間表示	0: なし, 1: 処理時間表示あり
-	IniRead, INIDispTime, %IniFilePath%, Advanced, DispTime, 0
+; テストモード	0: なし, 1: 処理時間表示, 2: 表示待ち文字列表示
+	IniRead, TestMode, %IniFilePath%, Advanced, TestMode
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
@@ -230,13 +230,19 @@ if (AdvancedMenu)
 	CombKeyUpS1 := (CombKeyUpS == 1 ? 1 : 0)
 	CombKeyUpS2 := (CombKeyUpS == 2 ? 1 : 0)
 }
+if (TestMode != "ERROR")
+{
+	TestMode0 := (TestMode == 0 ? 1 : 0)
+	TestMode1 := (TestMode == 1 ? 1 : 0)
+	TestMode2 := (TestMode == 2 ? 1 : 0)
+}
 
 ; ----------------------------------------------------------------------
 ; メニュー表示
 ; ----------------------------------------------------------------------
 	; ツールチップを変更する
 	menu, tray, tip, Hachiku %Version%`n%LayoutName%`n固有名詞セット%KoyuNumber%
-	; タスクトレイメニューの標準メニュー項目を解除
+	; 標準メニュー項目を削除する
 	menu, tray, NoStandard
 
 	; 薙刀式配列用メニュー
@@ -250,12 +256,11 @@ if (AdvancedMenu)
 		menu, tray, add, 固有名詞登録, KoyuMenu
 	}
 
-	; 設定画面を追加
-	menu, tray, add, 設定..., PrefMenu
-	; セパレーター
-	menu, tray, add
-	; 標準メニュー項目を追加
-	menu, tray, Standard
+	menu, tray, add, 設定..., PrefMenu	; 設定画面を追加
+	menu, tray, add						; セパレーター
+	menu, tray, add, ログ表示, DispLog	; ログ
+	menu, tray, add						; セパレーター
+	menu, tray, Standard	; 標準メニュー項目を追加する
 
 	; バージョンアップ後、初めての起動時は設定画面を表示
 	if (INIVersion != Version)
@@ -286,7 +291,7 @@ VerticalMode:
 	Vertical := (Vertical == 0 ? 1 : 0)
 	; 設定ファイル書き込み
 	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
-return
+	return
 
 ButtonOK:
 	Gui, Submit
@@ -301,6 +306,8 @@ ButtonOK:
 		CombStyleS := (CombStyleS0 ? 0 : (CombStyleS1 ? 1 : (CombStyleS2 ? 2 : 3)))
 		CombKeyUpS := (CombKeyUpS0 ? 0 : (CombKeyUpS1 ? 1 : 2))
 	}
+	if (TestMode != "ERROR")
+		TestMode := (TestMode0 ? 0 : (TestMode1 ? 1 : 2))
 	; 設定ファイル書き込み
 	IniWrite, %INIVersion%, %IniFilePath%, general, Version
 	IniWrite, %AdvancedMenu%, %IniFilePath%, general, AdvancedMenu
@@ -324,8 +331,9 @@ ButtonOK:
 		IniWrite, %CombLimitE%, %IniFilePath%, Advanced, CombLimitE
 		IniWrite, %KeyUpToOutputAll%, %IniFilePath%, Advanced, KeyUpToOutputAll
 		IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
-		IniWrite, %INIDispTime%, %IniFilePath%, Advanced, DispTime
 	}
+	if (TestMode != "ERROR")
+		IniWrite, %TestMode%, %IniFilePath%, Advanced, TestMode
 
 	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
 	DeleteDefs()	; 配列定義をすべて消去する
@@ -333,6 +341,7 @@ ButtonOK:
 	SettingLayout()	; 出力確定する定義に印をつける
 GuiEscape:
 ButtonCancel:
+ButtonClose:
 GuiClose:
 	GoodHwnd := BadHwnd := ""	; IME窓の検出可否をリセット
 	Gui, Destroy
@@ -481,9 +490,19 @@ PrefMenu:
 		Gui, Add, Checkbox, xm y+10 vEisuSandS, 英数入力時のSandS
 		if (EisuSandS)
 			GuiControl, , EisuSandS, 1
-		Gui, Add, Checkbox, xm y+10 vINIDispTime, 処理時間表示
-		if (INIDispTime)
-			GuiControl, , INIDispTime, 1
+		if (TestMode != "ERROR")
+		{
+			Gui, Add, Text, xm y+15, テストモード
+			Gui, Add, Radio, xm+75 yp+0 Group vTestMode0, なし
+			Gui, Add, Radio, x+0 vTestMode1, 処理時間表示
+			Gui, Add, Radio, x+0 vTestMode2, 表示待ち文字列表示
+			if (TestMode0)
+				GuiControl, , TestMode0, 1
+			else if (TestMode1)
+				GuiControl, , TestMode1, 1
+			else
+				GuiControl, , TestMode2, 1
+		}
 
 		Gui, Tab
 		Gui, Add, Button, W60 xm+146 ys+240 Default, OK
@@ -496,5 +515,103 @@ PrefMenu:
 		Gui, Add, Button, W60 x+0, Cancel
 		Gui, Show
 	}
-
 	return
+
+; ログ表示
+DispLog:
+	DispLogFunc()
+	return
+; ログ表示(本体)
+DispLogFunc()
+{
+	global InBufsKey, InBufReadPos, InBufsTime, USKB, TestMode
+;	local SCArray, LastKeyTime, KeyTime, diff, pos, Str, c, PreStr, Term, number, temp
+
+	if (USKB)	; USキーボード
+		SCArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
+			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
+			, "D", "F", "G", "H", "J", "K", "L", ";", "'", "`", "LShift", "\", "Z", "X", "C", "V"
+			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5"
+			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+	else		; USキーボード以外
+		SCArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
+			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
+			, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
+			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "英数", "F1", "F2", "F3", "F4", "F5"
+			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+
+	Gui, Destroy
+	Gui, -MinimizeBox
+	Gui, Add, Text, xm, ≪ログ≫
+	LastKeyTime := 0.0
+	pos := InBufReadPos
+	while ((pos := ++pos & 31) != InBufReadPos)
+	{
+		Str := InBufsKey[pos], KeyTime := InBufsTime[pos]
+		if (Str)
+		{
+			; 時間を書き出し
+			if (LastKeyTime)
+			{
+				if (TestMode != "ERROR")
+					diff := round(KeyTime - LastKeyTime, 1)
+				else
+					diff := round(KeyTime - LastKeyTime)
+				Gui, Add, Text, xm, % "(" . diff . "ms) "
+			}
+			else
+				Gui, Add, Text, xm
+
+			; 修飾キー
+			PreStr := ""
+			while (c := SubStr(Str, 1, 1))
+			{
+				if (c == "+" || c == "^" || c == "!" || c == "#"
+				 || c == "*" || c == "~" || c == "$")
+				{
+					PreStr .= c
+					Str := SubStr(Str, 2)	; 先頭の文字を消去
+				}
+				else
+					break
+			}
+			; キーの上げ下げを調べる
+			StringRight, Term, Str, 3	; Term に入力末尾の2文字を入れる
+			if (Term = " up")	; キーが離されたとき
+			{
+				Term := "↑"
+				Str := SubStr(Str, 1, StrLen(Str) - 3)
+			}
+			else
+				Term := ""
+
+			; 書き出し
+			if (Str = "KeyTimer")
+				Str := "[KeyTimer]"
+			else if (Str = "vk1A")
+				Str := "(Mac)英数"
+			else if (Str = "vk16")
+				Str := "(Mac)かな"
+			else if (SubStr(Str, 1, 2) = "sc")
+			{
+				number := "0x" . SubStr(Str, 3, 2)
+				temp := SCArray[number]
+				if (temp != "")
+					Str := temp
+			}
+			Gui, Add, Text, xm+60 yp, % PreStr . Str . Term
+		}
+		LastKeyTime := KeyTime	; 押した時間を保存
+	}
+	Gui, Add, Button, W60 xm+30 y+10 Default, Close
+	Gui, Show
+	return
+}

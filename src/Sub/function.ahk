@@ -24,8 +24,8 @@
 KeyTimer:	; 後置シフトの判定期限タイマー
 	; 入力バッファが空の時、保存
 	InBufsKey[InBufWritePos] := "KeyTimer", InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest == 15 ? ++InBufWritePos & 15 : InBufWritePos)
-		, (InBufRest == 15 ? InBufRest-- : )
+		, InBufWritePos := (InBufRest == 31 ? ++InBufWritePos & 31 : InBufWritePos)
+		, (InBufRest == 31 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
 
@@ -411,26 +411,22 @@ DetectMSIME()
 {
 	global IMESelect, GoodHwnd, BadHwnd
 	static IMEName := ""
-		, LastSearchTime := 0.0
+		, LastSearchTime := 0
 ;	local Value, NowIME
 
 	NowIME := IMEName
 
 	if (IMESelect)
 		NowIME := "ATOK"
-	else
+	else if (A_TickCount < LastSearchTime || LastSearchTime + 10000 < A_TickCount)
 	{
-		NowTime := QPC()
-		if (LastSearchTime + 10000.0 < NowTime)
-		{
-			LastSearchTime := NowTime
-			; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
-			; 参考: https://registry.tomoroh.net/archives/11547
-			RegRead, Value, HKEY_CURRENT_USER
-				, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-				, NoTsf3Override2
-			NowIME := (ErrorLevel == 1 ? "MSIME" : (Value ? "OldMSIME" : "NewMSIME"))
-		}
+		LastSearchTime := A_TickCount
+		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+		; 参考: https://registry.tomoroh.net/archives/11547
+		RegRead, Value, HKEY_CURRENT_USER
+			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
+			, NoTsf3Override2
+		NowIME := (ErrorLevel == 1 ? "MSIME" : (Value ? "OldMSIME" : "NewMSIME"))
 	}
 
 	if (NowIME != IMEName)
@@ -442,14 +438,15 @@ DetectMSIME()
 SendEachChar(Str1, Delay:=0)
 {
 	global IMESelect, GoodHwnd, BadHwnd
-	static LastTickCount := QPC()
-		, flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
+	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
+		, LastSendTime := 0.0	; 最後に出力した時間
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
 ;		, NoIME, IMEConvMode		; IME入力モードの保存、復元に関するフラグと変数
 ;		, PreDelay, PostDelay		; 出力前後のディレイの値
+;		, FinalDelay
 ;		, LastDelay					; 前回出力時のディレイの値
 ;		, Slow
 ;		, ClipSaved
@@ -458,8 +455,8 @@ SendEachChar(Str1, Delay:=0)
 ;ToolTip, %Str1%
 ;SetTimer, RemoveToolTip, 5000
 	KakuteiIsEnter := False
-
 	WinGet, Hwnd, ID, A
+
 	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
@@ -467,7 +464,7 @@ SendEachChar(Str1, Delay:=0)
 		Slow := (IMESelect ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
-	LastDelay := Floor(QPC() - LastTickCount)
+	LastDelay := Floor(QPC() - LastSendTime)
 
 	; 文字列を細切れにして出力
 	NoIME := False
@@ -529,18 +526,19 @@ SendEachChar(Str1, Delay:=0)
 				{
 					if (PostDelay < 10)
 						PostDelay := 10
-					if (KakuteiIsEnter	; 文字確定させるのにエンターのみで良い
-					 || (LastDelay >= (IMESelect ? 90 : 40) && IME_GetConverting()))
-						; 文字確定からIME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms
-						Str2 := "{Enter}"
-					else if (LastDelay < (IMESelect ? 90 : 40) || Hwnd != GoodHwnd)
-					{	; IME窓を検出可能か不明
+					if (Hwnd != GoodHwnd || LastDelay < (IMESelect ? 90 : 40))
+						; IME窓の検出を当てにできない
+						; あるいは文字確定から時間が経っていない(IME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms)
+					{
 						Send, =
 						Sleep, PostDelay
 						Send, {Enter}
 						Sleep, PostDelay
 						Str2 := "{BS}"
 					}
+					else if (KakuteiIsEnter	|| IME_GetConverting())
+						; 文字確定させるのにエンターのみで良い、またはIME窓あり
+						Str2 := "{Enter}"
 				}
 			}
 			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEをオフにするが後で元に戻せるようにする
@@ -557,23 +555,27 @@ SendEachChar(Str1, Delay:=0)
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
+				LastDelay := 0
 			}
 			else if (StrChopped = "{IMEON}")
 			{
 				NoIME := False
 				IME_SET(1)			; IMEオン
+				LastDelay := 0
 			}
 			else if (StrChopped == "{全英}")
 			{
 				NoIME := False
 				IME_SET(1)			; IMEオン
 				IME_SetConvMode(24)	; IME 入力モード	全英数
+				LastDelay := 0
 			}
 			else if (StrChopped == "{半ｶﾅ}")
 			{
 				NoIME := False
 				IME_SET(1)			; IMEオン
 				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
+				LastDelay := 0
 			}
 			; ATOK+秀丸エディタで、文字列途中のエンターをゆっくり出力する
 			else if (Slow == 0x11
@@ -603,7 +605,9 @@ SendEachChar(Str1, Delay:=0)
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
+				if (DetectMSIME() = "NewMSIME")
+					BadHwnd := Hwnd
+				else if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
 					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
@@ -626,6 +630,8 @@ SendEachChar(Str1, Delay:=0)
 				; 出力直後のディレイ
 				if (PostDelay > 0)
 					Sleep, % (LastDelay := PostDelay)
+				else
+					LastDelay := 0
 			}
 
 			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
@@ -679,7 +685,7 @@ SendEachChar(Str1, Delay:=0)
 		i++
 	}
 
-	LastTickCount := QPC() - LastDelay	; 最後に出力した時間を記録
+	LastSendTime := QPC() - LastDelay	; 最後に出力した時間を記録
 	return
 }
 
@@ -715,6 +721,7 @@ OutBuf(i:=2)
 		_usc--
 		i--
 	}
+	DispStr()	; 表示待ち文字列表示
 	return
 }
 
@@ -734,7 +741,7 @@ StoreBuf(nBack, Str1, CtrlNo:=0)
 	_usc++
 	OutStrs[_usc] := Str1
 	OutCtrlNos[_usc] := CtrlNo
-
+	DispStr()	; 表示待ち文字列表示
 	return
 }
 
@@ -772,14 +779,34 @@ SelectStr(i)
 ; TimeA からの時間を表示[ミリ秒単位]
 DispTime(TimeA, Str1:="")
 {
-	global INIDispTime
+	global TestMode
 ;	local TimeAtoB
 
-	if (INIDispTime)
+	if (TestMode = 1)
 	{
 		TimeAtoB := Round(QPC() - TimeA, 1)
 		ToolTip, %TimeAtoB% ms%Str1%
 		SetTimer, RemoveToolTip, 1000
+	}
+}
+
+; 表示待ち文字列表示
+DispStr()
+{
+	global TestMode, _usc, OutStrs
+
+	if (TestMode = 2)
+	{
+		if (!_usc)
+			ToolTip
+		else
+		{
+			if (_usc = 1)
+				Str1 := OutStrs[1]
+			else
+				Str1 := OutStrs[1] . "`n" . OutStrs[2]
+			ToolTip, %Str1%
+		}
 	}
 }
 
@@ -814,6 +841,7 @@ Convert()
 		, ent		:= 0	; エンター
 		, CombinableBit := -1 ; 押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local KeyTime	; キーを押した時間
+;		, PreDelay
 ;		, IMEState, IMEConvMode
 ;		, NowKey, len
 ;		, Term		; 入力の末端2文字
@@ -833,7 +861,7 @@ Convert()
 		return	; 多重起動防止で戻る
 
 	; 入力バッファが空になるまで
-	while (ConvRest := 15 - InBufRest || NextKey != "")
+	while (ConvRest := 31 - InBufRest || NextKey != "")
 	{
 		SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 
@@ -841,7 +869,7 @@ Convert()
 		{
 			; 入力バッファから読み出し
 			NowKey := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
-				, InBufReadPos := ++InBufReadPos & 15, InBufRest++
+				, InBufReadPos := ++InBufReadPos & 31, InBufRest++
 			if (NowKey != LastKey)
 			{
 				SendKeyUp()	; キーリピート中の押し残したキーを上げる
@@ -851,9 +879,9 @@ Convert()
 			; 判定期限到来
 			if (NowKey == "KeyTimer")
 			{
-				if (InBufRest != 15)	; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
+				if (InBufRest != 31)	; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
 					continue
-				if (KeyTime >= EndOfTime)
+				if (KeyTime > EndOfTime)
 				{
 					OutBuf()
 					DispTime(LastKeyTime, "`n判定期限")	; キー変化からの経過時間を表示
@@ -1056,7 +1084,7 @@ Convert()
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
 		else if (NowBit == KC_SPC && !(RealBit & NowBit)
-			&& (!_usc || LastKeyTime + ShiftDelay <= KeyTime))
+			&& (!_usc || LastKeyTime + ShiftDelay < KeyTime))
 		{
 			OutBuf()
 			RealBit |= KC_SPC
@@ -1076,7 +1104,7 @@ Convert()
 
 			; 同時押しの判定期限到来
 			EnableComb := True
-			if (NowBit != KC_SPC && CombDelay > 0 && LastKeyTime + CombDelay <= KeyTime
+			if (NowBit != KC_SPC && CombDelay > 0 && LastKeyTime + CombDelay < KeyTime
 			 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 			{
 				OutOfCombDelay := True
@@ -1085,7 +1113,7 @@ Convert()
 			}
 			else
 				OutOfCombDelay := False
-			; 今押したキーで同時押しにならない	
+			; 今押したキーで同時押しにならない
 			if !(CombinableBit & NowBit)
 				OutBuf()
 
@@ -1262,7 +1290,7 @@ Convert()
 				; オフなら、いま検索したキーを除外
 			if (CombinableBit == 0 || (ShiftDelay <= 0 && CombinableBit == KC_SPC))
 				OutBuf()	; 出力確定
-			else if (InBufRest == 15 && NextKey == "")
+			else if (InBufRest == 31 && NextKey == "")
 			{
 				EndOfTime := 0.0
 				; 同時押しの判定期限
@@ -1421,8 +1449,8 @@ sc29::	; (JIS)半角/全角	(US)`
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest > 6 ? ++InBufWritePos & 15 : InBufWritePos)
-		, (InBufRest > 6 ? InBufRest-- : )
+		, InBufWritePos := (InBufRest > 22 ? ++InBufWritePos & 31 : InBufWritePos)
+		, (InBufRest > 22 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
 
@@ -1545,7 +1573,7 @@ Enter up::
 #If		; End #If ()
 ; 入力バッファへ保存
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest ? ++InBufWritePos & 15 : InBufWritePos)
+		, InBufWritePos := (InBufRest ? ++InBufWritePos & 31 : InBufWritePos)
 		, (InBufRest ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
