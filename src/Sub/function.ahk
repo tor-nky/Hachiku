@@ -905,8 +905,10 @@ Convert()
 		{
 			IMEState := IME_GET()
 			IMEConvMode := IME_GetConvMode()
-			if ((IMEState == 0 && LastSendTime + 30.0 <= QPC()) || IMEState == 1)
-				KanaMode := (IMEState ? IMEConvMode & 1 : 0)
+			if (IMEState == 0 && LastSendTime + 30.0 <= QPC())
+				KanaMode := 0	; 英数入力中なら、前回の出力から 30ミリ秒経っていたら変数を更新
+			else if (IMEState == 1 && IMEConvMode != "")	; かな入力中
+				KanaMode := IMEConvMode & 1
 		}
 
 		; 左右シフト処理
