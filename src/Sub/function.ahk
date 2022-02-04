@@ -437,9 +437,8 @@ DetectMSIME()
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
-	global IMESelect, GoodHwnd, BadHwnd
+	global IMESelect, GoodHwnd, BadHwnd, LastSendTime
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
-		, LastSendTime := 0.0	; 最後に出力した時間
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
@@ -816,7 +815,7 @@ Convert()
 	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
-		, _usc
+		, _usc, LastSendTime
 		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat
 		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE
 		, KeyUpToOutputAll, EisuSandS
@@ -906,7 +905,7 @@ Convert()
 		{
 			IMEState := IME_GET()
 			IMEConvMode := IME_GetConvMode()
-			if (IMEState != "" && IMEConvMode != "")	; 検出に失敗したら書き換えない
+			if ((IMEState == 0 && LastSendTime + 30.0 <= QPC()) || IMEState == 1)
 				KanaMode := (IMEState ? IMEConvMode & 1 : 0)
 		}
 
