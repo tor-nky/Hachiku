@@ -521,6 +521,8 @@ SendEachChar(Str1, Delay:=0)
 			}
 			else if (StrChopped == "{確定}")
 			{
+				if (LastDelay < 30)
+					Sleep, % 30 - LastDelay	; 前回の出力から 30ミリ秒経ってから IME_GET()
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (PostDelay < 10)
