@@ -525,8 +525,11 @@ SendEachChar(Str1, Delay:=0)
 					Sleep, % 30 - LastDelay	; 前回の出力から 30ミリ秒経ってから IME_GET()
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (PostDelay < 10)
+					if (DetectMSIME() = "OldMSIME" && PostDelay < 30)
+						PostDelay := 30
+					else if (PostDelay < 10)
 						PostDelay := 10
+
 					if (Hwnd != GoodHwnd || LastDelay < (IMESelect ? 90 : 40))
 						; IME窓の検出を当てにできない
 						; あるいは文字確定から時間が経っていない(IME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms)
@@ -536,6 +539,7 @@ SendEachChar(Str1, Delay:=0)
 						Send, {Enter}
 						Sleep, PostDelay
 						Str2 := "{BS}"
+						PostDelay := 0
 					}
 					else if (KakuteiIsEnter	|| IME_GetConverting())
 						; 文字確定させるのにエンターのみで良い、またはIME窓あり
@@ -627,7 +631,7 @@ SendEachChar(Str1, Delay:=0)
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
-				Send, % Str2
+				Send, % "{Blind}" . Str2
 				; 出力直後のディレイ
 				if (PostDelay > 0)
 					Sleep, % (LastDelay := PostDelay)
@@ -690,18 +694,80 @@ SendEachChar(Str1, Delay:=0)
 	return
 }
 
+; 押したままのキーを上げ、入れ替える
+SendKeyUp(Str1:="")
+{
+	global RestStr
+
+	if (RestStr != "")
+		SendEachChar(RestStr)
+	RestStr := Str1
+
+	return
+}
+
+; キーの上げ下げを分離
+;	返り値: 下げるキー
+;	RestStr: 後で上げるキー
+SplitKeyUpDown(Str1)
+{
+	global RestStr	; まだ上げていないキー
+	static KeyDowns := Object("{Space}", "{Space down}"
+;			, "{Home}", "{Home down}", "{End}", "{End down}", "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}"
+			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}")
+		, KeyUps := Object("{Space}", "{Space up}"
+;			, "{Home}", "{Home up}", "{End}", "{End up}", "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}"
+			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}")
+;	local sft, Str2, KeyDown, KeyUp
+
+	sft := 0
+	if (Asc(Str1) == 43)		; "+" から始まる
+	{
+		sft := 1
+		Str2 := SubStr(Str1, 2)	; 先頭の "+" を消去
+	}
+
+	KeyDown := KeyDowns[Str2]
+	; キーの上げ下げを分離しない時
+	if (KeyDown == "")
+	{
+		SendKeyUp(KeyUp)	; 押したままのキーを上げる
+		return Str1
+	}
+
+	; キーの上げ下げを分離できる時
+	if (sft)
+	{
+		KeyUp := KeyUps[Str2] . "{ShiftUp}"
+		if (RestStr != KeyUp)
+		{
+			SendKeyUp(KeyUp)	; 押したままのキーを入れ替える
+			KeyDown := "{ShiftDown}" . KeyDown
+		}
+	}
+	else
+	{
+		KeyUp := KeyUps[Str2]
+		if (RestStr != KeyUp)
+			SendKeyUp(KeyUp)	; 押したままのキーを入れ替える
+	}
+	return KeyDown
+}
+
 ; 仮出力バッファの先頭から i 個出力する
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
 {
 	global _usc, OutStrs, OutCtrlNos, R
-;	local Str1, EnterPos
+;	local Str1, CtrlNo, EnterPos
 
 	while (i > 0 && _usc > 0)
 	{
-		if (!OutCtrlNos[1] || OutCtrlNos[1] == R)
+		Str1 := OutStrs[1]
+		CtrlNo := OutCtrlNos[1]
+		if (!CtrlNo || CtrlNo == R)
 		{
-			Str1 := OutStrs[1]
+			Str1 := SplitKeyUpDown(Str1)	; キーの上げ下げを分離
 			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
 			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
@@ -715,7 +781,10 @@ OutBuf(i:=2)
 				SendEachChar(Str1)
 		}
 		else
-			SendSP(OutStrs[1], OutCtrlNos[1])	; 特別出力(かな定義ファイルで操作)
+		{
+			SendKeyUp()	; キーリピート中の押し残したキーを上げる
+			SendSP(Str1, CtrlNo)	; 特別出力(かな定義ファイルで操作)
+		}
 
 		OutStrs[1] := OutStrs[2]
 		OutCtrlNos[1] := OutCtrlNos[2]
@@ -746,29 +815,6 @@ StoreBuf(nBack, Str1, CtrlNo:=0)
 	return
 }
 
-; キーリピート中の押し残したキーを上げる
-SendKeyUp()
-{
-	global RestStr
-
-	if (RestStr != "")
-	{
-		StoreBuf(0, RestStr)
-		OutBuf()
-		RestStr := ""
-	}
-	return
-}
-
-; キーの押し残しを覚えておく
-StoreKeyUp(Str1)
-{
-	global RestStr
-
-	RestStr := Str1
-	return
-}
-
 ; 出力する文字列を選択
 SelectStr(i)
 {
@@ -783,7 +829,7 @@ DispTime(TimeA, Str1:="")
 	global TestMode
 ;	local TimeAtoB
 
-	if (TestMode = 1)
+	if (TestMode == 1)
 	{
 		TimeAtoB := Round(QPC() - TimeA, 1)
 		ToolTip, %TimeAtoB% ms%Str1%
@@ -796,13 +842,13 @@ DispStr()
 {
 	global TestMode, _usc, OutStrs
 
-	if (TestMode = 2)
+	if (TestMode == 2)
 	{
 		if (!_usc)
 			ToolTip
 		else
 		{
-			if (_usc = 1)
+			if (_usc == 1)
 				Str1 := OutStrs[1]
 			else
 				Str1 := OutStrs[1] . "`n" . OutStrs[2]
@@ -872,10 +918,7 @@ Convert()
 			NowKey := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
 				, InBufReadPos := ++InBufReadPos & 31, InBufRest++
 			if (NowKey != LastKey)
-			{
-				SendKeyUp()	; キーリピート中の押し残したキーを上げる
 				LastKey := NowKey
-			}
 
 			; 判定期限到来
 			if (NowKey == "KeyTimer")
@@ -916,7 +959,7 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 		{
-			if (!sft)			; 左右シフトなし→あり
+			if (!sft && GetKeyState("Shift", "P"))	; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -941,8 +984,7 @@ Convert()
 			if ((!IMEConvMode && DetectMSIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
-				StoreKeyUp("{Space up}")
-				StoreBuf(0, "{Space down}")
+				StoreBuf(0, "{Space}", R)
 				OutBuf()
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
@@ -954,8 +996,7 @@ Convert()
 				else
 				{
 					spc := 3	; 空白をリピート中
-					StoreKeyUp("{Space up}")
-					StoreBuf(0, "{Space down}")
+					StoreBuf(0, "{Space}", R)
 					OutBuf()
 				}
 				DispTime(KeyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
@@ -973,6 +1014,7 @@ Convert()
 				else
 				{
 					spc := 0
+					SendKeyUp()			; キーリピート中の押し残したキーを上げる
 					DispTime(KeyTime)	; キー変化からの経過時間を表示
 					continue
 				}
@@ -982,16 +1024,19 @@ Convert()
 			spc := 0
 		}
 		; エンターキー処理
-		else if (NowKey == "Enter" && EnterShift)
-;		else if (NowKey == "Enter" && EnterShift && (EisuSandS || KanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
+		else if (NowKey == "Enter")
+;		else if (NowKey == "Enter" && (EisuSandS || KanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
-			NowKey := "sc39"	; スペース押す
-			if (!ent)
-				ent := 1
+			if (!GetKeyState("Shift", "P"))	; 本当にシフトキーを押していない時
+			{
+				NowKey := "sc39"	; スペース押す
+				if (!ent)
+					ent := 1
+			}
 		}
 		else if (NowKey == "Enter up")
 		{
-			NowKey := "sc39 up"			; スペース上げ
+			NowKey := "sc39 up"	; スペース上げ
 			if (sft || spc)		; 他のシフトを押している時
 			{
 				if (ent == 1)
@@ -999,6 +1044,7 @@ Convert()
 				else
 				{
 					ent := 0
+					SendKeyUp()			; キーリピート中の押し残したキーを上げる
 					DispTime(KeyTime)	; キー変化からの経過時間を表示
 					continue
 				}
@@ -1063,9 +1109,10 @@ Convert()
 			BitMask := NowBit ^ (-1)	; RealBit &= ~NowBit では32ビット計算になることがあるので
 			RealBit &= BitMask
 			ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)	; 文字キーによるシフトの適用範囲
-			if (KeyUpToOutputAll || (LastBit & NowBit))
+			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
+				SendKeyUp()	; キーリピート中の押し残したキーを上げる
 ;				LastStr := ""
 				_lks := 0
 			}
@@ -1388,14 +1435,13 @@ Home::
 End::
 PgUp::
 PgDn::
-Enter::
 ; USキーボードの場合
 #If (USKB)
 sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
-#If (USKBSideShift)
+#If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift)
+#If (SideShift || !GetKeyState("Shift", "P"))
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -1444,10 +1490,18 @@ sc29::	; (JIS)半角/全角	(US)`
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-;+Up::	; ※小文字にしてはいけない
-;+Left::
-;+Right::
-;+Down::
++Up::	; ※小文字にしてはいけない
++Left::
++Right::
++Down::
+;+Home::
+;+End::
+;+PgUp::
+;+PgDn::
+; エンター同時押しをシフトとして扱う場合
+#If (EnterShift)
+Enter::
++Enter::
 #If		; End #If ()
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
@@ -1507,17 +1561,21 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
-;Up up::	; ※小文字にしてはいけない
-;Left up::
-;Right up::
-;Down up::
+Up up::	; ※小文字にしてはいけない
+Left up::
+Right up::
+Down up::
+;Home up::
+;End up::
+;PgUp up::
+;PgDn up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
-#If (USKBSideShift)
+#If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift)
+#If (SideShift || !GetKeyState("Shift", "P"))
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1566,13 +1624,18 @@ sc29 up::	; (JIS)半角/全角	(US)`
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
-;+Up up::	; ※小文字にしてはいけない
-;+Left up::
-;+Right up::
-;+Down up::
++Up up::	; ※小文字にしてはいけない
++Left up::
++Right up::
++Down up::
+;+Home up::
+;+End up::
+;+PgUp up::
+;+PgDn up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
++Enter up::
 #If		; End #If ()
 ; 入力バッファへ保存
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
