@@ -950,8 +950,8 @@ Convert()
 		{
 			IMEState := IME_GET()
 			IMEConvMode := IME_GetConvMode()
-			if (IMEState == 0 && LastSendTime + 30.0 <= QPC())
-				KanaMode := 0	; 英数入力中なら、前回の出力から 30ミリ秒経っていたら変数を更新
+			if (IMEState == 0 && LastSendTime + 50.0 <= QPC())
+				KanaMode := 0	; 英数入力中なら、前回の出力から 50ミリ秒経っていたら変数を更新
 			else if (IMEState == 1 && IMEConvMode != "")	; かな入力中
 				KanaMode := IMEConvMode & 1
 		}
@@ -1506,8 +1506,8 @@ Enter::
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest > 22 ? ++InBufWritePos & 31 : InBufWritePos)
-		, (InBufRest > 22 ? InBufRest-- : )
+		, InBufWritePos := (InBufRest > 16 ? ++InBufWritePos & 31 : InBufWritePos)
+		, (InBufRest > 16 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
 

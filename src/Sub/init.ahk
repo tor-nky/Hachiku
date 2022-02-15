@@ -29,6 +29,9 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
 ;CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
 
+#HotkeyInterval 2000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
+#MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
+
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数
 ;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk を利用
@@ -508,14 +511,13 @@ PrefMenu:
 		Gui, Tab
 		Gui, Add, Button, W60 xm+146 ys+240 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
-		Gui, Show
 	}
 	else	; 詳細メニュー不要の時
 	{
 		Gui, Add, Button, W60 xm+71 y+10 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
-		Gui, Show
 	}
+	Gui, Show
 	return
 
 ; ログ表示
