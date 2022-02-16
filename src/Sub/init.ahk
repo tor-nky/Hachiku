@@ -193,6 +193,8 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 		IniRead, CombKeyUpS, %IniFilePath%, Advanced, CombKeyUpS, 2
 ;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
 		IniRead, CombLimitE, %IniFilePath%, Advanced, CombLimitE, 0
+;	スペースキーを離した時の設定	0: 通常時, 1: スペース押下時
+		IniRead, CombKeyUpSPC, %IniFilePath%, Advanced, CombKeyUpSPC, 0
 ; キーを離せば常に全部出力する	0: いいえ, 1: はい
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0: なし, 1: あり
@@ -233,6 +235,8 @@ if (AdvancedMenu)
 	CombKeyUpS0 := (CombKeyUpS == 0 ? 1 : 0)
 	CombKeyUpS1 := (CombKeyUpS == 1 ? 1 : 0)
 	CombKeyUpS2 := (CombKeyUpS == 2 ? 1 : 0)
+	CombKeyUpSPC0 := (CombKeyUpSPC == 0 ? 1 : 0)
+	CombKeyUpSPC1 := (CombKeyUpSPC == 1 ? 1 : 0)
 }
 if (TestMode != "ERROR")
 {
@@ -309,6 +313,7 @@ ButtonOK:
 		CombKeyUpN := (CombKeyUpN0 ? 0 : (CombKeyUpN1 ? 1 : 2))
 		CombStyleS := (CombStyleS0 ? 0 : (CombStyleS1 ? 1 : (CombStyleS2 ? 2 : 3)))
 		CombKeyUpS := (CombKeyUpS0 ? 0 : (CombKeyUpS1 ? 1 : 2))
+		CombKeyUpSPC := (CombKeyUpSPC0 == 1 ? 0 : 1)
 	}
 	if (TestMode != "ERROR")
 		TestMode := (TestMode0 ? 0 : (TestMode1 ? 1 : 2))
@@ -333,6 +338,7 @@ ButtonOK:
 		IniWrite, %CombStyleS%, %IniFilePath%, Advanced, CombStyleS
 		IniWrite, %CombKeyUpS%, %IniFilePath%, Advanced, CombKeyUpS
 		IniWrite, %CombLimitE%, %IniFilePath%, Advanced, CombLimitE
+		IniWrite, %CombKeyUpSPC%, %IniFilePath%, Advanced, CombKeyUpSPC
 		IniWrite, %KeyUpToOutputAll%, %IniFilePath%, Advanced, KeyUpToOutputAll
 		IniWrite, %EisuSandS%, %IniFilePath%, Advanced, EisuSandS
 	}
@@ -488,6 +494,13 @@ PrefMenu:
 				Gui, Add, Checkbox, xm+95 yp+0 vCombLimitE, 判定期限ありを強制する ※文字キーシフトは1回のみとなる
 				if (CombLimitE)
 					GuiControl, , CombLimitE, 1
+			Gui, Add, Text, xm+10 y+5, スペースキーを離した時の設定
+				Gui, Add, Radio, xm+160 yp+0 Group vCombKeyUpSPC0, 通常時
+				Gui, Add, Radio, x+0 vCombKeyUpSPC1, スペース押下時
+				if (CombKeyUpSPC0)
+					GuiControl, , CombKeyUpSPC0, 1
+				else
+					GuiControl, , CombKeyUpSPC1, 1
 		Gui, Add, Checkbox, xm y+10 vKeyUpToOutputAll, キーを離せば常に全部出力する
 		if (KeyUpToOutputAll)
 			GuiControl, , KeyUpToOutputAll, 1
@@ -496,7 +509,7 @@ PrefMenu:
 			GuiControl, , EisuSandS, 1
 		if (TestMode != "ERROR")
 		{
-			Gui, Add, Text, xm y+15, テストモード
+			Gui, Add, Text, xm y+10, テストモード
 			Gui, Add, Radio, xm+75 yp+0 Group vTestMode0, なし
 			Gui, Add, Radio, x+0 vTestMode1, 処理時間表示
 			Gui, Add, Radio, x+0 vTestMode2, 表示待ち文字列表示

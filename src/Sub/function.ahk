@@ -865,7 +865,7 @@ Convert()
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc, LastSendTime
 		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat
-		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE
+		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE, CombKeyUpSPC
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
 		, LastKey	:= ""	; 前回のキー入力
@@ -1108,7 +1108,13 @@ Convert()
 		{
 			BitMask := NowBit ^ (-1)	; RealBit &= ~NowBit では32ビット計算になることがあるので
 			RealBit &= BitMask
-			ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)	; 文字キーによるシフトの適用範囲
+
+			; 文字キーによるシフトの適用範囲
+			if (CombKeyUpSPC && NowBit == KC_SPC)
+				ShiftStyle := CombKeyUpS	; スペースキーを離した時は、スペース押下時の設定
+			else
+				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
+
 			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
