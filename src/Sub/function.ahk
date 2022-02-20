@@ -724,23 +724,31 @@ SplitKeyUpDown(Str1)
 	if (Asc(Str1) == 43)	; "+" から始まる
 	{
 		Str2 := SubStr(Str1, 2)	; 先頭の "+" を消去
+		KeyDown := KeyDowns[Str2]
+		if (KeyDown == "")	; キーの上げ下げを分離しない時
+		{
+			SendKeyUp()	; 押し下げを出力中のキーを上げる
+			return Str1
+		}
 		KeyUp := KeyUps[Str2] . "{ShiftUp}"
 		if (RestStr != KeyUp)
 		{
 			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
-			KeyDown := (KeyUp == "" ? Str1 : "{ShiftDown}" . KeyDowns[Str2])
+			KeyDown := "{ShiftDown}" . KeyDown
 		}
-		else
-			KeyDown := (KeyUp == "" ? Str1 : KeyDowns[Str2])
 	}
 	else
 	{
+		KeyDown := KeyDowns[Str1]
+		if (KeyDown == "")	; キーの上げ下げを分離しない時
+		{
+			SendKeyUp()	; 押し下げを出力中のキーを上げる
+			return Str1
+		}
 		KeyUp := KeyUps[Str1]
 		if (RestStr != KeyUp)
 			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
-		KeyDown := (KeyUp == "" ? Str1 : KeyDowns[Str1])
 	}
-
 	return KeyDown
 }
 
