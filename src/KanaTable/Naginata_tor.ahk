@@ -25,7 +25,7 @@ SendSP(Str1, CtrlNo)
 	if (CtrlNo == "ESCx3")
 	{
 		SendEachChar(Str1)				; "+{Esc}{Esc 2}" を出力
-		IMEName := DetectMSIME()
+		IMEName := DetectIME()
 		Sleep, % (IMEName = "ATOK" ? 140 : (IMEName = "OldMSIME" ? 150 : 80))
 			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
 		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
@@ -576,12 +576,6 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^u"		)		; ひらがな
 
 KanaGroup := 0	; 0 はグループなし
-
-	; 固有名詞ショートカット(U+I)を押し続けて
-	; 前文字削除(U)のリピートが起きる場合があるので対策
-	SetKana( KC_U | KC_I					,"{Null}"	)	; ダミー
-
-
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver = "kbd101.dll")
 	{
@@ -672,6 +666,11 @@ KoyuRegist()
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
+
+	; 固有名詞ショートカット(U+I)を押し続けて
+	; 前文字削除(U)のリピートが起きる場合があるので対策
+	KanaGroup := 0	; 0 はグループなし
+	SetKana( KC_U | KC_I				,"{Null}")	; ダミー
 
 	KanaGroup := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_1		,"{直接}" . E01)
