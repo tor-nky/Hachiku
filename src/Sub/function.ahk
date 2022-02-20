@@ -452,7 +452,7 @@ SendEachChar(Str1, Delay:=0)
 ;		, KakuteiIsEnter	; 文字確定させるのにエンターのみで良ければ True
 
 ;ToolTip, %Str1%
-;SetTimer, RemoveToolTip, 5000
+;SetTimer, RemoveToolTip, 2000
 	KakuteiIsEnter := False
 	WinGet, Hwnd, ID, A
 
@@ -694,7 +694,7 @@ SendEachChar(Str1, Delay:=0)
 	return
 }
 
-; 押したままのキーを上げ、入れ替える
+; 押し下げを出力中のキーを上げ、別のに入れ替え
 SendKeyUp(Str1:="")
 {
 	global RestStr
@@ -718,39 +718,29 @@ SplitKeyUpDown(Str1)
 		, KeyUps := Object("{Space}", "{Space up}"
 ;			, "{Home}", "{Home up}", "{End}", "{End up}", "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}"
 			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}")
-;	local sft, Str2, KeyDown, KeyUp
+;	local Str2, KeyDown, KeyUp
 
-	sft := 0
-	if (Asc(Str1) == 43)		; "+" から始まる
+
+	if (Asc(Str1) == 43)	; "+" から始まる
 	{
-		sft := 1
 		Str2 := SubStr(Str1, 2)	; 先頭の "+" を消去
-	}
-
-	KeyDown := KeyDowns[Str2]
-	; キーの上げ下げを分離しない時
-	if (KeyDown == "")
-	{
-		SendKeyUp(KeyUp)	; 押したままのキーを上げる
-		return Str1
-	}
-
-	; キーの上げ下げを分離できる時
-	if (sft)
-	{
 		KeyUp := KeyUps[Str2] . "{ShiftUp}"
 		if (RestStr != KeyUp)
 		{
-			SendKeyUp(KeyUp)	; 押したままのキーを入れ替える
-			KeyDown := "{ShiftDown}" . KeyDown
+			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
+			KeyDown := (KeyUp == "" ? Str1 : "{ShiftDown}" . KeyDowns[Str2])
 		}
+		else
+			KeyDown := (KeyUp == "" ? Str1 : KeyDowns[Str2])
 	}
 	else
 	{
-		KeyUp := KeyUps[Str2]
+		KeyUp := KeyUps[Str1]
 		if (RestStr != KeyUp)
-			SendKeyUp(KeyUp)	; 押したままのキーを入れ替える
+			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
+		KeyDown := (KeyUp == "" ? Str1 : KeyDowns[Str1])
 	}
+
 	return KeyDown
 }
 
@@ -782,7 +772,7 @@ OutBuf(i:=2)
 		}
 		else
 		{
-			SendKeyUp()	; キーリピート中の押し残したキーを上げる
+			SendKeyUp()				; 押し下げを出力中のキーを上げる
 			SendSP(Str1, CtrlNo)	; 特別出力(かな定義ファイルで操作)
 		}
 
@@ -1014,7 +1004,7 @@ Convert()
 				else
 				{
 					spc := 0
-					SendKeyUp()			; キーリピート中の押し残したキーを上げる
+					SendKeyUp()			; 押し下げを出力中のキーを上げる
 					DispTime(KeyTime)	; キー変化からの経過時間を表示
 					continue
 				}
@@ -1044,7 +1034,7 @@ Convert()
 				else
 				{
 					ent := 0
-					SendKeyUp()			; キーリピート中の押し残したキーを上げる
+					SendKeyUp()			; 押し下げを出力中のキーを上げる
 					DispTime(KeyTime)	; キー変化からの経過時間を表示
 					continue
 				}
@@ -1118,7 +1108,7 @@ Convert()
 			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
-				SendKeyUp()	; キーリピート中の押し残したキーを上げる
+				SendKeyUp()	; 押し下げを出力中のキーを上げる
 ;				LastStr := ""
 				_lks := 0
 			}
