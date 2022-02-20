@@ -403,11 +403,11 @@ SettingLayout()
 	return
 }
 
-; 使用している MS-IME を調べる。10秒経過していれば再調査。
+; 使用している IME を調べる。MS-IME は 10秒経過していれば再調査。
 ; 戻り値	"MSIME": 新MS-IME登場以前のもの,
 ;			"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
 ;			"ATOK": ATOK
-DetectMSIME()
+DetectIME()
 {
 	global IMESelect, GoodHwnd, BadHwnd
 	static IMEName := ""
@@ -525,7 +525,7 @@ SendEachChar(Str1, Delay:=0)
 					Sleep, % 30 - LastDelay	; 前回の出力から 30ミリ秒経ってから IME_GET()
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (DetectMSIME() = "OldMSIME" && PostDelay < 30)
+					if (DetectIME() = "OldMSIME" && PostDelay < 30)
 						PostDelay := 30
 					else if (PostDelay < 10)
 						PostDelay := 10
@@ -610,7 +610,7 @@ SendEachChar(Str1, Delay:=0)
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
 			{
-				if (DetectMSIME() = "NewMSIME")
+				if (DetectIME() = "NewMSIME")
 					BadHwnd := Hwnd
 				else if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
@@ -769,7 +769,7 @@ OutBuf(i:=2)
 			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
 			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
-				if (DetectMSIME() = "OldMSIME" && EnterPos >= 0)
+				if (DetectIME() = "OldMSIME" && EnterPos >= 0)
 					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
 					SendEachChar(Str1, 30)	; ゆっくりと出力
 				else
@@ -979,7 +979,7 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if ((!IMEConvMode && DetectMSIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+			if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
 				StoreBuf(0, "{Space}", R)
@@ -1117,7 +1117,8 @@ Convert()
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
-;				LastStr := ""
+;				RepeatBit := 0
+				LastStr := ""
 				_lks := 0
 			}
 			else if (_usc == 2 && _lks == 1 && NowBit == Last2Bit)
@@ -1125,7 +1126,6 @@ Convert()
 				OutBuf(1)	; 1個出力
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
 			}
-			RepeatBit := 0
 			ReuseBit := (ShiftStyle ? 0 : RealBit)	; 文字キーシフト全復活
 			if (ShiftStyle >= 2)	; 全解除
 				Last2Bit := LastBit := 0
@@ -1145,8 +1145,16 @@ Convert()
 			RepeatBit := 0		; リピート解除
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
+		; リピート中のキー
+		else if (RepeatBit && NowBit == RepeatBit && LastStr != "")
+		{	; 前回の文字列を出力
+			if (!_usc)
+				StoreBuf(0, LastStr)
+			OutBuf()
+			DispTime(KeyTime, "`nリピート")	; キー変化からの経過時間を表示
+		}
 		; 押されていなかったキー、sc**以外のキー
-		else if !(RealBit & NowBit)
+		else if (!(RealBit & NowBit) || RepeatBit)
 		{
 			RealBit |= NowBit
 			; 文字キーによるシフトの適用範囲
@@ -1360,14 +1368,6 @@ Convert()
 					SetTimer, KeyTimer, % QPC() - EndOfTime	; 1回のみのタイマー
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
-		}
-		; リピートできるキー
-		else if (NowBit == RepeatBit)
-		{	; 前回の文字列を出力
-			if (!_usc)
-				StoreBuf(0, LastStr)
-			OutBuf()
-			DispTime(KeyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
 	}
 
