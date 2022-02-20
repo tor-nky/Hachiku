@@ -1112,7 +1112,7 @@ Convert()
 ;				LastStr := ""
 				_lks := 0
 			}
-			else if (_usc == 2 && _lks == 1 && RealBit == LastBit)
+			else if (_usc == 2 && _lks == 1 && NowBit == Last2Bit)
 			{	; 同時押しにならなくなった
 				OutBuf(1)	; 1個出力
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
