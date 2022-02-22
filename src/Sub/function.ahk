@@ -1152,7 +1152,7 @@ Convert()
 			else
 				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
 
-			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
+			if (KeyUpToOutputAll || (LastBit & NowBit))
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
@@ -1160,6 +1160,8 @@ Convert()
 				LastStr := ""
 				_lks := 0
 			}
+			else if (NowBit == 0)
+				SendKeyUp()	; 押し下げを出力中のキーを上げる
 			else if (_usc == 2 && _lks == 1 && NowBit == Last2Bit)
 			{	; 同時押しにならなくなった
 				OutBuf(1)	; 1個出力
@@ -1392,20 +1394,24 @@ Convert()
 				; オフなら、いま検索したキーを除外
 			if (CombinableBit == 0 || (ShiftDelay <= 0 && CombinableBit == KC_SPC))
 				OutBuf()	; 出力確定
-			else if (InBufRest == 31 && NextKey == "")
+			else
 			{
-				EndOfTime := 0.0
-				; 同時押しの判定期限
-				if (CombDelay > 0
-				 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
-					EndOfTime := KeyTime + CombDelay	; 期限の時間
-				; 後置シフトの判定期限
-				if ((CombinableBit == KC_SPC || (EndOfTime > 0.0 && ShiftDelay > 0 && (CombinableBit & KC_SPC)))	; 後者は、同時押しの判定期限があるなら後置シフトの判定期限を待つの意
-				 && (EndOfTime == 0.0 || ShiftDelay > CombDelay))
-					EndOfTime := KeyTime + ShiftDelay
-				; タイマー起動
-				if (EndOfTime != 0.0)
-					SetTimer, KeyTimer, % QPC() - EndOfTime	; 1回のみのタイマー
+				SendKeyUp()	; 押し下げを出力中のキーを上げる
+				if (InBufRest == 31 && NextKey == "")
+				{
+					EndOfTime := 0.0
+					; 同時押しの判定期限
+					if (CombDelay > 0
+					&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
+						EndOfTime := KeyTime + CombDelay	; 期限の時間
+					; 後置シフトの判定期限
+					if ((CombinableBit == KC_SPC || (EndOfTime > 0.0 && ShiftDelay > 0 && (CombinableBit & KC_SPC)))	; 後者は、同時押しの判定期限があるなら後置シフトの判定期限を待つの意
+					&& (EndOfTime == 0.0 || ShiftDelay > CombDelay))
+						EndOfTime := KeyTime + ShiftDelay
+					; タイマー起動
+					if (EndOfTime != 0.0)
+						SetTimer, KeyTimer, % QPC() - EndOfTime	; 1回のみのタイマー
+				}
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
@@ -1547,7 +1553,7 @@ RShift::
 ;+PgUp::
 ;+PgDn::
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift || !GetKeyState("Shift", "P"))
+#If (EnterShift)
 Enter::
 +Enter::
 #If		; End #If ()
@@ -1685,7 +1691,7 @@ RShift up::
 ;+PgUp up::
 ;+PgDn up::
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift || !GetKeyState("Shift", "P"))
+#If (EnterShift)
 Enter up::
 +Enter up::
 #If		; End #If ()
