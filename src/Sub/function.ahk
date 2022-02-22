@@ -1008,7 +1008,6 @@ Convert()
 		else if (NowKey == "RShift up")
 		{
 			rsft := 0
-			ToolTip2("1:" . sft, 1000)
 			if (!sft)	; 左シフトも離されている
 				SendBlind("{ShiftUp}")
 			if (sft || spc || ent)	; 他のシフトを押している時
