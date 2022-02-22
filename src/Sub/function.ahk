@@ -612,16 +612,7 @@ SendEachChar(Str1, Delay:=0)
 				ClipSaved =					;保存用変数に使ったメモリを開放
 			}
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
-			{
-				if (i <= len1)
-					Str2 := SplitKeyUpDown(StrChopped, PostDelay)	; キーの上げ下げを分離
-				else
-				{
-					if (i - LenChopped == 0)
-						SendKeyUp( , PostDelay)	; 押し下げを出力中のキーを上げる
-					Str2 := StrChopped
-				}
-			}
+				Str2 := StrChopped
 
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
@@ -710,31 +701,27 @@ SendEachChar(Str1, Delay:=0)
 	return
 }
 
-SendEachChar2(Str1, PostDelay:=0)
+SendBlind(Str1)
 {
 	Send, % "{Blind}" . Str1
-	if (PostDelay > 0)
-		Sleep, PostDelay
 }
 
 ; 押し下げを出力中のキーを上げ、別のに入れ替え
-SendKeyUp(Str1:="", PostDelay:=0)
+SendKeyUp(Str1:="")
 {
 	global RestStr
-;	local Pos
 
 	if (RestStr != "")
 	{
-		StringGetPos, Pos, RestStr, {ShiftUp}, R	; RestStr の右から "{ShiftUp}" を探す
-		if (Pos >= 0)
-		{	; "{ShiftUp}" あり
-			SendEachChar2(SubStr(RestStr, 1, StrLen(RestStr) - 9), PostDelay)	; "{ShiftUp}" より左を出力
-			StringGetPos, Pos, Str1, {ShiftUp}, R	; Str1 の右から "{ShiftUp}" を探す
-			if (Pos == -1)	; 次の文字も Shift文字でないなら
-				SendEachChar2("{ShiftUp}", PostDelay)
+		if (SubStr(RestStr, StrLen(RestStr) - 9, 9) = "{ShiftUp}")
+		{	; 押し下げを出力中のキーは {ShiftUp} あり
+			SendBlind(SubStr(RestStr, 1, StrLen(RestStr) - 9))	; "{ShiftUp}" より左を出力
+			; 入れ替えるキーに {ShiftUp} あり
+			if (SubStr(Str1, StrLen(Str1) - 9, 9) != "{ShiftUp}")
+				SendBlind("{ShiftUp}")
 		}
 		else
-			SendEachChar2(RestStr, PostDelay)
+			SendBlind(RestStr)
 	}
 	RestStr := Str1
 	return
@@ -743,7 +730,7 @@ SendKeyUp(Str1:="", PostDelay:=0)
 ; キーの上げ下げを分離
 ;	返り値: 下げるキー
 ;	RestStr: 後で上げるキー
-SplitKeyUpDown(Str1, PostDelay:=0)
+SplitKeyUpDown(Str1)
 {
 	global RestStr	; まだ上げていないキー
 	static KeyDowns := Object("{Space}", "{Space down}"
@@ -760,14 +747,14 @@ SplitKeyUpDown(Str1, PostDelay:=0)
 		KeyDown := KeyDowns[Str2]
 		if (KeyDown == "")	; キーの上げ下げを分離しない時
 		{
-			SendKeyUp( , PostDelay)	; 押し下げを出力中のキーを上げる
+			SendKeyUp()	; 押し下げを出力中のキーを上げる
 			return Str1
 		}
 		KeyUp := KeyUps[Str2] . "{ShiftUp}"
 		if (RestStr != KeyUp)
 		{
-			SendKeyUp(KeyUp, PostDelay)	; 押し下げを出力中のキーを入れ替え
-			SendEachChar2("{ShiftDown}", PostDelay)
+			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
+			SendBlind("{ShiftDown}")
 		}
 	}
 	else
@@ -775,14 +762,14 @@ SplitKeyUpDown(Str1, PostDelay:=0)
 		KeyDown := KeyDowns[Str1]
 		if (KeyDown == "")	; キーの上げ下げを分離しない時
 		{
-			SendKeyUp( , PostDelay)	; 押し下げを出力中のキーを上げる
+			SendKeyUp()	; 押し下げを出力中のキーを上げる
 			return Str1
 		}
 		KeyUp := KeyUps[Str1]
 		if (RestStr != KeyUp)
-			SendKeyUp(KeyUp, PostDelay)	; 押し下げを出力中のキーを入れ替え
+			SendKeyUp(KeyUp)	; 押し下げを出力中のキーを入れ替え
 	}
-	SendEachChar2(KeyDown, PostDelay)
+	SendBlind(KeyDown)
 	return ""
 }
 
@@ -799,6 +786,7 @@ OutBuf(i:=2)
 		CtrlNo := OutCtrlNos[1]
 		if (!CtrlNo || CtrlNo == R)
 		{
+			Str1 := SplitKeyUpDown(Str1)	; キーの上げ下げを分離
 			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
 			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
@@ -915,7 +903,8 @@ Convert()
 		, RepeatBit	:= 0	; リピート中のキーのビット
 		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, spc		:= 0	; スペースキー
-		, sft		:= 0	; 左右シフト
+		, sft		:= 0	; 左シフト
+		, rsft		:= 0	; 右シフト
 		, ent		:= 0	; エンター
 		, CombinableBit := -1 ; 押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local KeyTime	; キーを押した時間
@@ -990,21 +979,39 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)		; "+" から始まる
 			NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
-		if (NowKey == "~Shift")
+		if (NowKey == "~LShift")
 		{
-			if (!SideShift || sft)
-				continue
-			else
-			{
-				OutBuf()
-				NowKey := "sc39"	; スペース押す
-				sft := 1
-			}
+			sft := 1
+			OutBuf()
+			NowKey := "sc39"	; スペース押す
 		}
-		else if (NowKey == "~Shift up")
+		else if (NowKey == "~LShift up")
 		{
 			sft := 0
-			if (!SideShift || spc || ent)	; 他のシフトを押している時
+			if (rsft)	; 右シフトは離されていない
+			{
+				SendBlind("{ShiftDown}")
+				continue
+			}
+			else if (spc || ent)	; 他のシフトを押している時
+				continue
+			else
+				NowKey := "sc39 up"	; スペース上げ
+		}
+		else if (NowKey == "RShift")
+		{
+			rsft := 1
+			OutBuf()
+			SendBlind("{ShiftDown}")
+			NowKey := "sc39"	; スペース押す
+		}
+		else if (NowKey == "RShift up")
+		{
+			rsft := 0
+			ToolTip2("1:" . sft, 1000)
+			if (!sft)	; 左シフトも離されている
+				SendBlind("{ShiftUp}")
+			if (sft || spc || ent)	; 他のシフトを押している時
 				continue
 			else
 				NowKey := "sc39 up"	; スペース上げ
@@ -1039,7 +1046,7 @@ Convert()
 		else if (NowKey == "sc39 up")
 		{
 			SendKeyUp()			; 押し下げを出力中のキーを上げる
-			if (sft || ent)		; 他のシフトを押している時
+			if (sft || rsft || ent)		; 他のシフトを押している時
 			{
 				if (spc == 1)
 					NowKey := "vk20"	; スペース単独押しのみ
@@ -1058,18 +1065,17 @@ Convert()
 		else if (NowKey == "Enter")
 ;		else if (NowKey == "Enter" && (EisuSandS || KanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
-			if (!sft)	; シフトキーを押していない時
+			if !(sft || rsft)	; シフトキーを押していない時
 			{
 				NowKey := "sc39"	; スペース押す
-				if (!ent)
-					ent := 1
+				ent := 1
 			}
 		}
 		else if (NowKey == "Enter up")
 		{
 			NowKey := "sc39 up"	; スペース上げ
 			SendKeyUp()			; 押し下げを出力中のキーを上げる
-			if (sft || spc)		; 他のシフトを押している時
+			if (sft || rsft || spc)		; 他のシフトを押している時
 			{
 				if (ent == 1)
 					NowKey := "vk0D"	; エンター単独押しのみ
@@ -1417,7 +1423,6 @@ Convert()
 						; 最大のスレッド数を設定
 
 ; キー入力部
-~Shift::
 sc02::	; 1
 sc03::	; 2
 sc04::	; 3
@@ -1481,6 +1486,10 @@ sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29::	; (JIS)半角/全角	(US)`
+#If (SideShift)
+~LShift::
+RShift::
++RShift::
 #If (SideShift || !GetKeyState("Shift", "P"))
 +sc02::	; 1
 +sc03::	; 2
@@ -1552,7 +1561,6 @@ Enter::
 	return
 
 ; キー押上げ
-~Shift up::
 sc02 up::	; 1
 sc03 up::	; 2
 sc04 up::	; 3
@@ -1616,6 +1624,10 @@ sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29 up::	; (JIS)半角/全角	(US)`
+#If (SideShift)
+~LShift up::
+RShift up::
++RShift up::
 #If (SideShift || !GetKeyState("Shift", "P"))
 +sc02 up::	; 1
 +sc03 up::	; 2
