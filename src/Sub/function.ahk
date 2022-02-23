@@ -546,7 +546,7 @@ SendEachChar(Str1, Delay:=0)
 						Send, {Enter}
 						Sleep, PostDelay
 						Str2 := "{BS}"
-						PostDelay := 0
+;						PostDelay := 0
 					}
 					else if (KakuteiIsEnter	|| IME_GetConverting())
 						; 文字確定させるのにエンターのみで良い、またはIME窓あり
@@ -786,7 +786,10 @@ OutBuf(i:=2)
 		CtrlNo := OutCtrlNos[1]
 		if (!CtrlNo || CtrlNo == R)
 		{
-			Str1 := SplitKeyUpDown(Str1)	; キーの上げ下げを分離
+			if (CtrlNo == R)	; リピート可能
+				Str1 := SplitKeyUpDown(Str1)	; キーの上げ下げを分離
+			else
+				SendKeyUp()	; 押し下げを出力中のキーを上げる
 			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
 			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
 			{
@@ -1018,7 +1021,14 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+			if (sft || rsft || ent)	; シフトキーを押している時
+			{
+				StoreBuf(0, "+{Space}", R)	; シフト+スペース出力
+				OutBuf()
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
+				continue
+			}
+			else if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
 				StoreBuf(0, "{Space}", R)
@@ -1353,7 +1363,7 @@ Convert()
 				ent := 2	; 単独エンターではない
 
 			; 出力する文字列を選ぶ
-			CtrlNo := 0
+			CtrlNo := R
 			if (nkeys > 0)	; 定義が見つかった時
 			{
 				OutStr := SelectStr(i)					; 出力する文字列
@@ -1363,7 +1373,7 @@ Convert()
 			else if (!nkeys)	; 定義が見つけられなかった時
 				; 一緒に押すと同時押しになるキーを探す
 				CombinableBit := FindCombinableBit(SearchBit, KanaMode, nkeys)
-			else
+			else	; nkeys < 0
 				CombinableBit := 0
 			; 仮出力バッファに入れる
 			StoreBuf(nBack, OutStr, CtrlNo)
@@ -1544,6 +1554,7 @@ RShift::
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
++sc39::	; Space
 +Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
@@ -1682,6 +1693,7 @@ RShift up::
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
++sc39 up::	; Space
 +Up up::	; ※小文字にしてはいけない
 +Left up::
 +Right up::
