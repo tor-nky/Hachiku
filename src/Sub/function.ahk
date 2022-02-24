@@ -980,9 +980,31 @@ Convert()
 		}
 
 		; 左右シフト処理
-		if (Asc(NowKey) == 43)		; "+" から始まる
+		if (Asc(NowKey) == 43 && SideShift != 2)	; "+" から始まる(左右シフトかな以外)
 			NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
-		if (NowKey == "~LShift")
+
+		if (Asc(NowKey) == 43)	; "+" から始まる(左右シフトかなのみ)
+		{
+			if (!sft)			; 左右シフトなし→あり
+			{
+				OutBuf()
+				NextKey := NowKey
+				NowKey := "sc39"	; スペース押す→押したキー
+				sft := 1
+			}
+			else
+				NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
+		}
+		else if (sft && SideShift == 2)	; 左右シフトあり→なし
+		{
+			if (!spc && !ent)
+			{
+				NextKey := NowKey
+				NowKey := "sc39 up"	; スペース上げ→押したキー
+			}
+			sft := 0
+		}
+		else if (NowKey == "~LShift")
 		{
 			sft := 1
 			OutBuf()
@@ -1166,7 +1188,7 @@ Convert()
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
-;				RepeatBit := 0
+				RepeatBit &= BitMask
 				LastStr := ""
 				_lks := 0
 			}
@@ -1501,7 +1523,7 @@ sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift)
+#If (SideShift == 1)
 ~LShift::
 RShift::
 +RShift::
@@ -1640,7 +1662,7 @@ sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift)
+#If (SideShift == 1)
 ~LShift up::
 RShift up::
 +RShift up::
