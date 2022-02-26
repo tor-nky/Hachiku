@@ -716,7 +716,7 @@ SendKeyUp(Str1:="")
 		if (SubStr(RestStr, StrLen(RestStr) - 9, 9) = "{ShiftUp}")
 		{	; 押し下げを出力中のキーは {ShiftUp} あり
 			SendBlind(SubStr(RestStr, 1, StrLen(RestStr) - 9))	; "{ShiftUp}" より左を出力
-			; 入れ替えるキーに {ShiftUp} あり
+			; 入れ替えるキーに {ShiftUp} なし
 			if (SubStr(Str1, StrLen(Str1) - 9, 9) != "{ShiftUp}")
 				SendBlind("{ShiftUp}")
 		}
@@ -904,6 +904,7 @@ Convert()
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
 		, LastGroup	:= 0	; 前回、何グループだったか？ 0はグループなし
 		, RepeatBit	:= 0	; リピート中のキーのビット
+		, CtrlNo	:= 0	; 0: リピートなし, R: リピートあり, それ以外: かな配列ごとの特殊コード
 		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, spc		:= 0	; スペースキー
 		, sft		:= 0	; 左シフト
@@ -923,7 +924,6 @@ Convert()
 ;		, ShiftStyle
 ;		, i, imax		; カウンタ用
 ;		, DefKeyCopy
-;		, CtrlNo
 ;		, OutOfCombDelay
 ;		, EnableComb
 
@@ -965,25 +965,24 @@ Convert()
 		}
 
 		; IME の状態を更新
+		IMEConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
 		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
-		else
+		else if (LastSendTime + 50.0 <= QPC())	; 前回の出力から 50ミリ秒経っていたら IME を調査
 		{
 			IMEState := IME_GET()
-			IMEConvMode := IME_GetConvMode()
-			if (IMEState == 0 && LastSendTime + 50.0 <= QPC())
-				KanaMode := 0	; 英数入力中なら、前回の出力から 50ミリ秒経っていたら変数を更新
+			if (IMEState == 0)
+				KanaMode := 0
 			else if (IMEState == 1 && IMEConvMode != "")	; かな入力中
 				KanaMode := IMEConvMode & 1
 		}
 
-		; 左右シフト処理
 		if (Asc(NowKey) == 43 && SideShift != 2)	; "+" から始まる(左右シフトかな以外)
 			NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
-
-		if (Asc(NowKey) == 43)	; "+" から始まる(左右シフトかなのみ)
+		; 左右シフト処理
+		if (Asc(NowKey) == 43 && GetKeyState("Shift", "P"))	; "+" から始まる(左右シフトかなのみ)
 		{
 			if (!sft)			; 左右シフトなし→あり
 			{
@@ -1043,14 +1042,7 @@ Convert()
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
-			if (sft || rsft || ent)	; シフトキーを押している時
-			{
-				StoreBuf(0, "+{Space}", R)	; シフト+スペース出力
-				OutBuf()
-				DispTime(KeyTime)	; キー変化からの経過時間を表示
-				continue
-			}
-			else if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
+			if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
 			{
 				StoreBuf(0, "{Space}", R)
@@ -1096,7 +1088,7 @@ Convert()
 		else if (NowKey == "Enter")
 ;		else if (NowKey == "Enter" && (EisuSandS || KanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
-			if !(sft || rsft)	; シフトキーを押していない時
+			if !(sft || rsft || spc)	; シフトキーを押していない時
 			{
 				NowKey := "sc39"	; スペース押す
 				ent := 1
@@ -1223,7 +1215,7 @@ Convert()
 		else if (RepeatBit && NowBit == RepeatBit && LastStr != "")
 		{	; 前回の文字列を出力
 			if (!_usc)
-				StoreBuf(0, LastStr)
+				StoreBuf(0, LastStr, CtrlNo)
 			OutBuf()
 			DispTime(KeyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
@@ -1383,7 +1375,6 @@ Convert()
 				spc := 2	; 単独スペースではない
 			if (ent == 1)
 				ent := 2	; 単独エンターではない
-
 			; 出力する文字列を選ぶ
 			CtrlNo := R
 			if (nkeys > 0)	; 定義が見つかった時
@@ -1576,19 +1567,13 @@ RShift::
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-+sc39::	; Space
 +Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
 +Down::
-;+Home::
-;+End::
-;+PgUp::
-;+PgDn::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
-+Enter::
 #If		; End #If ()
 	; 入力バッファへ保存
 	; キーを押す方はいっぱいまで使わない
@@ -1652,10 +1637,6 @@ Up up::	; ※小文字にしてはいけない
 Left up::
 Right up::
 Down up::
-;Home up::
-;End up::
-;PgUp up::
-;PgDn up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
@@ -1720,14 +1701,9 @@ RShift up::
 +Left up::
 +Right up::
 +Down up::
-;+Home up::
-;+End up::
-;+PgUp up::
-;+PgDn up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
-+Enter up::
 #If		; End #If ()
 ; 入力バッファへ保存
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
