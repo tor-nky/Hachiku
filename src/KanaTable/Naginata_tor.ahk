@@ -13,8 +13,8 @@
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
 ; **********************************************************************
 
-#Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
-#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
+;#Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
+#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk		; Workman配列
 
 
 ; 特別出力
@@ -89,8 +89,8 @@ ReadLayout()
 
 	LayoutName := "薙刀式配列v14（集大成版）"
 
-	ReadStandardLayout()	; キーボード初期配列を読み込み
-;	ReadWorkmanLayout()		; Workman配列
+;	ReadStandardLayout()	; キーボード初期配列を読み込み
+	ReadWorkmanLayout()		; Workman配列
 
 	; -----------------------------------------
 	; 別名登録
