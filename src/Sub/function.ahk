@@ -944,8 +944,9 @@ Convert()
 			; 判定期限到来
 			if (NowKey == "KeyTimer")
 			{
-				if (InBufRest != 31)	; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
-					continue
+				; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
+				if (InBufRest != 31 || EndOfTime == 0.0)	; 前者でタイマー割り込み中のキー入力を、
+					continue								; 後者でキー入力発生中のタイマー割り込みを排除する
 				if (KeyTime > EndOfTime)
 				{
 					OutBuf()
