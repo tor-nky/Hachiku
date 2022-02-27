@@ -54,7 +54,7 @@ QPC() {	; ミリ秒単位
 ToolTip2(Str1, time:=0)
 {
 	ToolTip, %Str1%
-	if (time > 0)
+	if (time != 0)
 		SetTimer, RemoveToolTip, %time%
 }
 
@@ -886,7 +886,7 @@ Convert()
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
 		, _usc, LastSendTime
-		, SideShift, EnterShift, ShiftDelay, CombDelay, SpaceKeyRepeat
+		, SideShift, ShiftDelay, CombDelay, SpaceKeyRepeat
 		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE, CombKeyUpSPC
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
@@ -933,8 +933,6 @@ Convert()
 	; 入力バッファが空になるまで
 	while (ConvRest := 31 - InBufRest || NextKey != "")
 	{
-		SetTimer, KeyTimer, Off		; 判定期限タイマー停止
-
 		if (NextKey == "")
 		{
 			; 入力バッファから読み出し
@@ -970,7 +968,7 @@ Convert()
 			KanaMode := 0
 		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
-		else if (LastSendTime + 50.0 <= QPC())	; 前回の出力から 50ミリ秒経っていたら IME を調査
+		else if (LastSendTime + 30.0 <= QPC())	; 前回の出力から 50ミリ秒経っていたら IME を調査
 		{
 			IMEState := IME_GET()
 			if (IMEState == 0)
@@ -979,12 +977,14 @@ Convert()
 				KanaMode := IMEConvMode & 1
 		}
 
-		if (Asc(NowKey) == 43 && SideShift != 2)	; "+" から始まる(左右シフトかな以外)
-			NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
+		; 左右シフトかな以外の時、先頭の "+" を消去
+		if (SideShift != 2 && Asc(NowKey) == 43)
+			NowKey := SubStr(NowKey, 2)
+
 		; 左右シフト処理
-		if (Asc(NowKey) == 43 && GetKeyState("Shift", "P"))	; "+" から始まる(左右シフトかなのみ)
+		if (Asc(NowKey) == 43)	; "+" から始まる(左右シフトかなのみ)
 		{
-			if (!sft)			; 左右シフトなし→あり
+			if (!sft && GetKeyState("Shift", "P"))			; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
@@ -994,7 +994,7 @@ Convert()
 			else
 				NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
 		}
-		else if (sft && SideShift == 2)	; 左右シフトあり→なし
+		else if (SideShift == 2 && sft)	; 左右シフトあり→なし
 		{
 			if (!spc && !ent)
 			{
@@ -1060,6 +1060,8 @@ Convert()
 					StoreBuf(0, "{Space}", R)
 					OutBuf()
 				}
+				if (ent == 1)
+					ent := 2	; 単独エンターではない
 				DispTime(KeyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
 				continue
 			}
@@ -1176,29 +1178,24 @@ Convert()
 			else
 				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
 
-			if (KeyUpToOutputAll || (LastBit & NowBit))
+			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
-				RepeatBit &= BitMask
 				LastStr := ""
 				_lks := 0
+				if (ShiftStyle == 2)	; 全解除
+					Last2Bit := LastBit := 0
 			}
-			else if (NowBit == 0)
-				SendKeyUp()	; 押し下げを出力中のキーを上げる
 			else if (_usc == 2 && _lks == 1 && NowBit == Last2Bit)
 			{	; 同時押しにならなくなった
 				OutBuf(1)	; 1個出力
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
 			}
+			RepeatBit &= BitMask
 			ReuseBit := (ShiftStyle ? 0 : RealBit)	; 文字キーシフト全復活
-			if (ShiftStyle >= 2)	; 全解除
-				Last2Bit := LastBit := 0
-			else					; 他
-			{
-				Last2Bit &= BitMask
-				LastBit &= BitMask
-			}
+			Last2Bit &= BitMask
+			LastBit &= BitMask
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
@@ -1236,7 +1233,7 @@ Convert()
 			 && ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
 			{
 				OutOfCombDelay := True
-				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle >= 3)
+				if ((ShiftStyle == 2 && !LastGroup) || ShiftStyle == 3)
 					EnableComb := False	; 同時押しを一時停止
 			}
 			else
@@ -1264,7 +1261,7 @@ Convert()
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
 							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
-							if (ShiftStyle >= 3 && _lks >= 3 && NowBit != KC_SPC)
+							if (ShiftStyle == 3 && _lks >= 3 && NowBit != KC_SPC)
 							{
 								EnableComb := False
 								break
@@ -1300,7 +1297,7 @@ Convert()
 							&& DefsKanaMode[i] == KanaMode)	; 英数用、かな用の種別が一致していること
 						{
 							; 文字キーシフト「1回のみ」で2回目なら、1キー入力の検索へ
-							if (ShiftStyle >= 3 && _lks >= 2 && NowBit != KC_SPC)
+							if (ShiftStyle == 3 && _lks >= 2 && NowBit != KC_SPC)
 							{
 								EnableComb := False
 								break
@@ -1405,7 +1402,7 @@ Convert()
 				Last2Bit := LastBit
 				LastBit := SearchBit
 			}
-			LastGroup := (nkeys >= 1 ? DefsGroup[i] : 0)	; 何グループだったか保存
+			LastGroup := (nkeys > 0 ? DefsGroup[i] : 0)	; 何グループだったか保存
 			if (CtrlNo == R)
 				RepeatBit := NowBit		; キーリピートする
 			else
@@ -1514,7 +1511,7 @@ sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift == 1)
+#If (SideShift & 1)
 ~LShift::
 RShift::
 +RShift::
@@ -1567,10 +1564,15 @@ RShift::
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
++sc39::	; Space
 +Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
 +Down::
++Home::
++End::
++PgUp::
++PgDn::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
@@ -1580,6 +1582,7 @@ Enter::
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest > 16 ? ++InBufWritePos & 31 : InBufWritePos)
 		, (InBufRest > 16 ? InBufRest-- : )
+	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	Convert()	; 変換ルーチン
 	return
 
@@ -1637,17 +1640,21 @@ Up up::	; ※小文字にしてはいけない
 Left up::
 Right up::
 Down up::
+Home up::
+End up::
+PgUp up::
+PgDn up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
-#If (USKBSideShift || !GetKeyState("Shift", "P"))
+#If (USKBSideShift || !GetKeyState("Shift", "P"))	; 押す方と同じにする
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift == 1)
+#If (SideShift & 1)
 ~LShift up::
 RShift up::
 +RShift up::
-#If (SideShift || !GetKeyState("Shift", "P"))
+#If (SideShift || !GetKeyState("Shift", "P"))	; 押す方と同じにする
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1701,6 +1708,10 @@ RShift up::
 +Left up::
 +Right up::
 +Down up::
++Home up::
++End up::
++PgUp up::
++PgDn up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::

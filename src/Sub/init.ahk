@@ -29,7 +29,7 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
 ;CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
 
-#HotkeyInterval 2000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
+#HotkeyInterval 1000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
 #MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
 
 ; ----------------------------------------------------------------------
@@ -154,53 +154,57 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, AdvancedMenu, %IniFilePath%, general, AdvancedMenu, 0
 
 ; [Basic]
-; IMESelect		0: MS-IME専用, 1: ATOK使用
+; IMESelect		0または空: MS-IME専用, 他: ATOK使用
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
-; USLike		0: 英数表記通り, 1: USキーボード風配列
+; USLike		0または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
-; SideShift		0-1: 左右シフト英数, 2: 左右シフトかな
+; SideShift		0-1: 左右シフト英数, 2-3: 左右シフトかな
 	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
-; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
+; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
 ; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
 	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
-; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
+; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 他: 空白リピート
 	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
 ;[Naginata]
-; Vertical		0: 横書き用, 1: 縦書き用
+; Vertical		0または空: 横書き用, 他: 縦書き用
 	IniRead, Vertical, %IniFilePath%, Naginata, Vertical, 1
 ; 固有名詞ショートカットの選択
 	IniRead, KoyuNumber, %IniFilePath%, Naginata, KoyuNumber, 1
 
 ; [Advanced]
 ;	通常時
-;		同時打鍵の判定期限	0: なし, 1: あり
+;		同時打鍵の判定期限	0または空: なし, 他: あり
 		IniRead, CombLimitN, %IniFilePath%, Advanced, CombLimitN, 0
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
 		IniRead, CombStyleN, %IniFilePath%, Advanced, CombStyleN, 3
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
 		IniRead, CombKeyUpN, %IniFilePath%, Advanced, CombKeyUpN, 0
 ;	スペース押下時
-;		同時打鍵の判定期限	0: なし, 1: あり
+;		同時打鍵の判定期限	0または空: なし, 他: あり
 		IniRead, CombLimitS, %IniFilePath%, Advanced, CombLimitS, 1
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
 		IniRead, CombStyleS, %IniFilePath%, Advanced, CombStyleS, 3
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
 		IniRead, CombKeyUpS, %IniFilePath%, Advanced, CombKeyUpS, 2
-;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
+;	英数時の同時打鍵期限を強制する	0または空: なし, 他: あり
 		IniRead, CombLimitE, %IniFilePath%, Advanced, CombLimitE, 0
-;	スペースキーを離した時の設定	0: 通常時, 1: スペース押下時
+;	スペースキーを離した時の設定	0または空: 通常時, 他: スペース押下時
 		IniRead, CombKeyUpSPC, %IniFilePath%, Advanced, CombKeyUpSPC, 0
-; キーを離せば常に全部出力する	0: いいえ, 1: はい
+; キーを離せば常に全部出力する	0または空: いいえ, 他: はい
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
-; 英数入力時のSandS		0: なし, 1: あり
+; 英数入力時のSandS		0または空: なし, 他: あり
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
-; テストモード	0: なし, 1: 処理時間表示, 2: 表示待ち文字列表示
+; テストモード	1: 処理時間表示, 2: 表示待ち文字列表示, 他: なし ※iniになければ設定画面に表示しない
 	IniRead, TestMode, %IniFilePath%, Advanced, TestMode
+
+; 範囲外は初期値へ
+if (SideShift < 0 || SideShift > 3)
+	SideShift := 2
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
@@ -214,8 +218,8 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 SideShift0 := (SideShift == 0 ? 1 : 0)
 SideShift1 := (SideShift == 1 ? 1 : 0)
 SideShift2 := (SideShift == 2 ? 1 : 0)
-EnterShift0 := (EnterShift == 0 ? 1 : 0)
-EnterShift1 := (EnterShift == 1 ? 1 : 0)
+EnterShift0 := (!EnterShift ? 1 : 0)
+EnterShift1 := (EnterShift 1 ? 1 : 0)
 SpaceKeyRepeat0 := (SpaceKeyRepeat == 0 ? 1 : 0)
 SpaceKeyRepeat1 := (SpaceKeyRepeat == 1 ? 1 : 0)
 SpaceKeyRepeat2 := (SpaceKeyRepeat == 2 ? 1 : 0)
@@ -235,8 +239,8 @@ if (AdvancedMenu)
 	CombKeyUpS0 := (CombKeyUpS == 0 ? 1 : 0)
 	CombKeyUpS1 := (CombKeyUpS == 1 ? 1 : 0)
 	CombKeyUpS2 := (CombKeyUpS == 2 ? 1 : 0)
-	CombKeyUpSPC0 := (CombKeyUpSPC == 0 ? 1 : 0)
-	CombKeyUpSPC1 := (CombKeyUpSPC == 1 ? 1 : 0)
+	CombKeyUpSPC0 := (!CombKeyUpSPC ? 1 : 0)
+	CombKeyUpSPC1 := (CombKeyUpSPC ? 1 : 0)
 }
 if (TestMode != "ERROR")
 {
@@ -305,7 +309,7 @@ ButtonOK:
 	Gui, Submit
 	INIVersion := Version
 	SideShift := (SideShift0 ? 0 : (SideShift1 ? 1 : 2))
-	EnterShift := (EnterShift0 == 1 ? 0 : 1)
+	EnterShift := (EnterShift0 ? 0 : 1)
 	SpaceKeyRepeat := (SpaceKeyRepeat0 ? 0 : (SpaceKeyRepeat1 ? 1 : 2))
 	if (AdvancedMenu)
 	{
@@ -313,7 +317,7 @@ ButtonOK:
 		CombKeyUpN := (CombKeyUpN0 ? 0 : (CombKeyUpN1 ? 1 : 2))
 		CombStyleS := (CombStyleS0 ? 0 : (CombStyleS1 ? 1 : (CombStyleS2 ? 2 : 3)))
 		CombKeyUpS := (CombKeyUpS0 ? 0 : (CombKeyUpS1 ? 1 : 2))
-		CombKeyUpSPC := (CombKeyUpSPC0 == 1 ? 0 : 1)
+		CombKeyUpSPC := (CombKeyUpSPC0 ? 0 : 1)
 	}
 	if (TestMode != "ERROR")
 		TestMode := (TestMode0 ? 0 : (TestMode1 ? 1 : 2))
