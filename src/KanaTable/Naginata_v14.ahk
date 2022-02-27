@@ -50,8 +50,8 @@ SendSP(Str1, CtrlNo)
 		KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
 		SettingLayout()					; 出力確定する定義に印をつける
 	}
-;	else	; その他、未定義のもの。念のため。
-;		SendEachChar(Str1, 30)
+	else	; その他、未定義のもの。念のため。
+		SendEachChar(Str1, 30)
 
 	return
 }
@@ -87,7 +87,6 @@ ReadLayout()
 	LayoutName := "薙刀式配列v14（集大成版）"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
-	; ↑ 無くても動くが、あるほうがわずかに速い
 
 	; -----------------------------------------
 	; 別名登録
@@ -607,19 +606,19 @@ KanaGroup := 0	; 0 はグループなし
 	SetEisu( KC_QUOT			,"+{sc08}"	)	; '
 	SetEisu( KC_NUHS			,"+{sc1A}"	)	; `
 
-	SetEisu( KC_2 | KC_SPC		,"{sc1A}"	)	; @
-	SetEisu( KC_6 | KC_SPC		,"{sc0D}"	)	; ^
-	SetEisu( KC_7 | KC_SPC		,"+{sc07}"	)	; &
-	SetEisu( KC_8 | KC_SPC		,"+{sc28}"	)	; *
-	SetEisu( KC_9 | KC_SPC		,"+{sc09}"	)	; (
-	SetEisu( KC_0 | KC_SPC		,"+{sc0A}"	)	; )
-	SetEisu( KC_MINS | KC_SPC	,"+{sc73}"	)	; _
-	SetEisu( KC_EQL | KC_SPC	,"+{sc27}"	)	; +
-	SetEisu( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
-	SetEisu( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
-	SetEisu( KC_SCLN | KC_SPC	,"{sc28}"	)	; :
-	SetEisu( KC_QUOT | KC_SPC	,"+{sc03}"	)	; "
-	SetEisu( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
+	SetEisu( KC_SPC | KC_2		,"{sc1A}"	)	; @
+	SetEisu( KC_SPC | KC_6		,"{sc0D}"	)	; ^
+	SetEisu( KC_SPC | KC_7		,"+{sc07}"	)	; &
+	SetEisu( KC_SPC | KC_8		,"+{sc28}"	)	; *
+	SetEisu( KC_SPC | KC_9		,"+{sc09}"	)	; (
+	SetEisu( KC_SPC | KC_0		,"+{sc0A}"	)	; )
+	SetEisu( KC_SPC | KC_MINS	,"+{sc73}"	)	; _
+	SetEisu( KC_SPC | KC_EQL	,"+{sc27}"	)	; +
+	SetEisu( KC_SPC | KC_LBRC	,"+{sc1B}"	)	; {
+	SetEisu( KC_SPC | KC_RBRC	,"+{sc2B}"	)	; }
+	SetEisu( KC_SPC | KC_SCLN	,"{sc28}"	)	; :
+	SetEisu( KC_SPC | KC_QUOT	,"+{sc03}"	)	; "
+	SetEisu( KC_SPC | KC_NUHS	,"+{sc0D}"	)	; ~
 
 
 	SetKana( KC_EQL				,"+{sc0C}"	)	; =
@@ -628,19 +627,19 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_QUOT			,"+{sc08}"	)	; '
 	SetKana( KC_NUHS			,"+{sc1A}"	)	; `
 
-	SetKana( KC_2 | KC_SPC		,"{sc1A}"	)	; @
-	SetKana( KC_6 | KC_SPC		,"{sc0D}"	)	; ^
-	SetKana( KC_7 | KC_SPC		,"+{sc07}"	)	; &
-	SetKana( KC_8 | KC_SPC		,"+{sc28}"	)	; *
-	SetKana( KC_9 | KC_SPC		,"+{sc09}"	)	; (
-	SetKana( KC_0 | KC_SPC		,"+{sc0A}"	)	; )
-	SetKana( KC_MINS | KC_SPC	,"+{sc73}"	)	; _
-	SetKana( KC_EQL | KC_SPC	,"+{sc27}"	)	; +
-	SetKana( KC_LBRC | KC_SPC	,"+{sc1B}"	)	; {
-	SetKana( KC_RBRC | KC_SPC	,"+{sc2B}"	)	; }
-;	SetKana( KC_SCLN | KC_SPC	,"{sc28}"	)	; :	(薙刀式で使用)
-	SetKana( KC_QUOT | KC_SPC	,"+{sc03}"	)	; "
-	SetKana( KC_NUHS | KC_SPC	,"+{sc0D}"	)	; ~
+	SetKana( KC_SPC | KC_2		,"{sc1A}"	)	; @
+	SetKana( KC_SPC | KC_6		,"{sc0D}"	)	; ^
+	SetKana( KC_SPC | KC_7		,"+{sc07}"	)	; &
+	SetKana( KC_SPC | KC_8		,"+{sc28}"	)	; *
+	SetKana( KC_SPC | KC_9		,"+{sc09}"	)	; (
+	SetKana( KC_SPC | KC_0		,"+{sc0A}"	)	; )
+	SetKana( KC_SPC | KC_MINS	,"+{sc73}"	)	; _
+	SetKana( KC_SPC | KC_EQL	,"+{sc27}"	)	; +
+	SetKana( KC_SPC | KC_LBRC	,"+{sc1B}"	)	; {
+	SetKana( KC_SPC | KC_RBRC	,"+{sc2B}"	)	; }
+;	SetKana( KC_SPC |  KC_SCLN	,"{sc28}"	)	; :	(薙刀式で使用)
+	SetKana( KC_SPC | KC_QUOT	,"+{sc03}"	)	; "
+	SetKana( KC_SPC | KC_NUHS	,"+{sc0D}"	)	; ~
 
 	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver = "kbdnec.dll")
@@ -722,72 +721,72 @@ KoyuRegist()
 		SetKana(KC_E | KC_R | KC_INT1	,"{直接}" . B11)
 
 	KanaGroup := "KL"	; 左手側
-		SetKana(KC_U | KC_I | KC_1 | KC_SPC		,"{直接}" . E01S)
-		SetKana(KC_U | KC_I | KC_2 | KC_SPC		,"{直接}" . E02S)
-		SetKana(KC_U | KC_I | KC_3 | KC_SPC		,"{直接}" . E03S)
-		SetKana(KC_U | KC_I | KC_4 | KC_SPC		,"{直接}" . E04S)
-		SetKana(KC_U | KC_I | KC_5 | KC_SPC		,"{直接}" . E05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_1		,"{直接}" . E01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_2		,"{直接}" . E02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_3		,"{直接}" . E03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_4		,"{直接}" . E04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_5		,"{直接}" . E05S)
 	KanaGroup := "KR"	; 右手側
-		SetKana(KC_E | KC_R | KC_6 | KC_SPC		,"{直接}" . E06S)
-		SetKana(KC_E | KC_R | KC_7 | KC_SPC		,"{直接}" . E07S)
-		SetKana(KC_E | KC_R | KC_8 | KC_SPC		,"{直接}" . E08S)
-		SetKana(KC_E | KC_R | KC_9 | KC_SPC		,"{直接}" . E09S)
-		SetKana(KC_E | KC_R | KC_0 | KC_SPC		,"{直接}" . E10S)
-		SetKana(KC_E | KC_R | KC_MINS | KC_SPC	,"{直接}" . E11S)
-		SetKana(KC_E | KC_R | KC_EQL | KC_SPC	,"{直接}" . E12S)
-		SetKana(KC_E | KC_R | JP_YEN | KC_SPC	,"{直接}" . E13S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_6		,"{直接}" . E06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_7		,"{直接}" . E07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_8		,"{直接}" . E08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_9		,"{直接}" . E09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_0		,"{直接}" . E10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_MINS	,"{直接}" . E11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_EQL	,"{直接}" . E12S)
+		SetKana(KC_SPC | KC_E | KC_R | JP_YEN	,"{直接}" . E13S)
 
 	KanaGroup := "KL"	; 左手側
-		SetKana(KC_U | KC_I | KC_Q | KC_SPC		,"{直接}" . D01S)
-		SetKana(KC_U | KC_I | KC_W | KC_SPC		,"{直接}" . D02S)
-		SetKana(KC_U | KC_I | KC_E | KC_SPC		,"{直接}" . D03S)
-		SetKana(KC_U | KC_I | KC_R | KC_SPC		,"{直接}" . D04S)
-		SetKana(KC_U | KC_I | KC_T | KC_SPC		,"{直接}" . D05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_Q		,"{直接}" . D01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_W		,"{直接}" . D02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_E		,"{直接}" . D03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_R		,"{直接}" . D04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_T		,"{直接}" . D05S)
 	KanaGroup := "KR"	; 右手側
-		SetKana(KC_E | KC_R | KC_Y | KC_SPC		,"{直接}" . D06S)
-		SetKana(KC_E | KC_R | KC_U | KC_SPC		,"{直接}" . D07S)
-		SetKana(KC_E | KC_R | KC_I | KC_SPC		,"{直接}" . D08S)
-		SetKana(KC_E | KC_R | KC_O | KC_SPC		,"{直接}" . D09S)
-		SetKana(KC_E | KC_R | KC_P | KC_SPC		,"{直接}" . D10S)
-		SetKana(KC_E | KC_R | KC_LBRC | KC_SPC	,"{直接}" . D11S)
-		SetKana(KC_E | KC_R | KC_RBRC | KC_SPC	,"{直接}" . D12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_Y		,"{直接}" . D06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_U		,"{直接}" . D07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_I		,"{直接}" . D08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_O		,"{直接}" . D09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_P		,"{直接}" . D10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_LBRC	,"{直接}" . D11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_RBRC	,"{直接}" . D12S)
 
 	KanaGroup := "KL"	; 左手側
-		SetKana(KC_U | KC_I | KC_A | KC_SPC		,"{直接}" . C01S)
-		SetKana(KC_U | KC_I | KC_S | KC_SPC		,"{直接}" . C02S)
-		SetKana(KC_U | KC_I | KC_D | KC_SPC		,"{直接}" . C03S)
-		SetKana(KC_U | KC_I | KC_F | KC_SPC		,"{直接}" . C04S)
-		SetKana(KC_U | KC_I | KC_G | KC_SPC		,"{直接}" . C05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_A		,"{直接}" . C01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_S		,"{直接}" . C02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_D		,"{直接}" . C03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_F		,"{直接}" . C04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_G		,"{直接}" . C05S)
 	KanaGroup := "KR"	; 右手側
-		SetKana(KC_E | KC_R | KC_H | KC_SPC		,"{直接}" . C06S)
-		SetKana(KC_E | KC_R | KC_J | KC_SPC		,"{直接}" . C07S)
-		SetKana(KC_E | KC_R | KC_K | KC_SPC		,"{直接}" . C08S)
-		SetKana(KC_E | KC_R | KC_L | KC_SPC		,"{直接}" . C09S)
-		SetKana(KC_E | KC_R | KC_SCLN | KC_SPC	,"{直接}" . C10S)
-		SetKana(KC_E | KC_R | KC_QUOT | KC_SPC	,"{直接}" . C11S)
-		SetKana(KC_E | KC_R | KC_NUHS | KC_SPC	,"{直接}" . C12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_H		,"{直接}" . C06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_J		,"{直接}" . C07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_K		,"{直接}" . C08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_L		,"{直接}" . C09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_SCLN	,"{直接}" . C10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_QUOT	,"{直接}" . C11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_NUHS	,"{直接}" . C12S)
 
 	KanaGroup := "KL"	; 左手側
-		SetKana(KC_U | KC_I | KC_Z | KC_SPC		,"{直接}" . B01S)
-		SetKana(KC_U | KC_I | KC_X | KC_SPC		,"{直接}" . B02S)
-		SetKana(KC_U | KC_I | KC_C | KC_SPC		,"{直接}" . B03S)
-		SetKana(KC_U | KC_I | KC_V | KC_SPC		,"{直接}" . B04S)
-		SetKana(KC_U | KC_I | KC_B | KC_SPC		,"{直接}" . B05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_Z		,"{直接}" . B01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_X		,"{直接}" . B02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_C		,"{直接}" . B03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_V		,"{直接}" . B04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_B		,"{直接}" . B05S)
 	KanaGroup := "KR"	; 右手側
-		SetKana(KC_E | KC_R | KC_N | KC_SPC		,"{直接}" . B06S)
-		SetKana(KC_E | KC_R | KC_M | KC_SPC		,"{直接}" . B07S)
-		SetKana(KC_E | KC_R | KC_COMM | KC_SPC	,"{直接}" . B08S)
-		SetKana(KC_E | KC_R | KC_DOT | KC_SPC	,"{直接}" . B09S)
-		SetKana(KC_E | KC_R | KC_SLSH | KC_SPC	,"{直接}" . B10S)
-		SetKana(KC_E | KC_R | KC_INT1 | KC_SPC	,"{直接}" . B11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_N		,"{直接}" . B06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_M		,"{直接}" . B07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_COMM	,"{直接}" . B08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_DOT	,"{直接}" . B09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_SLSH	,"{直接}" . B10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_INT1	,"{直接}" . B11S)
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver == "kbd101.dll")
 	{
 		SetKana(KC_E | KC_R | KC_BSLS			,"{直接}" . E13)
 		SetKana(KC_E | KC_R | KC_GRV			,"{直接}" . C12)
-		SetKana(KC_E | KC_R | KC_BSLS | KC_SPC	,"{直接}" . E13S)
-		SetKana(KC_E | KC_R | KC_GRV | KC_SPC	,"{直接}" . C12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_BSLS	,"{直接}" . E13S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_GRV	,"{直接}" . C12S)
 	}
 
 	KanaGroup := "2L"
