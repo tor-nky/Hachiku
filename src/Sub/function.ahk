@@ -597,6 +597,11 @@ SendEachChar(Str1, Delay:=0)
 				PreDelay := 80
 				PostDelay := 100	; 秀丸エディタ + ATOK 用
 			}
+			else if (StrChopped = "^v" && IMESelect)	; ATOK対策
+			{
+				Str2 := StrChopped
+				PostDelay := 40
+			}
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
 			else if (SubStr(StrChopped, 1, 7) = "{C_Wait")
@@ -969,7 +974,7 @@ Convert()
 			KanaMode := 0
 		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
-		else if (LastSendTime + 30.0 <= QPC())	; 前回の出力から 50ミリ秒経っていたら IME を調査
+		else if (LastSendTime + 10.0 <= QPC())	; 前回の出力から 10ミリ秒経っていたら
 		{
 			IMEState := IME_GET()
 			if (IMEState == 0)
