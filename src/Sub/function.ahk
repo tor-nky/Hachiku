@@ -22,9 +22,9 @@
 ; ----------------------------------------------------------------------
 
 KeyTimer:	; 後置シフトの判定期限タイマー
-	; 入力バッファが空の時、保存
+	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	InBufsKey[InBufWritePos] := "KeyTimer", InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest == 31 ? ++InBufWritePos & 31 : InBufWritePos)
+		, InBufWritePos := (InBufRest == 31 ? ++InBufWritePos & 31 : InBufWritePos)	; 入力バッファが空の時、保存
 		, (InBufRest == 31 ? InBufRest-- : )
 	Convert()	; 変換ルーチン
 	return
@@ -445,7 +445,7 @@ DetectIME()
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
-	global IMESelect, GoodHwnd, BadHwnd, LastSendTime
+	global IMESelect, GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
@@ -528,8 +528,8 @@ SendEachChar(Str1, Delay:=0)
 			}
 			else if (StrChopped == "{確定}")
 			{
-				if (LastDelay < 30)
-					Sleep, % 30 - LastDelay	; 前回の出力から 30ミリ秒経ってから IME_GET()
+				if (LastDelay < IME_Get_Interval)
+					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (DetectIME() = "OldMSIME" && PostDelay < 30)
@@ -890,12 +890,11 @@ Convert()
 	global InBufsKey, InBufReadPos, InBufsTime, InBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, DefsKey, DefsGroup, DefsKanaMode, DefsCombinableBit, DefsCtrlNo, DefBegin, DefEnd
-		, _usc, LastSendTime
+		, _usc, LastSendTime, IME_Get_Interval
 		, SideShift, ShiftDelay, CombDelay, SpaceKeyRepeat
 		, CombLimitN, CombStyleN, CombKeyUpN, CombLimitS, CombStyleS, CombKeyUpS, CombLimitE, CombKeyUpSPC
 		, KeyUpToOutputAll, EisuSandS
 	static ConvRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
-		, LastKey	:= ""	; 前回のキー入力
 		, NextKey	:= ""	; 次回送りのキー入力
 		, RealBit	:= 0	; 今押している全部のキービットの集合
 		, LastBit	:= 0	; 前回のキービット
@@ -941,10 +940,9 @@ Convert()
 		if (NextKey == "")
 		{
 			; 入力バッファから読み出し
+			; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 			NowKey := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
 				, InBufReadPos := ++InBufReadPos & 31, InBufRest++
-			if (NowKey != LastKey)
-				LastKey := NowKey
 
 			; 判定期限到来
 			if (NowKey == "KeyTimer")
@@ -974,7 +972,7 @@ Convert()
 			KanaMode := 0
 		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
-		else if (LastSendTime + 10.0 <= QPC())	; 前回の出力から 10ミリ秒経っていたら
+		else if (LastSendTime + IME_Get_Interval <= QPC())	; 前回の出力から一定時間経っていたら
 		{
 			IMEState := IME_GET()
 			if (IMEState == 0)
@@ -1583,10 +1581,10 @@ RShift::
 #If (EnterShift)
 Enter::
 #If		; End #If ()
-	; 入力バッファへ保存
-	; キーを押す方はいっぱいまで使わない
+; 入力バッファへ保存
+	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
-		, InBufWritePos := (InBufRest > 16 ? ++InBufWritePos & 31 : InBufWritePos)
+		, InBufWritePos := (InBufRest > 16 ? ++InBufWritePos & 31 : InBufWritePos)	; キーを押す方はいっぱいまで使わない
 		, (InBufRest > 16 ? InBufRest-- : )
 	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	Convert()	; 変換ルーチン
@@ -1723,6 +1721,7 @@ RShift up::
 Enter up::
 #If		; End #If ()
 ; 入力バッファへ保存
+	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest ? ++InBufWritePos & 31 : InBufWritePos)
 		, (InBufRest ? InBufRest-- : )

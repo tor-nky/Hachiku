@@ -201,10 +201,16 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
 ; テストモード	1: 処理時間表示, 2: 表示待ち文字列表示, 他: なし ※iniになければ設定画面に表示しない
 	IniRead, TestMode, %IniFilePath%, Advanced, TestMode
+; Send から IME_GET までの必要時間(ミリ秒)
+	IniRead, IME_Get_Interval, %IniFilePath%, Advanced, IME_Get_Interval, 30.0
 
 ; 範囲外は初期値へ
-if (SideShift < 0 || SideShift > 3)
-	SideShift := 2
+	if (SideShift < 0 || SideShift > 3)
+		SideShift := 2
+	if (IME_Get_Interval < 0.0)
+		IME_Get_Interval := 0.0
+	else if (IME_Get_Interval > 200.0)
+		IME_Get_Interval := 200.0
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
