@@ -16,7 +16,6 @@
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
 ;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
 
-
 ; 特別出力
 SendSP(Str1, CtrlNo)
 {
@@ -32,6 +31,10 @@ SendSP(Str1, CtrlNo)
 		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
 			Send, a
 	}
+	else if (CtrlNo == "横書き")
+		ChangeVertical(0)
+	else if (CtrlNo == "縦書き")
+		ChangeVertical(1)
 	; 固有名詞ショートカットを切り替える
 	else if (CtrlNo == "KoyuChange")
 	{
@@ -577,6 +580,12 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^u"		)		; ひらがな
 
 KanaGroup := 0	; 0 はグループなし
+	SetKana( KC_Q | KC_W			,"Null"		,"横書き")
+	SetEisu( KC_Q | KC_W			,"Null"		,"横書き")
+	SetKana( KC_Q | KC_A			,"Null"		,"縦書き")
+	SetEisu( KC_Q | KC_A			,"Null"		,"縦書き")
+
+
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver = "kbd101.dll")
 	{
