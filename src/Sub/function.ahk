@@ -842,6 +842,42 @@ StoreBuf(nBack, Str1, CtrlNo:=0)
 	return
 }
 
+; 縦書き・横書き切り替え
+ChangeVertical(number)
+{
+	global IniFilePath, Vertical
+
+	static icon_H_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
+					. Path_RemoveExtension(A_ScriptName) . "_H.ico"
+		, icon_V_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
+					. Path_RemoveExtension(A_ScriptName) . "_V.ico"
+
+	; 設定ファイル書き込み
+	if (Vertical != number)
+	{
+		Vertical := number
+		IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
+	}
+
+	; タスクトレイ関連
+	if (Vertical)
+	{
+		menu, tray, Check, 縦書きモード	; “縦書きモード”にチェックを付ける
+		if (Path_FileExists(icon_V_Path))
+			Menu, TRAY, Icon, %icon_V_Path%
+		else
+			Menu, TRAY, Icon, *
+	}
+	else
+	{
+		menu, tray, Uncheck, 縦書きモード	; “縦書きモード”のチェックを外す
+		if (Path_FileExists(icon_H_Path))
+			Menu, TRAY, Icon, %icon_H_Path%
+		else
+			Menu, TRAY, Icon, *
+	}
+}
+
 ; 出力する文字列を選択
 SelectStr(i)
 {

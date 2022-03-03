@@ -1,15 +1,15 @@
 ﻿/************************************************************************
-	ファイルパス関数群	(Path.ahk)
+    ファイルパス関数群  (Path.ahk)
 
-	DllCallにてAPIを使用 (\ ダメ文字対応)
+    DllCallにてAPIを使用 (\ ダメ文字対応)
    (上位からの引数に問題がない限り本関数内で新たに文字化けを起こすことはない筈)
-	  グローバル変数 : なし
-	  各関数の依存性 : なし(必要関数だけ切出してコピペでも使えます)
+      グローバル変数 : なし
+      各関数の依存性 : なし(必要関数だけ切出してコピペでも使えます)
 
-	AHKL Ver:		1.1.08.01
-	Language:		Japanease
-	Platform:		WinNT  IE 4以上 (SHLWAPI.DLL使用)
-	Author: 		eamat.	  2008.01.30
+    AHKL Ver:       1.1.08.01
+    Language:       Japanease
+    Platform:       WinNT  IE 4以上 (SHLWAPI.DLL使用)
+    Author:         eamat.    2008.01.30
  ************************************************************************
  2008.12.10
  2009.01.24  コメント修正
@@ -18,28 +18,46 @@
  2009.10.22  SplitPath() 追加 (AHK本来の SplitPathコマンド互換)
  2012.08.20  UTF-8保存 暫定
  2012.11.08  Unicode対応 DllCall時の末尾A削除(A,W自動判別)
-			 msvcrt.dll\_mbscpy廃止 UInt & → Str
-			 MAX_PATH 260 → 520
+             msvcrt.dll\_mbscpy廃止 UInt & → Str
+             MAX_PATH 260 → 520
 */
 
+;=============================================================================
+;   判定系 (存在チェック)
+;=============================================================================
+;---  ファイルの有無をチェックする 戻り値 0:なし 1:あり ---
+; ディレクトリ指定時も1が返る。UNCパス(\\%A_ComputerName%\hoge.txt 等)でもOK
+Path_FileExists(path)   {
+    Return DllCall("SHLWAPI.DLL\PathFileExists", Str,path, Int)
+}
 
 ;=============================================================================
-;	変換系
+;   変換系
 ;=============================================================================
 
-;---- パス名がスペースを含む時に""でくくる ---
-Path_QuoteSpaces(path)	{
-	DllCall("SHLWAPI.DLL\PathQuoteSpaces", Str, path)
-	return path
+;---- パス名の最後尾にバックスラッシュをつける -----
+Path_AddBackslash(path) {
+    DllCall("SHLWAPI.DLL\PathAddBackslash", Str, path)
+    return path
 }
 
 ;-----------------------------------------------------------
 ;  フルパス名から拡張子だけを変更したパス名を取得する
-;	path	対象パス
-;	ext 	変更する拡張子
+;   path    対象パス
+;   ext     変更する拡張子
 ;-----------------------------------------------------------
-Path_RenameExtension(path,ext)	{
-	ext := ("." != SubStr(ext,1,1)) ? "." ext : ext 	;"."がない時は付加
-	DllCall("SHLWAPI.DLL\PathRenameExtension", Str,path, Str,ext)
-	Return path
+Path_RenameExtension(path,ext)  {
+    ext := ("." != SubStr(ext,1,1)) ? "." ext : ext     ;"."がない時は付加
+    DllCall("SHLWAPI.DLL\PathRenameExtension", Str,path, Str,ext)
+    Return path
+}
+
+;=============================================================================
+;   抽出系
+;=============================================================================
+
+;---- フルパス名から拡張子のみを除いたパス名を取得する ----
+Path_RemoveExtension(path)  {
+    DllCall("SHLWAPI.DLL\PathRemoveExtension", Str, path)
+    return path
 }

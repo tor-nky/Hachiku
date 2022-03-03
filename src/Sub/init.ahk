@@ -144,7 +144,7 @@ USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
 ; ----------------------------------------------------------------------
 
 ; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
-IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
+IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 
 ; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
 ; [general]
@@ -166,7 +166,7 @@ IniFilePath := Path_QuoteSpaces(Path_RenameExtension(A_ScriptFullPath, "ini"))
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
 ; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 40
+	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 50
 ; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 他: 空白リピート
 	IniRead, SpaceKeyRepeat, %IniFilePath%, Basic, SpaceKeyRepeat, 0
 
@@ -268,8 +268,7 @@ if (TestMode != "ERROR")
 	{
 		; 縦書きモード切替を追加
 		menu, tray, add, 縦書きモード, VerticalMode
-		if (Vertical)
-			menu, tray, Check, 縦書きモード	; “縦書きモード”にチェックを付ける
+		ChangeVertical(Vertical)
 		; 「固有名詞」編集画面を追加
 		menu, tray, add, 固有名詞登録, KoyuMenu
 	}
@@ -281,7 +280,7 @@ if (TestMode != "ERROR")
 	menu, tray, Standard	; 標準メニュー項目を追加する
 
 	; バージョンアップ後、初めての起動時は設定画面を表示
-	if (INIVersion != Version)
+	if (!Path_FileExists(IniFilePath))
 		Gosub, PrefMenu
 
 ; ----------------------------------------------------------------------
@@ -306,9 +305,7 @@ ExitSub:
 ; 縦書きモード切替
 VerticalMode:
 	menu, tray, ToggleCheck, 縦書きモード
-	Vertical := (Vertical == 0 ? 1 : 0)
-	; 設定ファイル書き込み
-	IniWrite, %Vertical%, %IniFilePath%, Naginata, Vertical
+	ChangeVertical(Vertical == 0 ? 1 : 0)
 	return
 
 ButtonOK:
