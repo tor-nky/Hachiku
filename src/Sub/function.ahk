@@ -411,6 +411,25 @@ SettingLayout()
 	return
 }
 
+ExistNewMSIME()
+{
+;	local build
+
+	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
+	if A_OSVersion in WIN_8.1,WIN_8,WIN_7,WIN_VISTA,WIN_2003,WIN_XP,WIN_2000	; Note: No spaces around commas.
+		return False
+	else if (SubStr(A_OSVersion, 1, 5) = "10.0.")	; [requires v1.1.20+]
+	{
+		build := SubStr(A_OSVersion, 6)
+		if (build <= 18363)	; Windows 10 1909 以前
+			return False
+;		else
+;			return True
+	}
+	else
+		return True
+}
+
 ; 使用している IME を調べる。MS-IME は 10秒経過していれば再調査。
 ; 戻り値	"MSIME": 新MS-IME登場以前のもの,
 ;			"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
@@ -418,14 +437,16 @@ SettingLayout()
 DetectIME()
 {
 	global IMESelect, GoodHwnd, BadHwnd
-	static IMEName := ""
-		, LastSearchTime := 0
+	static ExistNewMSIME := ExistNewMSIME()
+		, IMEName := "", LastSearchTime := 0
 ;	local Value, NowIME
 
 	NowIME := IMEName
 
 	if (IMESelect)
 		NowIME := "ATOK"
+	else if (ExistNewMSIME == False)
+		NowIME := "MSIME"
 	else if (A_TickCount < LastSearchTime || LastSearchTime + 10000 < A_TickCount)
 	{
 		LastSearchTime := A_TickCount
@@ -434,7 +455,7 @@ DetectIME()
 		RegRead, Value, HKEY_CURRENT_USER
 			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
 			, NoTsf3Override2
-		NowIME := (ErrorLevel == 1 ? "MSIME" : (Value ? "OldMSIME" : "NewMSIME"))
+		NowIME := (ErrorLevel == 1 || !Value ? "NewMSIME" : "OldMSIME")
 	}
 
 	if (NowIME != IMEName)
