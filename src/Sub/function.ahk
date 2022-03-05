@@ -748,9 +748,6 @@ SendKeyUp(Str1:="")
 			SendBlind(RestStr)
 	}
 	RestStr := Str1
-
-	if (GetKeyState("Shift", "P"))
-		SendBlind("{ShiftDown}")
 	return
 }
 
@@ -1039,33 +1036,11 @@ Convert()
 				KanaMode := IMEConvMode & 1
 		}
 
-		; 左右シフトかな以外の時、先頭の "+" を消去
-		if (SideShift != 2 && Asc(NowKey) == 43)
+		; 先頭の "+" を消去
+		if (Asc(NowKey) == 43)
 			NowKey := SubStr(NowKey, 2)
-
 		; 左右シフト処理
-		if (Asc(NowKey) == 43)	; "+" から始まる(左右シフトかなのみ)
-		{
-			if (!sft && GetKeyState("Shift", "P"))	; 左右シフトなし→あり
-			{
-				OutBuf()
-				NextKey := NowKey
-				NowKey := "sc39"	; センターシフト押す→押したキー
-				sft := 1
-			}
-			else
-				NowKey := SubStr(NowKey, 2)	; 先頭の "+" を消去
-		}
-		else if (SideShift == 2 && sft)	; 左右シフトあり→なし
-		{
-			if !(spc || ent)
-			{
-				NextKey := NowKey
-				NowKey := "sc39 up"	; センターシフト上げ→押したキー
-			}
-			sft := 0
-		}
-		else if (NowKey == "~LShift")
+		if (NowKey == "~LShift")
 		{
 			sft := 1
 			OutBuf()
@@ -1581,7 +1556,7 @@ sc29::	; (JIS)半角/全角	(US)`
 ; キー入力部(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))
 +sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift & 1)
+#If (SideShift)
 ~LShift::
 RShift::
 +RShift::
@@ -1719,7 +1694,7 @@ sc29 up::	; (JIS)半角/全角	(US)`
 ; キー押上げ(左右シフト)
 #If (USKBSideShift || !GetKeyState("Shift", "P"))	; 押す方と同じにする
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift & 1)
+#If (SideShift)
 ~LShift up::
 RShift up::
 +RShift up::

@@ -158,7 +158,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
 ; USLike		0または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
-; SideShift		0-1: 左右シフト英数, 2-3: 左右シフトかな
+; SideShift		左右シフト	0: 英数, 1: 英数２, 2: かな
 	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
 ; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
@@ -205,12 +205,10 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, IME_Get_Interval, %IniFilePath%, Advanced, IME_Get_Interval, 30.0
 
 ; 範囲外は初期値へ
-	if (SideShift < 0 || SideShift > 3)
+	if (SideShift < 0 || SideShift > 2)
 		SideShift := 2
-	if (IME_Get_Interval < 0.0)
-		IME_Get_Interval := 0.0
-	else if (IME_Get_Interval > 200.0)
-		IME_Get_Interval := 200.0
+	if (IME_Get_Interval < 0.0 || IME_Get_Interval > 200.0)
+		IME_Get_Interval := 30.0
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
