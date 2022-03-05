@@ -418,14 +418,12 @@ ExistNewMSIME()
 	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
 	if A_OSVersion in WIN_8.1,WIN_8,WIN_7,WIN_VISTA,WIN_2003,WIN_XP,WIN_2000	; Note: No spaces around commas.
 		return False
-	else if (SubStr(A_OSVersion, 1, 5) = "10.0.")	; [requires v1.1.20+]
-	{
-		build := SubStr(A_OSVersion, 6)
-		if (build <= 18363)	; Windows 10 1909 以前
-			return False
-;		else
-;			return True
-	}
+
+	; 参考: https://docs.microsoft.com/ja-jp/windows/release-health/supported-versions-windows-client
+	; [requires v1.1.20+]
+	build := SubStr(A_OSVersion, 6)	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
+	if (build <= 18363)	; Windows 10 1909 以前
+		return False
 	else
 		return True
 }
@@ -445,7 +443,7 @@ DetectIME()
 
 	if (IMESelect)
 		NowIME := "ATOK"
-	else if (ExistNewMSIME == False)
+	else if (!ExistNewMSIME)
 		NowIME := "MSIME"
 	else if (A_TickCount < LastSearchTime || LastSearchTime + 10000 < A_TickCount)
 	{
@@ -750,6 +748,9 @@ SendKeyUp(Str1:="")
 			SendBlind(RestStr)
 	}
 	RestStr := Str1
+
+	if (GetKeyState("Shift", "P"))
+		SendBlind("{ShiftDown}")
 	return
 }
 
@@ -1045,11 +1046,11 @@ Convert()
 		; 左右シフト処理
 		if (Asc(NowKey) == 43)	; "+" から始まる(左右シフトかなのみ)
 		{
-			if (!sft && GetKeyState("Shift", "P"))			; 左右シフトなし→あり
+			if (!sft && GetKeyState("Shift", "P"))	; 左右シフトなし→あり
 			{
 				OutBuf()
 				NextKey := NowKey
-				NowKey := "sc39"	; スペース押す→押したキー
+				NowKey := "sc39"	; センターシフト押す→押したキー
 				sft := 1
 			}
 			else
@@ -1057,10 +1058,10 @@ Convert()
 		}
 		else if (SideShift == 2 && sft)	; 左右シフトあり→なし
 		{
-			if (!spc && !ent)
+			if !(spc || ent)
 			{
 				NextKey := NowKey
-				NowKey := "sc39 up"	; スペース上げ→押したキー
+				NowKey := "sc39 up"	; センターシフト上げ→押したキー
 			}
 			sft := 0
 		}
@@ -1068,7 +1069,7 @@ Convert()
 		{
 			sft := 1
 			OutBuf()
-			NowKey := "sc39"	; スペース押す
+			NowKey := "sc39"	; センターシフト押す
 		}
 		else if (NowKey == "~LShift up")
 		{
@@ -1081,14 +1082,14 @@ Convert()
 			else if (spc || ent)	; 他のシフトを押している時
 				continue
 			else
-				NowKey := "sc39 up"	; スペース上げ
+				NowKey := "sc39 up"	; センターシフト上げ
 		}
 		else if (NowKey == "RShift")
 		{
 			rsft := 1
 			OutBuf()
 			SendBlind("{ShiftDown}")
-			NowKey := "sc39"	; スペース押す
+			NowKey := "sc39"	; センターシフト押す
 		}
 		else if (NowKey == "RShift up")
 		{
@@ -1098,18 +1099,26 @@ Convert()
 			if (sft || spc || ent)	; 他のシフトを押している時
 				continue
 			else
-				NowKey := "sc39 up"	; スペース上げ
+				NowKey := "sc39 up"	; センターシフト上げ
 		}
 		; スペースキー処理
 		else if (NowKey == "sc39")
 		{
 			if ((!IMEConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
-				|| (!EisuSandS && !KanaMode))		; SandSなしの設定で英数入力時
+				|| (!EisuSandS && !KanaMode))	; SandSなしの設定で英数入力時
 			{
 				StoreBuf(0, "{Space}", R)
 				OutBuf()
 				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
+			}
+			else if (ent)	; 他のシフトを押している時
+			{
+				StoreBuf(0, "+{Space}", R)
+				OutBuf()
+				if (ent == 1)
+					ent := 2	; 単独エンターではない
+				DispTime(KeyTime, "`nエンター+スペース")	; キー変化からの経過時間を表示
 			}
 			else if (SpaceKeyRepeat && (spc & 1))	; スペースキーの長押し
 			{
@@ -1144,7 +1153,7 @@ Convert()
 				}
 			}
 			else if (spc == 1)
-				NextKey := "vk20"	; スペース単独押し→スペース上げ
+				NextKey := "vk20"	; スペース単独押し→センターシフト上げ
 			spc := 0
 		}
 		; エンターキー処理
@@ -1153,13 +1162,13 @@ Convert()
 		{
 			if !(sft || rsft || spc)	; シフトキーを押していない時
 			{
-				NowKey := "sc39"	; スペース押す
+				NowKey := "sc39"	; センターシフト押す
 				ent := 1
 			}
 		}
 		else if (NowKey == "Enter up")
 		{
-			NowKey := "sc39 up"	; スペース上げ
+			NowKey := "sc39 up"	; センターシフト上げ
 			SendKeyUp()			; 押し下げを出力中のキーを上げる
 			if (sft || rsft || spc)		; 他のシフトを押している時
 			{
@@ -1173,7 +1182,7 @@ Convert()
 				}
 			}
 			else if (ent == 1)
-				NextKey := "vk0D"	; エンター単独押し→スペース上げ ※"Enter"としないこと
+				NextKey := "vk0D"	; エンター単独押し→センターシフト上げ ※"Enter"としないこと
 			ent := 0
 		}
 		; スペースのリピートを止める
@@ -1625,7 +1634,6 @@ RShift::
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
-+sc39::	; Space
 +Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
@@ -1764,7 +1772,6 @@ RShift up::
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
-+sc39 up::	; Space
 +Up up::	; ※小文字にしてはいけない
 +Left up::
 +Right up::
