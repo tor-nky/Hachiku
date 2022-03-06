@@ -1025,7 +1025,7 @@ Convert()
 		IMEConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if (Asc(NowKey) == 43 && SideShift == 1)	; 左右シフト英数２
+		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
 		else if (LastSendTime + IME_Get_Interval <= QPC())	; 前回の出力から一定時間経っていたら
 		{
@@ -1052,10 +1052,14 @@ Convert()
 			if (rsft)	; 右シフトは離されていない
 			{
 				SendBlind("{ShiftDown}")
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
 			}
 			else if (spc || ent)	; 他のシフトを押している時
+			{
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
+			}
 			else
 				NowKey := "sc39 up"	; センターシフト上げ
 		}
@@ -1072,7 +1076,10 @@ Convert()
 			if (!sft)	; 左シフトも離されている
 				SendBlind("{ShiftUp}")
 			if (sft || spc || ent)	; 他のシフトを押している時
+			{
+				DispTime(KeyTime)	; キー変化からの経過時間を表示
 				continue
+			}
 			else
 				NowKey := "sc39 up"	; センターシフト上げ
 		}
