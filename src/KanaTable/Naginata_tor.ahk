@@ -90,7 +90,7 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列v14（集大成版）"
+	LayoutName := "薙刀式配列 2022年3月4日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 ;	ReadWorkmanLayout()		; Workman配列
@@ -99,9 +99,9 @@ ReadLayout()
 	; 別名登録
 	; -----------------------------------------
 	AL_小							:= KC_Q
-	AL_き	:= AL_む				:= KC_W
+	AL_き	:= AL_ぬ				:= KC_W
 	AL_て	:= AL_り				:= KC_E
-	AL_し	:= AL_ぬ				:= KC_R
+	AL_し	:= AL_ね				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
 	AL_BS	:= AL_さ				:= KC_U
@@ -127,7 +127,7 @@ ReadLayout()
 	AL_そ	:= AL_み				:= KC_B
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
-	AL_ん	:= AL_ね				:= KC_COMM
+	AL_ん	:= AL_む				:= KC_COMM
 	AL_ら	:= AL_ふ				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
@@ -489,8 +489,8 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
-	SetKana( KC_D | KC_F | KC_SCLN	,"{↑ 5}"			, R)	; 5↑
-	SetKana( KC_D | KC_F | KC_SLSH	,"{↓ 5}"			, R)	; 5↓
+	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
+	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
 	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"			)		; Home
 	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定End
@@ -505,8 +505,8 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
-	SetEisu( KC_D | KC_F | KC_SCLN	,"{↑ 5}"			, R)	; 5↑
-	SetEisu( KC_D | KC_F | KC_SLSH	,"{↓ 5}"			, R)	; 5↓
+	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
+	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
 ; 編集モード２
 ; 下段人差指＋中指
@@ -560,8 +560,8 @@ KanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
 	SetKana( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
 	SetKana( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetKana( KC_C | KC_V | KC_SCLN	,"^i"		)		; カタカナ
-	SetKana( KC_C | KC_V | KC_SLSH	,"^u"		)		; ひらがな
+	SetKana( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; +→
+	SetKana( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; +←
 
 	SetEisu( KC_C | KC_V | KC_Y		,"+{Home}"	)		; +Home
 	SetEisu( KC_C | KC_V | KC_H		,"^c"		)		; Copy
@@ -576,8 +576,8 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
 	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
 	SetEisu( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetEisu( KC_C | KC_V | KC_SCLN	,"^i"		)		; カタカナ
-	SetEisu( KC_C | KC_V | KC_SLSH	,"^u"		)		; ひらがな
+	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; +→
+	SetEisu( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; +←
 
 KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_Q | KC_W			,"Null"		,"横書き")
