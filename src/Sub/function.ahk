@@ -563,7 +563,7 @@ SendEachChar(Str1, Delay:=0)
 						Send, =
 						Sleep, PostDelay
 						Send, {Enter}
-						Sleep, PostDelay
+						Sleep, PostDelay	; ブラウザで Github の直接編集をするときは 110
 						Str2 := "{BS}"
 ;						PostDelay := 0
 					}
