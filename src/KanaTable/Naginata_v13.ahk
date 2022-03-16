@@ -49,8 +49,8 @@ SendSP(Str1, CtrlNo)
 		KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
 		SettingLayout()					; 出力確定する定義に印をつける
 	}
-;	else	; その他、未定義のもの。念のため。
-;		SendEachChar(Str1, 30)
+	else	; その他、未定義のもの。念のため。
+		SendEachChar(Str1, 30)
 
 	return
 }
