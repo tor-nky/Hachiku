@@ -727,7 +727,10 @@ SendEachChar(Str1, Delay:=0)
 
 SendBlind(Str1)
 {
+	global LastSendTime
+
 	Send, % "{Blind}" . Str1
+	LastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
 ; 押し下げを出力中のキーを上げ、別のに入れ替え
@@ -801,7 +804,7 @@ SplitKeyUpDown(Str1)
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)
 {
-	global _usc, OutStrs, OutCtrlNos, R
+	global _usc, OutStrs, OutCtrlNos, R, LastSendTime
 ;	local Str1, CtrlNo, EnterPos
 
 	while (i > 0 && _usc > 0)
@@ -830,6 +833,7 @@ OutBuf(i:=2)
 		{
 			SendKeyUp()				; 押し下げを出力中のキーを上げる
 			SendSP(Str1, CtrlNo)	; 特別出力(かな定義ファイルで操作)
+			LastSendTime := QPC()	; 最後に出力した時間を記録
 		}
 
 		OutStrs[1] := OutStrs[2]
