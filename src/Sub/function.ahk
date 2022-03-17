@@ -489,7 +489,7 @@ SendEachChar(Str1, Delay:=0)
 		Slow := (IMESelect ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
-	LastDelay := Floor(QPC() - LastSendTime)
+	LastDelay := (LastSearchTime <= A_TickCount ? A_TickCount - LastSearchTime : 0x100000000 + A_TickCount - LastSearchTime)
 
 	; 文字列を細切れにして出力
 	NoIME := False
@@ -517,20 +517,11 @@ SendEachChar(Str1, Delay:=0)
 			; "{Raw}"からの残りは全部出力する
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
-				i++
-				while (i <= len1)
+				while (++i <= len1)
 				{
 					StrChopped := SubStr(Str1, i, 2)
-					if (Asc(StrChopped) > 65535)	; ユニコード拡張領域
-					{
-						SendRaw, % StrChopped
-						i += 2
-					}
-					else
-					{
-						SendRaw, % SubStr(Str1, i, 1)
-						i++
-					}
+					SendRaw, % SubStr(Str1, i, 1)
+					LastSendTime := A_TickCount	; 最後に出力した時間を記録
 					; 出力直後のディレイ
 					if (PostDelay > 0)
 						Sleep, PostDelay
@@ -663,6 +654,7 @@ SendEachChar(Str1, Delay:=0)
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				Send, % Str2
+				LastSendTime := A_TickCount	; 最後に出力した時間を記録
 				; 出力直後のディレイ
 				if (PostDelay > 0)
 					Sleep, % (LastDelay := PostDelay)
@@ -701,11 +693,15 @@ SendEachChar(Str1, Delay:=0)
 					PostDelay := 70	; ATOK 用
 				}
 				else
+				{
+					PreDelay := 20
 					PostDelay := 30	; 新MS-IME用
+				}
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				Send, {vkF3}	; 半角/全角
+				LastSendTime := A_TickCount	; 最後に出力した時間を記録
 				Sleep, % (LastDelay := PostDelay)
 				; IME入力モードを回復する
 				if (IMEConvMode)
@@ -721,7 +717,6 @@ SendEachChar(Str1, Delay:=0)
 		i++
 	}
 
-	LastSendTime := QPC() - LastDelay	; 最後に出力した時間を記録
 	return
 }
 
@@ -730,7 +725,7 @@ SendBlind(Str1)
 	global LastSendTime
 
 	Send, % "{Blind}" . Str1
-	LastSendTime := QPC()	; 最後に出力した時間を記録
+	LastSendTime := A_TickCount	; 最後に出力した時間を記録
 }
 
 ; 押し下げを出力中のキーを上げ、別のに入れ替え
@@ -833,7 +828,7 @@ OutBuf(i:=2)
 		{
 			SendKeyUp()				; 押し下げを出力中のキーを上げる
 			SendSP(Str1, CtrlNo)	; 特別出力(かな定義ファイルで操作)
-			LastSendTime := QPC()	; 最後に出力した時間を記録
+			LastSendTime := A_TickCount	; 最後に出力した時間を記録
 		}
 
 		OutStrs[1] := OutStrs[2]
@@ -1031,8 +1026,9 @@ Convert()
 			KanaMode := 0
 		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
-		else if (LastSendTime + IME_Get_Interval <= QPC())	; 前回の出力から一定時間経っていたら
-		{
+		else if (LastSendTime + IME_Get_Interval <= A_TickCount
+			|| (A_TickCount < LastSearchTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
+		{	; 前回の出力から一定時間経っていたら
 			IMEState := IME_GET()
 			if (IMEState == 0)
 				KanaMode := 0
