@@ -464,7 +464,7 @@ DetectIME()
 ; 文字列 Str1 を適宜ディレイを入れながら出力する
 SendEachChar(Str1, Delay:=0)
 {
-	global IMESelect, GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
+	global GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
 ;	local Hwnd
 ;		, len1						; Str1 の長さ
@@ -474,22 +474,18 @@ SendEachChar(Str1, Delay:=0)
 ;		, PreDelay, PostDelay		; 出力前後のディレイの値
 ;		, FinalDelay
 ;		, LastDelay					; 前回出力時のディレイの値
-;		, Slow
 ;		, ClipSaved
 ;		, KakuteiIsEnter	; 文字確定させるのにエンターのみで良ければ True
 
-;ToolTip2(Str1, 2000)
+;ToolTip2(Str1, 2000)	; デバッグ用
 	KakuteiIsEnter := False
 	WinGet, Hwnd, ID, A
 
-	Slow := IMESelect
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
-	else IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
-		Slow := (IMESelect ? 0x11 : Slow)
 ;	SetKeyDelay, -1, -1
 
-	LastDelay := (LastSearchTime <= A_TickCount ? A_TickCount - LastSearchTime : 0x100000000 + A_TickCount - LastSearchTime)
+	LastDelay := (LastSendTime <= A_TickCount ? A_TickCount - LastSendTime : 0x100000000 + A_TickCount - LastSendTime)
 
 	; 文字列を細切れにして出力
 	NoIME := False
@@ -542,21 +538,14 @@ SendEachChar(Str1, Delay:=0)
 					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (DetectIME() = "OldMSIME" && PostDelay < 30)
-						PostDelay := 30
-					else if (PostDelay < 10)
-						PostDelay := 10
-
-					if (Hwnd != GoodHwnd || LastDelay < (IMESelect ? 90 : 40))
+					if (Hwnd != GoodHwnd || LastDelay < (DetectIME() = "ATOK" ? 90 : 40))
 						; IME窓の検出を当てにできない
 						; あるいは文字確定から時間が経っていない(IME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms)
 					{
-						Send, =
-						Sleep, PostDelay
+						Send, _
 						Send, {Enter}
-						Sleep, PostDelay	; ブラウザで Github の直接編集をするときは 110
+						Sleep, 120
 						Str2 := "{BS}"
-;						PostDelay := 0
 					}
 					else if (KakuteiIsEnter	|| IME_GetConverting())
 						; 文字確定させるのにエンターのみで良い、またはIME窓あり
@@ -569,6 +558,8 @@ SendEachChar(Str1, Delay:=0)
 				IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
 				Str2 := "{vkF3}"	; 半角/全角
 				PostDelay := 30
+				if (Delay < 10)
+					Delay := 10
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
@@ -599,15 +590,12 @@ SendEachChar(Str1, Delay:=0)
 				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 				LastDelay := 0
 			}
-			; ATOK+秀丸エディタで、文字列途中のエンターをゆっくり出力する
-			else if (Slow == 0x11
-			 && i != StrChopped && SubStr(StrChopped, 1, 6) = "{Enter")
+			else if (SubStr(StrChopped, 1, 6) = "{Enter")
 			{
 				Str2 := StrChopped
-				PreDelay := 80
-				PostDelay := 100	; 秀丸エディタ + ATOK 用
+				PostDelay := 110
 			}
-			else if (StrChopped = "^v" && IMESelect)	; ATOK対策
+			else if (StrChopped = "^v" && DetectIME() = "ATOK")	; ATOK対策
 			{
 				Str2 := StrChopped
 				PostDelay := 40
@@ -636,7 +624,7 @@ SendEachChar(Str1, Delay:=0)
 					BadHwnd := Hwnd
 				else if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
-					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
+					LastDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
 				else if (LenChopped == 1)	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
@@ -682,20 +670,15 @@ SendEachChar(Str1, Delay:=0)
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
 			{
 				NoIME := False
-				if (Slow == 0x11)
+				if (DetectIME() = "ATOK")
 				{
 					PreDelay := 70
-					PostDelay := 90	; 秀丸エディタ + ATOK 用
-				}
-				else if (Slow == 1)
-				{
-					PreDelay := 50
-					PostDelay := 70	; ATOK 用
+					PostDelay := 90
 				}
 				else
 				{
 					PreDelay := 20
-					PostDelay := 30	; 新MS-IME用
+					PostDelay := 30
 				}
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
@@ -812,17 +795,8 @@ OutBuf(i:=2)
 				Str1 := SplitKeyUpDown(Str1)	; キーの上げ下げを分離
 			else
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
-			StringGetPos, EnterPos, Str1, {Enter, R			; 右から "{Enter" を探す
-			if (InStr(Str1, "{NoIME}") || EnterPos >= 1)	; "{NoIME}" が入っているか、"{Enter" が途中にある
-			{
-				if (DetectIME() = "OldMSIME" && EnterPos >= 0)
-					; 新旧MSIMEが選べる環境で旧MSIMEを使い、改行が含まれる時
-					SendEachChar(Str1, 30)	; ゆっくりと出力
-				else
-					SendEachChar(Str1, 10)	; 1文字ごとに 10ms のスリープ
-			}
-			else
-				SendEachChar(Str1)
+
+			SendEachChar(Str1)
 		}
 		else
 		{
@@ -1027,7 +1001,7 @@ Convert()
 		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift == 1)	; 左右シフト英数２
 			KanaMode := 0
 		else if (LastSendTime + IME_Get_Interval <= A_TickCount
-			|| (A_TickCount < LastSearchTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
+			|| (A_TickCount < LastSendTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
 		{	; 前回の出力から一定時間経っていたら
 			IMEState := IME_GET()
 			if (IMEState == 0)
