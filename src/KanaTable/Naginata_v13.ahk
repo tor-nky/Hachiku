@@ -50,7 +50,7 @@ SendSP(Str1, CtrlNo)
 		SettingLayout()					; 出力確定する定義に印をつける
 	}
 	else	; その他、未定義のもの。念のため。
-		SendEachChar(Str1, 30)
+		SendEachChar(Str1)
 
 	return
 }
