@@ -19,7 +19,7 @@
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中の文字があれば確定し、なければそのまま所定の動作をします。
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
-;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
+;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
@@ -822,16 +822,11 @@ KoyuRegist()
 
 	KanaGroup := "2L"
 		; 固有名詞ショートカットを切り替える
-		SetKana( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
-		SetEisu( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
-		SetEisu( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
-		SetEisu( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
-		SetEisu( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
-		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
+		SetKana( KC_E | KC_R | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
+		SetKana( KC_E | KC_R | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
+		SetKana( KC_E | KC_R | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
+		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
+		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 
 	KanaGroup := 0	; 0 はグループなし
 	return
