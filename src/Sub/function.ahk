@@ -496,9 +496,7 @@ SendEachChar(Str1, Delay:=0)
 	len1 := StrLen(Str1)
 	while (i <= len1)
 	{
-		; ディレイの初期値
-		PreDelay := 0
-		PostDelay := Delay
+		PreDelay := PostDelay := 0	; ディレイの初期値
 
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
@@ -513,17 +511,16 @@ SendEachChar(Str1, Delay:=0)
 			; "{Raw}"からの残りは全部出力する
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
+				LastDelay := (PostDelay < 10 ? 10 : PostDelay)
 				while (++i <= len1)
 				{
 					StrChopped := SubStr(Str1, i, 2)
 					SendRaw, % SubStr(Str1, i, 1)
 					LastSendTime := A_TickCount	; 最後に出力した時間を記録
 					; 出力直後のディレイ
-					if (PostDelay > 0)
-						Sleep, PostDelay
+					Sleep, % LastDelay
 				}
 				StrChopped := ""	; 後で誤作動しないように消去
-				LastDelay := (PostDelay > 0 ? PostDelay : 0)
 			}
 
 			; 出力するキーを変換
@@ -544,7 +541,7 @@ SendEachChar(Str1, Delay:=0)
 					{
 						Send, _
 						Send, {Enter}
-						Sleep, 120
+						Sleep, 140
 						Str2 := "{BS}"
 					}
 					else if (KakuteiIsEnter	|| IME_GetConverting())
@@ -558,8 +555,6 @@ SendEachChar(Str1, Delay:=0)
 				IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
 				Str2 := "{vkF3}"	; 半角/全角
 				PostDelay := 30
-				if (Delay < 10)
-					Delay := 10
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
@@ -590,10 +585,14 @@ SendEachChar(Str1, Delay:=0)
 				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 				LastDelay := 0
 			}
-			else if (SubStr(StrChopped, 1, 6) = "{Enter")
+			else if (SubStr(StrChopped, 1, 6) = "{Enter" && DetectIME() = "ATOK")
 			{
 				Str2 := StrChopped
-				PostDelay := 110
+				IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
+				{
+					PreDelay := 80
+					PostDelay := 100
+				}
 			}
 			else if (StrChopped = "^v" && DetectIME() = "ATOK")	; ATOK対策
 			{
@@ -624,7 +623,7 @@ SendEachChar(Str1, Delay:=0)
 					BadHwnd := Hwnd
 				else if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
-					LastDelay := 70	; IME_GetConverting() が確実に変化する時間
+					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
 				else if (LenChopped == 1)	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
@@ -644,8 +643,9 @@ SendEachChar(Str1, Delay:=0)
 				Send, % Str2
 				LastSendTime := A_TickCount	; 最後に出力した時間を記録
 				; 出力直後のディレイ
-				if (PostDelay > 0)
-					Sleep, % (LastDelay := PostDelay)
+				LastDelay := (PostDelay < Delay ? Delay : PostDelay)
+				if (LastDelay > 0)
+					Sleep, % LastDelay
 				else
 					LastDelay := 0
 			}
@@ -672,8 +672,8 @@ SendEachChar(Str1, Delay:=0)
 				NoIME := False
 				if (DetectIME() = "ATOK")
 				{
-					PreDelay := 70
-					PostDelay := 90
+					PreDelay := 50
+					PostDelay := 70
 				}
 				else
 				{
@@ -796,7 +796,7 @@ OutBuf(i:=2)
 			else
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
 
-			SendEachChar(Str1)
+			SendEachChar(Str1, -100)
 		}
 		else
 		{
