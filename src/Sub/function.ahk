@@ -796,7 +796,7 @@ OutBuf(i:=2)
 			else
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
 
-			SendEachChar(Str1, -100)
+			SendEachChar(Str1)
 		}
 		else
 		{
