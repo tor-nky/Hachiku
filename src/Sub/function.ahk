@@ -475,10 +475,8 @@ SendEachChar(Str1, Delay:=0)
 ;		, FinalDelay
 ;		, LastDelay					; 前回出力時のディレイの値
 ;		, ClipSaved
-;		, KakuteiIsEnter	; 文字確定させるのにエンターのみで良ければ True
 
 ;ToolTip2(Str1, 2000)	; デバッグ用
-	KakuteiIsEnter := False
 	WinGet, Hwnd, ID, A
 
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
@@ -532,10 +530,16 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped == "{確定}")
 			{
 				if (LastDelay < IME_Get_Interval)
+				{
 					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
+					LastDelay := IME_Get_Interval
+				}
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (Hwnd != GoodHwnd || LastDelay < (DetectIME() = "ATOK" ? 90 : 40))
+					if (LastDelay >= (DetectIME() = "ATOK" ? 90 : 40) && IME_GetConverting())
+						; 文字確定から一定時間経っていて、IME窓あり
+						Str2 := "{Enter}"
+					else if (Hwnd != GoodHwnd || LastDelay < (DetectIME() = "ATOK" ? 90 : 40))
 						; IME窓の検出を当てにできない
 						; あるいは文字確定から時間が経っていない(IME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms)
 					{
@@ -544,9 +548,6 @@ SendEachChar(Str1, Delay:=0)
 						Sleep, 140
 						Str2 := "{BS}"
 					}
-					else if (KakuteiIsEnter	|| IME_GetConverting())
-						; 文字確定させるのにエンターのみで良い、またはIME窓あり
-						Str2 := "{Enter}"
 				}
 			}
 			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEをオフにするが後で元に戻せるようにする
@@ -617,17 +618,16 @@ SendEachChar(Str1, Delay:=0)
 				Str2 := StrChopped
 
 			; 変換1回目を検出
-			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && IME_GET())
+			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= IME_Get_Interval && IME_GET())
 			{
-				if (DetectIME() = "NewMSIME")
-					BadHwnd := Hwnd
-				else if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
+				if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
 					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
-				else if (LenChopped == 1)	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
-					flag := 1
+				else if ((LenChopped == 1 && Asc(LenChopped) >= 33)
+				 || (LenChopped == 3 && Asc(Str2) == 123))
+					flag := 1	; 文字が入力されたとき(ほぼローマ字変換された文字に相当)
 				else
 					flag := 0
 			}
@@ -649,7 +649,6 @@ SendEachChar(Str1, Delay:=0)
 				else
 					LastDelay := 0
 			}
-
 			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
 			if (flag > 1)
 			{
@@ -657,14 +656,7 @@ SendEachChar(Str1, Delay:=0)
 					GoodHwnd := Hwnd
 				else
 					BadHwnd := Hwnd
-				flag := 0
 			}
-
-			; 文字確定させるのにエンターのみで良いか検出
-			if (LenChopped == 1 || (LenChopped == 3 && Asc(Str2) == 123))
-				KakuteiIsEnter := True	; 1文字、または { で始まる3文字ならエンターのみで良い
-			else
-				KakuteiIsEnter := False
 
 			; 必要なら IME の状態を元に戻す
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))

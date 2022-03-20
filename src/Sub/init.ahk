@@ -216,6 +216,8 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
 
+	DetectIME()
+
 ; ----------------------------------------------------------------------
 ; メニューで使う変数
 ; ----------------------------------------------------------------------
@@ -277,7 +279,7 @@ if (TestMode != "ERROR")
 	menu, tray, add						; セパレーター
 	menu, tray, Standard	; 標準メニュー項目を追加する
 
-	; バージョンアップ後、初めての起動時は設定画面を表示
+	; iniファイルがなけれは設定画面を表示
 	if (!Path_FileExists(IniFilePath))
 		Gosub, PrefMenu
 
