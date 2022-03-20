@@ -550,12 +550,20 @@ SendEachChar(Str1, Delay:=0)
 					}
 				}
 			}
-			else if (StrChopped = "{NoIME}" && IME_GET())	; IMEをオフにするが後で元に戻せるようにする
+			else if (StrChopped = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにする
 			{
-				NoIME := True
-				IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
-				Str2 := "{vkF3}"	; 半角/全角
-				PostDelay := 30
+				if (LastDelay < IME_Get_Interval)
+				{
+					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
+					LastDelay := IME_Get_Interval
+				}
+				if (IME_GET())
+				{
+					NoIME := True
+					IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
+					Str2 := "{vkF3}"	; 半角/全角
+					PostDelay := 30
+				}
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
@@ -595,10 +603,13 @@ SendEachChar(Str1, Delay:=0)
 					PostDelay := 100
 				}
 			}
-			else if (StrChopped = "^v" && DetectIME() = "ATOK")	; ATOK対策
+			else if (StrChopped = "^v")
 			{
 				Str2 := StrChopped
-				PostDelay := 40
+				IfWinActive, ahk_exe WINWORD.EXE
+					PostDelay := 100	; Word は 100
+				else
+					PostDelay := 40
 			}
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
