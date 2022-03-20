@@ -193,7 +193,7 @@ Analysis(Str1)
 			; ASCIIコードでない
 			if (!NoIME && (Asc(StrChopped) > 127
 				|| SubStr(StrChopped, 1, 3) = "{U+"
-				|| (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, len2 - 6) > 127)))
+				|| (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
 			{
 				if (!Kakutei)
 					Str2 .= "{確定}"
@@ -478,7 +478,6 @@ SendEachChar(Str1, Delay:=0)
 
 ;ToolTip2(Str1, 2000)	; デバッグ用
 	WinGet, Hwnd, ID, A
-
 	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
 		Delay := (Delay < 10 ? 10 : Delay)
 ;	SetKeyDelay, -1, -1
@@ -545,7 +544,10 @@ SendEachChar(Str1, Delay:=0)
 					{
 						Send, _
 						Send, {Enter}
-						Sleep, 140
+						IfWinActive, ahk_exe WINWORD.EXE
+							Sleep, 20
+						else
+							Sleep, 140	; 本当はブラウザだけ 140、他は 30 としたい
 						Str2 := "{BS}"
 					}
 				}
@@ -606,10 +608,7 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "^v")
 			{
 				Str2 := StrChopped
-				IfWinActive, ahk_exe WINWORD.EXE
-					PostDelay := 100	; Word は 100
-				else
-					PostDelay := 40
+				PostDelay := 40
 			}
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
@@ -626,7 +625,13 @@ SendEachChar(Str1, Delay:=0)
 				ClipSaved =					;保存用変数に使ったメモリを開放
 			}
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
+			{
 				Str2 := StrChopped
+				if (Delay < 10 && (Asc(StrChopped) > 127
+				 || SubStr(StrChopped, 1, 3) = "{U+"
+				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
+				 	Delay := 10
+			}
 
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= IME_Get_Interval && IME_GET())
