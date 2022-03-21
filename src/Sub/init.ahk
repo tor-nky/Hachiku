@@ -32,6 +32,12 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 #HotkeyInterval 1000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
 #MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
 
+
+; ----------------------------------------------------------------------
+; 定数
+; ----------------------------------------------------------------------
+IME_Get_Interval := 40	; Send から IME_GET までの必要時間(ミリ秒)
+
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数
 ;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk を利用
@@ -201,14 +207,10 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
 ; テストモード	1: 処理時間表示, 2: 表示待ち文字列表示, 他: なし ※iniになければ設定画面に表示しない
 	IniRead, TestMode, %IniFilePath%, Advanced, TestMode
-; Send から IME_GET までの必要時間(ミリ秒)
-	IniRead, IME_Get_Interval, %IniFilePath%, Advanced, IME_Get_Interval, 40
 
 ; 範囲外は初期値へ
 	if (SideShift < 0 || SideShift > 2)
 		SideShift := 2
-	if (IME_Get_Interval < 0 || IME_Get_Interval > 200)
-		IME_Get_Interval := 40
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み

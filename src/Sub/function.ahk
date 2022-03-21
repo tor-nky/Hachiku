@@ -219,6 +219,11 @@ Analysis(Str1)
 				Str2 .= StrChopped
 				Kakutei := True	; "{Enter" で確定状態
 			}
+			else if (StrChopped == "^x")
+			{
+				Str2 .= StrChopped	; 確定状態のときに "^x" を使うとみなし
+				Kakutei := True		; IME 入力時のことは無視する
+			}
 			else if (Str1 != "^v" && StrChopped == "^v")	; "^v" 単独は除外
 			{
 				if (!NoIME && !Kakutei)
@@ -466,7 +471,7 @@ SendEachChar(Str1, Delay:=0)
 {
 	global GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
-;	local Hwnd
+;	local Hwnd, class
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
@@ -478,8 +483,10 @@ SendEachChar(Str1, Delay:=0)
 
 ;ToolTip2(Str1, 2000)	; デバッグ用
 	WinGet, Hwnd, ID, A
-	IfWinActive, ahk_class CabinetWClass	; エクスプローラーにはゆっくり出力する
-		Delay := (Delay < 10 ? 10 : Delay)
+	WinGetClass, class, ahk_id %Hwnd%
+	WinGet, process, ProcessName, ahk_id %Hwnd%
+	if (class == "CabinetWClass" && Delay < 10)
+		Delay := 10	; エクスプローラーにはゆっくり出力する
 ;	SetKeyDelay, -1, -1
 
 	LastDelay := (LastSendTime <= A_TickCount ? A_TickCount - LastSendTime : 0x100000000 + A_TickCount - LastSendTime)
@@ -544,10 +551,13 @@ SendEachChar(Str1, Delay:=0)
 					{
 						Send, _
 						Send, {Enter}
-						IfWinActive, ahk_exe WINWORD.EXE
-							Sleep, 20
+						if (title == "WINWORD.EXE")
+							Sleep, 20	; Word
+						else if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
+						 || process == "firefox.exe")
+							Sleep, 140	; ブラウザ
 						else
-							Sleep, 140	; 本当はブラウザだけ 140、他は 30 としたい
+							Sleep, 30	; その他
 						Str2 := "{BS}"
 					}
 				}
@@ -599,7 +609,7 @@ SendEachChar(Str1, Delay:=0)
 			else if (SubStr(StrChopped, 1, 6) = "{Enter" && DetectIME() = "ATOK")
 			{
 				Str2 := StrChopped
-				IfWinActive, ahk_class Hidemaru32Class	; 秀丸エディタ
+				if (class == "Hidemaru32Class")	; 秀丸エディタ
 				{
 					PreDelay := 80
 					PostDelay := 100
@@ -608,7 +618,7 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "^v")
 			{
 				Str2 := StrChopped
-				PostDelay := 40
+				PostDelay := 50
 			}
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
@@ -625,13 +635,7 @@ SendEachChar(Str1, Delay:=0)
 				ClipSaved =					;保存用変数に使ったメモリを開放
 			}
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
-			{
 				Str2 := StrChopped
-				if (Delay < 10 && (Asc(StrChopped) > 127
-				 || SubStr(StrChopped, 1, 3) = "{U+"
-				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
-				 	Delay := 10
-			}
 
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= IME_Get_Interval && IME_GET())
