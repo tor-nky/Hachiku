@@ -471,7 +471,7 @@ SendEachChar(Str1, Delay:=0)
 {
 	global GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
-;	local Hwnd, class
+;	local Hwnd, title, class, process
 ;		, len1						; Str1 の長さ
 ;		, StrChopped, LenChopped	; 細切れにした文字列と、その長さを入れる変数
 ;		, i, c, bracket
@@ -481,14 +481,18 @@ SendEachChar(Str1, Delay:=0)
 ;		, LastDelay					; 前回出力時のディレイの値
 ;		, ClipSaved
 
-;ToolTip2(Str1, 2000)	; デバッグ用
+	SetKeyDelay, -1, -1
 	WinGet, Hwnd, ID, A
+	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %Hwnd%
 	WinGet, process, ProcessName, ahk_id %Hwnd%
+
+	; ディレイの初期値
+	PreDelay := PostDelay := 0
 	if (class == "CabinetWClass" && Delay < 10)
 		Delay := 10	; エクスプローラーにはゆっくり出力する
-;	SetKeyDelay, -1, -1
-
+	else if (SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
+		PostDelay := 30	; 1文字目を必ずゆっくり出力する
 	LastDelay := (LastSendTime <= A_TickCount ? A_TickCount - LastSendTime : 0x100000000 + A_TickCount - LastSendTime)
 
 	; 文字列を細切れにして出力
@@ -500,8 +504,6 @@ SendEachChar(Str1, Delay:=0)
 	len1 := StrLen(Str1)
 	while (i <= len1)
 	{
-		PreDelay := PostDelay := 0	; ディレイの初期値
-
 		c := SubStr(Str1, i, 1)
 		if (c == "}" && bracket != 1)
 			bracket := 0
@@ -515,7 +517,9 @@ SendEachChar(Str1, Delay:=0)
 			; "{Raw}"からの残りは全部出力する
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
-				LastDelay := (PostDelay < 10 ? 10 : PostDelay)
+				LastDelay := (DetectIME() = "ATOK" && class == "Hidemaru32Class" && PostDelay < 30 ? 30
+					: (PostDelay < 10 ? 10 : PostDelay))
+
 				while (++i <= len1)
 				{
 					StrChopped := SubStr(Str1, i, 2)
@@ -551,9 +555,7 @@ SendEachChar(Str1, Delay:=0)
 					{
 						Send, _
 						Send, {Enter}
-						if (title == "WINWORD.EXE")
-							Sleep, 20	; Word
-						else if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
+						if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
 						 || process == "firefox.exe")
 							Sleep, 140	; ブラウザ
 						else
@@ -623,8 +625,8 @@ SendEachChar(Str1, Delay:=0)
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
 			else if (SubStr(StrChopped, 1, 7) = "{C_Wait")
-			{
-				Wait := SubStr(StrChopped, 9)		; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+			{	; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+				Wait := SubStr(StrChopped, 9, LenChopped - 9)
 				ClipWait, (Wait ? Wait : 0.2), 1
 			}
 			else if (StrChopped = "{C_Bkup}")
@@ -682,16 +684,8 @@ SendEachChar(Str1, Delay:=0)
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
 			{
 				NoIME := False
-				if (DetectIME() = "ATOK")
-				{
-					PreDelay := 50
-					PostDelay := 70
-				}
-				else
-				{
-					PreDelay := 20
-					PostDelay := 30
-				}
+				PreDelay := 20
+				PostDelay := 30
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
@@ -702,10 +696,12 @@ SendEachChar(Str1, Delay:=0)
 				if (IMEConvMode)
 				{
 					IME_SetConvMode(IMEConvMode)
+					LastSendTime := A_TickCount	; 最後に出力した時間を記録
 					Sleep, % (LastDelay := Delay)
 				}
 			}
 
+			PreDelay := PostDelay := 0
 			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
