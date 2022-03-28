@@ -608,14 +608,12 @@ SendEachChar(Str1, Delay:=0)
 				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 				LastDelay := 0
 			}
-			else if (SubStr(StrChopped, 1, 6) = "{Enter" && DetectIME() = "ATOK")
+			else if (SubStr(StrChopped, 1, 6) = "{Enter"
+			 && DetectIME() = "ATOK" && class == "Hidemaru32Class")	; ATOK + 秀丸エディタ
 			{
 				Str2 := StrChopped
-				if (class == "Hidemaru32Class")	; 秀丸エディタ
-				{
-					PreDelay := 80
-					PostDelay := 100
-				}
+				PreDelay := 80
+				PostDelay := 100
 			}
 			else if (StrChopped = "^v")
 			{
@@ -637,7 +635,14 @@ SendEachChar(Str1, Delay:=0)
 				ClipSaved =					;保存用変数に使ったメモリを開放
 			}
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
+			{
 				Str2 := StrChopped
+				if (DetectIME() = "ATOK" && PostDelay < 30
+				 && (Asc(StrChopped) > 127
+				 || SubStr(StrChopped, 1, 3) = "{U+"
+				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
+					PostDelay := 30	; ATOK 使用で ASCIIコードでない
+			}
 
 			; 変換1回目を検出
 			if (Hwnd != BadHwnd && Hwnd != GoodHwnd && LastDelay >= IME_Get_Interval && IME_GET())
