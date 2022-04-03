@@ -33,13 +33,19 @@ SendSP(Str1, CtrlNo)
 
 	if (CtrlNo == "ESCx3")
 	{
-		SendEachChar(Str1)				; "+{Esc}{Esc 2}" を出力
-		IMEName := DetectIME()
-		Sleep, % (IMEName = "ATOK" ? 140 : (IMEName = "OldMSIME" ? 150 : 80))
-			; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
-		IfWinExist, ahk_class #32770	; 一太郎のメニューが出ている時
-			Send, a
+		WinGet, process, ProcessName, A
+		SendEachChar(Str1)	; "+{Esc}{Esc 2}" を出力
+		if (SubStr(process, 1, 4) == "Taro")	; 一太郎を使っているとき
+		{
+			IMEName := DetectIME()
+			Sleep, % (IMEName = "ATOK" ? 140 : (IMEName = "OldMSIME" ? 150 : 80))
+				; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
+			IfWinActive, ahk_class #32770	; 一太郎のメニューが出た時
+				Send, a
+		}
 	}
+	else if (CtrlNo == "そのまま")
+		Send, % Str1
 	else if (CtrlNo == "横書き")
 		ChangeVertical(0)
 	else if (CtrlNo == "縦書き")
