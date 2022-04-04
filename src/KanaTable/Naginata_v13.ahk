@@ -512,10 +512,10 @@ KanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 KanaGroup := 0	; 0 はグループなし
-	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
-	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
-	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)
+	SetKana( KC_H | KC_J			,"{カタカナ}{ひらがな}")	; IME ON
+	SetEisu( KC_H | KC_J			,"{カタカナ}{ひらがな}")
+	SetKana( KC_F | KC_G			,"{カタカナ}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{カタカナ}{全角}"	)
 
 ; Enter
 ; VとMの同時押し

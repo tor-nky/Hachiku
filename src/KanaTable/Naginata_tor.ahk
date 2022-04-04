@@ -433,8 +433,8 @@ KanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 KanaGroup := 0	; 0 はグループなし
-	SetKana( KC_H | KC_J			,"{ひらがな 2}"		)	; IME ON
-	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
+	SetKana( KC_H | KC_J			,"{カタカナ}{ひらがな}")	; IME ON
+	SetEisu( KC_H | KC_J			,"{カタカナ}{ひらがな}")
 	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
 	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)
 
