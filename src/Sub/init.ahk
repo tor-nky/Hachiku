@@ -135,15 +135,6 @@ OutStrs := []
 OutCtrlNos := []
 _usc := 0			; 保存されている文字数
 RestStr := ""
-; IME窓の検出可否
-GoodHwnd := ""		; 可能
-BadHwnd := ""		; 不可
-
-; キーボードドライバを調べて KeyDriver に格納する
-; 参考: https://ixsvr.dyndns.org/blog/764
-RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
-USKB := (KeyDriver = "kbd101.dll" ? True : False)
-USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
 
 ; ----------------------------------------------------------------------
 ; 設定ファイル読み込み
@@ -160,7 +151,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, AdvancedMenu, %IniFilePath%, general, AdvancedMenu, 0
 
 ; [Basic]
-; IMESelect		0または空: MS-IME専用, 他: ATOK使用
+; IMESelect		0または空: MS-IME専用, 1: ATOK使用, 他: Google 日本語入力
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
 ; USLike		0または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
@@ -168,9 +159,9 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
 ; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
-; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
+; ShiftDelay	0または空: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
 	IniRead, ShiftDelay, %IniFilePath%, Basic, ShiftDelay, 0
-; CombDelay		0: 同時押しは時間無制限
+; CombDelay		0または空: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
 	IniRead, CombDelay, %IniFilePath%, Basic, CombDelay, 50
 ; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 他: 空白リピート
@@ -211,18 +202,30 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ; 範囲外は初期値へ
 	if (SideShift < 0 || SideShift > 2)
 		SideShift := 2
+	if (ShiftDelay < 0)
+		ShiftDelay := 0
+	if (CombDelay < 0)
+		CombDelay := 0
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
 ; ----------------------------------------------------------------------
+	; キーボードドライバを調べて KeyDriver に格納する
+	; 参考: https://ixsvr.dyndns.org/blog/764
+	RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
+	USKB := (KeyDriver = "kbd101.dll" ? True : False)
+	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
+
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
-
 	DetectIME()
 
 ; ----------------------------------------------------------------------
 ; メニューで使う変数
 ; ----------------------------------------------------------------------
+IMESelect0 := (IMESelect == 0 ? 1 : 0)
+IMESelect1 := (IMESelect == 1 ? 1 : 0)
+IMESelect2 := (IMESelect == 2 ? 1 : 0)
 SideShift0 := (SideShift == 0 ? 1 : 0)
 SideShift1 := (SideShift == 1 ? 1 : 0)
 SideShift2 := (SideShift == 2 ? 1 : 0)
@@ -313,6 +316,7 @@ VerticalMode:
 ButtonOK:
 	Gui, Submit
 	INIVersion := Version
+	IMESelect := (IMESelect0 ? 0 : (IMESelect1 ? 1 : 2))
 	SideShift := (SideShift0 ? 0 : (SideShift1 ? 1 : 2))
 	EnterShift := (EnterShift0 ? 0 : 1)
 	SpaceKeyRepeat := (SpaceKeyRepeat0 ? 0 : (SpaceKeyRepeat1 ? 1 : 2))
@@ -381,9 +385,16 @@ PrefMenu:
 	else	; 詳細メニュー不要の時
 		Gui, Add, Text, x+0 W230 Right Section, %Version%
 
-	Gui, Add, Checkbox, xm ys+25 vIMESelect, ATOK用
-	if (IMESelect)
-		GuiControl, , IMESelect, 1
+	Gui, Add, Text, xm ys+25, IMEの選択
+	Gui, Add, Radio, xm+68 yp+0 Group vIMESelect0, MS-IME
+	Gui, Add, Radio, x+0 vIMESelect1, ATOK
+	Gui, Add, Radio, x+0 vIMESelect2, Google
+	if (IMESelect0)
+		GuiControl, , IMESelect0, 1
+	else if (IMESelect1)
+		GuiControl, , IMESelect1, 1
+	else
+		GuiControl, , IMESelect2, 1
 
 	if (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在したら
 	{

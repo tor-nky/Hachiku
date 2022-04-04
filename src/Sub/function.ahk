@@ -446,8 +446,10 @@ DetectIME()
 
 	NowIME := IMEName
 
-	if (IMESelect)
+	if (IMESelect == 1)
 		NowIME := "ATOK"
+	else if (IMESelect)
+		NowIME := "Google"
 	else if (!ExistNewMSIME)
 		NowIME := "MSIME"
 	else if (A_TickCount < LastSearchTime || LastSearchTime + 10000 < A_TickCount)
@@ -483,7 +485,7 @@ SendEachChar(Str1, Delay:=0)
 
 	SetKeyDelay, -1, -1
 	WinGet, Hwnd, ID, A
-	WinGetTitle, title, ahk_id %hwnd%
+	WinGetTitle, title, ahk_id %Hwnd%
 	WinGetClass, class, ahk_id %Hwnd%
 	WinGet, process, ProcessName, ahk_id %Hwnd%
 
@@ -608,12 +610,16 @@ SendEachChar(Str1, Delay:=0)
 				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 				LastDelay := 0
 			}
-			else if (SubStr(StrChopped, 1, 6) = "{Enter"
-			 && DetectIME() = "ATOK" && class == "Hidemaru32Class")	; ATOK + 秀丸エディタ
+			else if (SubStr(StrChopped, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				Str2 := StrChopped
-				PreDelay := 80
-				PostDelay := 100
+				if (DetectIME() = "ATOK")
+				{
+					PreDelay := 80
+					PostDelay := 100
+				}
+				else if (DetectIME() = "Google")
+					PostDelay := 10
 			}
 			else if (StrChopped = "^v")
 			{
