@@ -4,16 +4,14 @@
 ; 【薙刀式】v14集大成版
 ; http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0
 ; (2021年12月10日)より
-; 【薙刀式】私家版更新
-; http://oookaworks.seesaa.net/article/485726781.html#gsc.tab=0
-; (2022年2月24日より)
-; 【薙刀式】編集モードv14を私家版に改造
-; http://oookaworks.seesaa.net/article/485841978.html#gsc.tab=0
-; (2022年3月4日より)
+; 【薙刀式】v15 fix版（仮）
+; http://oookaworks.seesaa.net/article/486333027.html#gsc.tab=0
+; (2022年4月7日より)
 ;
 ; DvorakJ版からの変更部分：
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
-;	IME OFF、新(J+K+Q)は確定してから ← 範囲選択している部分があると消去される不具合がある
+;	IME OFF、新(J+K+Q)は確定してから ← 範囲選択している部分を消去してしまう不具合がある
+;	スペース+F+G に全角英数入力、スペース+H+J に全角カタカナ入力
 ;
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中の文字があれば確定し、なければそのまま所定の動作をします。
@@ -105,7 +103,7 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列 2022年3月4日付"
+	LayoutName := "薙刀式配列v15 fix版（仮）"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 ;	ReadWorkmanLayout()		; Workman配列
@@ -433,10 +431,14 @@ KanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 KanaGroup := 0	; 0 はグループなし
-	SetKana( KC_H | KC_J			,"{カタカナ}{ひらがな}")	; IME ON
-	SetEisu( KC_H | KC_J			,"{カタカナ}{ひらがな}")
+	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
+	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
 	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)
+	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
+	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")	; カタカナ入力
+	SetEisu( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")
+	SetKana( KC_F | KC_G | KC_SPC	,"{全英}"	)				; 全角英数入力
+	SetEisu( KC_F | KC_G | KC_SPC	,"{全英}"	)
 
 ; Enter
 ; VとMの同時押し
@@ -504,8 +506,8 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
-	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
-	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
+	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
+	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 
 	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"			)		; Home
 	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定End
@@ -520,8 +522,8 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
-	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
-	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
+	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
+	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 
 ; 編集モード２
 ; 下段人差指＋中指
@@ -575,8 +577,8 @@ KanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
 	SetKana( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
 	SetKana( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetKana( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; +→
-	SetKana( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; +←
+	SetKana( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; 一行前選択
+	SetKana( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; 一行後選択
 
 	SetEisu( KC_C | KC_V | KC_Y		,"+{Home}"	)		; +Home
 	SetEisu( KC_C | KC_V | KC_H		,"^c"		)		; Copy
@@ -591,8 +593,8 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
 	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
 	SetEisu( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; +→
-	SetEisu( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; +←
+	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; 一行前選択
+	SetEisu( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; 一行後選択
 
 KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_Q | KC_W			,"Null"		,"横書き")
