@@ -144,6 +144,9 @@ ControlReplace(Str1)
 	StringReplace, Str1, Str1, {Caps Lock,	{vkF0,		A
 	StringReplace, Str1, Str1, {Back Space,	{BS,		A
 
+	StringReplace, Str1, Str1, {漢字,		{vk19,		A
+	StringReplace, Str1, Str1, {英数,		{vkF0,		A
+
 	return Str1
 }
 
@@ -598,17 +601,31 @@ SendEachChar(Str1, Delay:=0)
 			}
 			else if (StrChopped == "{全英}")
 			{
-				NoIME := False
-				IME_SET(1)			; IMEオン
-				IME_SetConvMode(24)	; IME 入力モード	全英数
-				LastDelay := 0
+				if (DetectIME() = "Google")
+				{
+					Send, {vkF2}	; ひらがなキー
+					Sleep, 30
+					Send, +{vk1D}	; シフト+無変換
+				}
+				else
+				{
+					NoIME := False
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(24)	; IME 入力モード	全英数
+					LastDelay := 0
+				}
 			}
 			else if (StrChopped == "{半ｶﾅ}")
 			{
-				NoIME := False
-				IME_SET(1)			; IMEオン
-				IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-				LastDelay := 0
+				if (DetectIME() = "Google")
+					TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
+				else
+				{
+					NoIME := False
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
+					LastDelay := 0
+				}
 			}
 			else if (SubStr(StrChopped, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
