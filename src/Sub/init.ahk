@@ -191,7 +191,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ;	英数時の同時打鍵期限を強制する	0または空: なし, 他: あり
 		IniRead, CombLimitE, %IniFilePath%, Advanced, CombLimitE, 0
 ;	スペースキーを離した時の設定	0または空: 通常時, 他: スペース押下時
-		IniRead, CombKeyUpSPC, %IniFilePath%, Advanced, CombKeyUpSPC, 0
+		IniRead, CombKeyUpSPC, %IniFilePath%, Advanced, CombKeyUpSPC, 1
 ; キーを離せば常に全部出力する	0または空: いいえ, 他: はい
 	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
 ; 英数入力時のSandS		0または空: なし, 他: あり
