@@ -1034,7 +1034,7 @@ Convert()
 		IMEConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
-		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift == 1)	; 左右シフト英数２
+		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift <= 1)	; 左右シフト英数２
 			KanaMode := 0
 		else if (LastSendTime + IME_Get_Interval <= A_TickCount
 			|| (A_TickCount < LastSendTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
@@ -1567,17 +1567,10 @@ Home::
 End::
 PgUp::
 PgDn::
-; USキーボードの場合
-#If (USKB)
-sc29::	; (JIS)半角/全角	(US)`
-; キー入力部(左右シフト)
-#If (USKBSideShift || !GetKeyState("Shift", "P"))
-+sc29::	; (JIS)半角/全角	(US)`
-#If (SideShift)
 ~LShift::
 RShift::
 +RShift::
-#If (SideShift || !GetKeyState("Shift", "P"))
+; キー入力部(左右シフト)
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -1637,6 +1630,10 @@ RShift::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
+; USキーボードの場合
+#If (USKB)
+sc29::	; (JIS)半角/全角	(US)`
++sc29::	; (JIS)半角/全角	(US)`
 #If		; End #If ()
 ; 入力バッファへ保存
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
@@ -1705,17 +1702,10 @@ Home up::
 End up::
 PgUp up::
 PgDn up::
-; USキーボードの場合
-#If (USKB)
-sc29 up::	; (JIS)半角/全角	(US)`
-; キー押上げ(左右シフト)
-#If (USKBSideShift || !GetKeyState("Shift", "P"))	; 押す方と同じにする
-+sc29 up::	; (JIS)半角/全角	(US)`
-#If (SideShift)
 ~LShift up::
 RShift up::
 +RShift up::
-#If (SideShift || !GetKeyState("Shift", "P"))	; 押す方と同じにする
+; キー押上げ(左右シフト)
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1775,6 +1765,10 @@ RShift up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
+; USキーボードの場合
+#If (USKB)
+sc29 up::	; (JIS)半角/全角	(US)`
++sc29 up::	; (JIS)半角/全角	(US)`
 #If		; End #If ()
 ; 入力バッファへ保存
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121

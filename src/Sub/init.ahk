@@ -36,7 +36,7 @@ SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自�
 ; ----------------------------------------------------------------------
 ; 定数
 ; ----------------------------------------------------------------------
-IME_Get_Interval := 40	; Send から IME_GET までの必要時間(ミリ秒)
+IME_Get_Interval := 50	; Send から IME_GET までの必要時間(ミリ秒)
 
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数
@@ -155,7 +155,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
 ; USLike		0または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
-; SideShift		左右シフト	0: 英数, 1: 英数２, 2: かな
+; SideShift		左右シフト	1以下: 英数２, 他: かな
 	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
 ; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
@@ -200,8 +200,6 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, TestMode, %IniFilePath%, Advanced, TestMode
 
 ; 範囲外は初期値へ
-	if (SideShift < 0 || SideShift > 2)
-		SideShift := 2
 	if (ShiftDelay < 0)
 		ShiftDelay := 0
 	if (CombDelay < 0)
@@ -214,7 +212,6 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	; 参考: https://ixsvr.dyndns.org/blog/764
 	RegRead, KeyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
 	USKB := (KeyDriver = "kbd101.dll" ? True : False)
-	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)
 
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
@@ -226,9 +223,8 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 IMESelect0 := (IMESelect == 0 ? 1 : 0)
 IMESelect1 := (IMESelect == 1 ? 1 : 0)
 IMESelect2 := (IMESelect == 2 ? 1 : 0)
-SideShift0 := (SideShift == 0 ? 1 : 0)
-SideShift1 := (SideShift == 1 ? 1 : 0)
-SideShift2 := (SideShift == 2 ? 1 : 0)
+SideShift1 := (SideShift <= 1 ? 1 : 0)
+SideShift2 := (SideShift > 1 ? 1 : 0)
 EnterShift0 := (!EnterShift ? 1 : 0)
 EnterShift1 := (EnterShift 1 ? 1 : 0)
 SpaceKeyRepeat0 := (SpaceKeyRepeat == 0 ? 1 : 0)
@@ -317,7 +313,7 @@ ButtonOK:
 	Gui, Submit
 	INIVersion := Version
 	IMESelect := (IMESelect0 ? 0 : (IMESelect1 ? 1 : 2))
-	SideShift := (SideShift0 ? 0 : (SideShift1 ? 1 : 2))
+	SideShift := (SideShift1 ? 1 : 2)
 	EnterShift := (EnterShift0 ? 0 : 1)
 	SpaceKeyRepeat := (SpaceKeyRepeat0 ? 0 : (SpaceKeyRepeat1 ? 1 : 2))
 	if (AdvancedMenu)
@@ -358,7 +354,6 @@ ButtonOK:
 	if (TestMode != "ERROR")
 		IniWrite, %TestMode%, %IniFilePath%, Advanced, TestMode
 
-	USKBSideShift := (USKB == True && SideShift > 0 ? True : False)	; 更新
 	DeleteDefs()	; 配列定義をすべて消去する
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
@@ -406,13 +401,9 @@ PrefMenu:
 	}
 
 	Gui, Add, Text, xm y+10, 左右シフト
-	Gui, Add, Radio, xm+68 yp+0 Group vSideShift0, 英数
-	if (AdvancedMenu || SideShift1)	; AdvancedMenuオン、または英数２になっているとき
-		Gui, Add, Radio, x+0 vSideShift1, 英数2
+	Gui, Add, Radio, xm+68 yp+0 Group vSideShift1, 英数
 	Gui, Add, Radio, x+0 vSideShift2, かな
-	if (SideShift0)
-		GuiControl, , SideShift0, 1
-	else if (SideShift1)
+	if (SideShift1)
 		GuiControl, , SideShift1, 1
 	else
 		GuiControl, , SideShift2, 1
