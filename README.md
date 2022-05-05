@@ -33,8 +33,6 @@ IME 入力モード切替の通知  → オフ: 画面中央に表示する
 
 キー設定： 半角+全角	→	[入力/変換文字なし]IMEオフ, [他]半英固定
 
-できれば「予測入力を使用する」をオフにしてください。
-
 ### 新MS-IME
 
 初期状態の設定で使います。
@@ -95,14 +93,15 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 
 # 動作確認
 
-* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.33.10) + 新旧MS-IME あるいは ATOK 2017
+* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.33.11) + 新旧MS-IME あるいは ATOK 2017
 
 Windows 7 の頃の古いIMEでは記号、固有名詞ショートカットが正しく入力できないことがあります。
 
 # 参考
 
-[【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
+* [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)
+* [ 【薙刀式】v15 fix版（仮）](http://oookaworks.seesaa.net/article/486333027.html#gsc.tab=0)
 
 ## 詳細メニューを出現させるには
 
