@@ -156,7 +156,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ; USLike		0または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
 ; SideShift		左右シフト	1以下: 英数２, 他: かな
-	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 2
+	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 1
 ; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, EnterShift, %IniFilePath%, Basic, EnterShift, 0
 ; ShiftDelay	0または空: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
