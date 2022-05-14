@@ -447,7 +447,7 @@ KanaGroup := "HA"
 KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetKana( KC_J | KC_K | KC_Z		,"││{確定}"						)	; ──
+	SetKana2(KC_J | KC_K | KC_Z	,"││{確定}", "──{確定}"			)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
 	SetKana( KC_J | KC_K | KC_S		,"（）{確定}{↑}"					)	; （）
 	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
@@ -463,7 +463,7 @@ KanaGroup := "1L"
 
 	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetEisu( KC_J | KC_K | KC_Z		,"││{確定}"						)	; ──
+	SetEisu2(KC_J | KC_K | KC_Z	,"││{確定}", "──{確定}"			)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
 	SetEisu( KC_J | KC_K | KC_S		,"（）{確定}{↑}"					)	; （）
 	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
