@@ -94,7 +94,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 
 # 動作確認
 
-* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.00) + 新旧MS-IME あるいは ATOK 2017
+* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.02) + 新旧MS-IME あるいは ATOK 2017
 
 Windows 7 の頃の古いIMEでは記号、固有名詞ショートカットが正しく入力できないことがあります。
 
