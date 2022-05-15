@@ -636,7 +636,15 @@ SendEachChar(Str1, Delay:=0)
 					PostDelay := 100
 				}
 				else if (DetectIME() = "Google")
+				{
+					PreDelay := 10
 					PostDelay := 10
+				}
+				else if (DetectIME() != "NewMSIME")
+				{
+					PreDelay := 60
+					PostDelay := 10
+				}
 			}
 			else if (StrChopped = "^v")
 			{
