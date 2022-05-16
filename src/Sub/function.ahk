@@ -563,6 +563,8 @@ SendEachChar(Str1, Delay:=0)
 						if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
 						 || process == "firefox.exe")
 							Sleep, 140	; ブラウザ
+						else if (class == "Hidemaru32Class")
+							Sleep, 60
 						else
 							Sleep, 30	; その他
 						Str2 := "{BS}"
