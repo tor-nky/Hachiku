@@ -602,11 +602,13 @@ DispLogFunc()
 			while (c := SubStr(Str, 1, 1))
 			{
 				if (c == "+" || c == "^" || c == "!" || c == "#"
-				 || c == "*" || c == "~" || c == "$")
+				 || c == "<" || c == ">")
 				{
 					PreStr .= c
 					Str := SubStr(Str, 2)	; 先頭の文字を消去
 				}
+				else if (c == "*" || c == "~" || c == "$")
+					Str := SubStr(Str, 2)	; 先頭の文字を消去
 				else
 					break
 			}

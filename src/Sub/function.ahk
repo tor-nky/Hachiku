@@ -471,8 +471,10 @@ DetectIME()
 	return (IMEName := NowIME)
 }
 
-; 文字列 Str1 を適宜ディレイを入れながら出力する
-SendEachChar(Str1, Delay:=0)
+; 文字列 Str1 を適宜スリープを入れながら出力する
+;	Delay:	-1未満	Sleep をなるべく入れない
+;			ほか	Sleep, % Delay が基本的に1文字ごとに入る
+SendEachChar(Str1, Delay:=-2)
 {
 	global GoodHwnd, BadHwnd, LastSendTime, IME_Get_Interval
 	static flag := 0	; 変換1回目のIME窓検出用	0: 検出済みか文字以外, 1: 文字入力中, 2: 変換1回目
@@ -493,9 +495,15 @@ SendEachChar(Str1, Delay:=0)
 	WinGet, process, ProcessName, ahk_id %Hwnd%
 
 	; ディレイの初期値
-	PreDelay := PostDelay := 0
+	if (Delay < -1)
+		Delay := -2
+	else if (Delay > 500)
+		TrayTip, , SendEachCharのディレイが長すぎです
+	PreDelay := PostDelay := -2
 	if (class == "CabinetWClass" && Delay < 10)
 		Delay := 10	; エクスプローラーにはゆっくり出力する
+;	else if (class == "Hidemaru32Class")
+;		Delay := 0
 	else if (SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
 		PostDelay := 30	; 1文字目を必ずゆっくり出力する
 	LastDelay := (LastSendTime <= A_TickCount ? A_TickCount - LastSendTime : 0x100000000 + A_TickCount - LastSendTime)
@@ -704,10 +712,10 @@ SendEachChar(Str1, Delay:=0)
 				LastSendTime := A_TickCount	; 最後に出力した時間を記録
 				; 出力直後のディレイ
 				LastDelay := (PostDelay < Delay ? Delay : PostDelay)
-				if (LastDelay > 0)
+				if (LastDelay > -2)
 					Sleep, % LastDelay
-				else
-					LastDelay := 0
+				if (LastDelay <= 0)
+						LastDelay := 0
 			}
 			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
 			if (flag > 1)
@@ -735,11 +743,11 @@ SendEachChar(Str1, Delay:=0)
 				{
 					IME_SetConvMode(IMEConvMode)
 					LastSendTime := A_TickCount	; 最後に出力した時間を記録
-					Sleep, % (LastDelay := Delay)
+					Sleep, % (LastDelay := (Delay > 0 ? Delay : 0))
 				}
 			}
 
-			PreDelay := PostDelay := 0
+			PreDelay := PostDelay := -2
 			StrChopped := Str2 := ""
 			LenChopped := 0
 		}
@@ -1060,13 +1068,13 @@ Convert()
 		if (Asc(NowKey) == 43)
 			NowKey := SubStr(NowKey, 2)
 		; 左右シフト処理
-		if (NowKey == "~LShift")
+		if (NowKey == "~*LShift")
 		{
 			sft := 1
 			OutBuf()
 			NowKey := "sc39"	; センターシフト押す
 		}
-		else if (NowKey == "~LShift up")
+		else if (NowKey == "~*LShift up")
 		{
 			sft := 0
 			if (rsft)	; 右シフトは離されていない
@@ -1083,14 +1091,14 @@ Convert()
 			else
 				NowKey := "sc39 up"	; センターシフト上げ
 		}
-		else if (NowKey == "RShift")
+		else if (NowKey == "*RShift")
 		{
 			rsft := 1
 			OutBuf()
 			SendBlind("{ShiftDown}")
 			NowKey := "sc39"	; センターシフト押す
 		}
-		else if (NowKey == "RShift up")
+		else if (NowKey == "*RShift up")
 		{
 			rsft := 0
 			if (!sft)	; 左シフトも離されている
@@ -1577,10 +1585,6 @@ Home::
 End::
 PgUp::
 PgDn::
-~LShift::
-RShift::
-+RShift::
-; キー入力部(左右シフト)
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -1712,10 +1716,6 @@ Home up::
 End up::
 PgUp up::
 PgDn up::
-~LShift up::
-RShift up::
-+RShift up::
-; キー押上げ(左右シフト)
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -1781,6 +1781,19 @@ sc29 up::	; (JIS)半角/全角	(US)`
 +sc29 up::	; (JIS)半角/全角	(US)`
 #If		; End #If ()
 ; 入力バッファへ保存
+	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
+	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
+		, InBufWritePos := (InBufRest ? ++InBufWritePos & 31 : InBufWritePos)
+		, (InBufRest ? InBufRest-- : )
+	Convert()	; 変換ルーチン
+	return
+
+; 左右シフト
+~*LShift::
+*RShift::
+~*LShift up::
+*RShift up::
+	Suspend, Permit	; Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest ? ++InBufWritePos & 31 : InBufWritePos)
