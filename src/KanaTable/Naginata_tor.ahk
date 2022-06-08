@@ -845,3 +845,10 @@ KoyuRegist()
 ; ----------------------------------------------------------------------
 +^sc0B::Suspend On	; 薙刀式中断 Shift+Ctrl+0
 +^sc02::Suspend Off	; 薙刀式再開 Shift+Ctrl+1
+
+; 新MS-IME使用で
+#if (DetectIME() == "NewMSIME")
+; 変換
+sc79::Send, {sc79 9}
++sc79::Send, +{sc79 9}
+#If		; End #If ()
