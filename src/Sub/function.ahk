@@ -715,7 +715,7 @@ SendEachChar(Str1, Delay:=-2)
 				if (LastDelay > -2)
 					Sleep, % LastDelay
 				if (LastDelay <= 0)
-						LastDelay := 0
+					LastDelay := 0
 			}
 			; 変換1回目でIME窓が検出できれば良し。できなければIME窓の検出は当てにしない
 			if (flag > 1)
@@ -1068,13 +1068,13 @@ Convert()
 		if (Asc(NowKey) == 43)
 			NowKey := SubStr(NowKey, 2)
 		; 左右シフト処理
-		if (NowKey == "~*LShift")
+		if (NowKey == "~LShift")
 		{
 			sft := 1
 			OutBuf()
 			NowKey := "sc39"	; センターシフト押す
 		}
-		else if (NowKey == "~*LShift up")
+		else if (NowKey == "~LShift up")
 		{
 			sft := 0
 			if (rsft)	; 右シフトは離されていない
@@ -1091,14 +1091,14 @@ Convert()
 			else
 				NowKey := "sc39 up"	; センターシフト上げ
 		}
-		else if (NowKey == "*RShift")
+		else if (NowKey == "RShift")
 		{
 			rsft := 1
 			OutBuf()
 			SendBlind("{ShiftDown}")
 			NowKey := "sc39"	; センターシフト押す
 		}
-		else if (NowKey == "*RShift up")
+		else if (NowKey == "RShift up")
 		{
 			rsft := 0
 			if (!sft)	; 左シフトも離されている
@@ -1789,10 +1789,12 @@ sc29 up::	; (JIS)半角/全角	(US)`
 	return
 
 ; 左右シフト
-~*LShift::
-*RShift::
-~*LShift up::
-*RShift up::
+~LShift::
+RShift::
++RShift::
+~LShift up::
+RShift up::
++RShift up::
 	Suspend, Permit	; Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
