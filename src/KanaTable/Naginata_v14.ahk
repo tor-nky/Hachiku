@@ -414,7 +414,7 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
 	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
 
 ; Enter
 ; VとMの同時押し
