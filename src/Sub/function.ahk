@@ -535,7 +535,6 @@ SendEachChar(Str1, Delay:=-2)
 
 				while (++i <= len1)
 				{
-					StrChopped := SubStr(Str1, i, 2)
 					SendRaw, % SubStr(Str1, i, 1)
 					LastSendTime := A_TickCount	; 最後に出力した時間を記録
 					; 出力直後のディレイ
@@ -545,7 +544,7 @@ SendEachChar(Str1, Delay:=-2)
 			}
 
 			; 出力するキーを変換
-			else if (StrChopped = "{vkF2}" || StrChopped == "{vkF3}")
+			else if (SubStr(StrChopped, 1, 5) = "{vkF2" || StrChopped = "{vkF3}")
 			{	; ひらがなキー、半角/全角キー
 				Str2 := StrChopped
 				PostDelay := 30
@@ -601,28 +600,28 @@ SendEachChar(Str1, Delay:=-2)
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
-				LastDelay := 0
+				LastDelay := IME_Get_Interval
 			}
 			else if (StrChopped = "{IMEON}")
 			{
 				NoIME := False
 				IME_SET(1)			; IMEオン
-				LastDelay := 0
+				LastDelay := IME_Get_Interval
 			}
 			else if (StrChopped == "{全英}")
 			{
 				if (DetectIME() = "Google")
 				{
-					Send, {vkF2}	; ひらがなキー
+					Send, {vkF2}		; ひらがなキー
 					Sleep, 30
-					Send, +{vk1D}	; シフト+無変換
+					Str2 := "+{vk1D}"	; シフト+無変換
 				}
 				else
 				{
 					NoIME := False
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(24)	; IME 入力モード	全英数
-					LastDelay := 0
+					LastDelay := IME_Get_Interval
 				}
 			}
 			else if (StrChopped == "{半ｶﾅ}")
@@ -634,7 +633,7 @@ SendEachChar(Str1, Delay:=-2)
 					NoIME := False
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-					LastDelay := 0
+					LastDelay := IME_Get_Interval
 				}
 			}
 			else if (SubStr(StrChopped, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
@@ -1056,7 +1055,7 @@ Convert()
 			KanaMode := 0
 		else if (LastSendTime + IME_Get_Interval <= A_TickCount
 			|| (A_TickCount < LastSendTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
-		{	; 前回の出力から一定時間経っていたら
+		{	; IME検出が確実にできる時
 			IMEState := IME_GET()
 			if (IMEState == 0)
 				KanaMode := 0
