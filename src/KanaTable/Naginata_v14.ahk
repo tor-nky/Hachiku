@@ -206,7 +206,6 @@ KanaGroup := 0	; 0 はグループなし
 ; 同時押し; 濁音、半濁音、小書き、拗音、外来音
 ;**********************************************
 ;**********************************************
-; 同時押しの定義は逆順もしておく
 
 ;****************************
 ; 濁音： 逆手の人差指中段
@@ -387,7 +386,7 @@ KanaGroup := "HA"
 	SetKana( AL_左半 | AL_く | AL_え			,"kuxe"		)	; くぇ
 	SetKana( AL_左半 | AL_く | AL_あ			,"kuxa"		)	; くぁ
 	SetKana( AL_左半 | AL_く | AL_い			,"kuxi"		)	; くぃ
-	SetKana( AL_左半 | AL_く | AL_う			,"kuxwa"	)	; くゎ
+	SetKana( AL_左半 | AL_く | AL_わ			,"kuxwa"	)	; くゎ
 	SetKana( AL_左半 | AL_く | AL_お			,"kuxo"		)	; くぉ
 
 ; グ; グァグィグェグォ
@@ -395,7 +394,7 @@ KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_く | AL_え			,"guxe"		)	; ぐぇ
 	SetKana( AL_左濁 | AL_く | AL_あ			,"gwa"		)	; ぐぁ
 	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
-	SetKana( AL_左濁 | AL_く | AL_う			,"guxwa"	)	; ぐゎ
+	SetKana( AL_左濁 | AL_く | AL_わ			,"guxwa"	)	; ぐゎ
 	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
 
 ; ツ; ツァツィツェツォ
@@ -438,7 +437,7 @@ KanaGroup := "HA"
 KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetKana2(KC_J | KC_K | KC_Z	,"││{確定}", "──{確定}"			)	; ──
+	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
 	SetKana( KC_J | KC_K | KC_S		,"（）{確定}{↑}"					)	; （）
 	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
@@ -454,7 +453,7 @@ KanaGroup := "1L"
 
 	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetEisu2(KC_J | KC_K | KC_Z	,"││{確定}", "──{確定}"			)	; ──
+	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
 	SetEisu( KC_J | KC_K | KC_S		,"（）{確定}{↑}"					)	; （）
 	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
@@ -481,7 +480,7 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"{↑ 5}"			, R)	; 5↑
 	SetKana( KC_D | KC_F | KC_SLSH	,"{↓ 5}"			, R)	; 5↓
 
@@ -497,7 +496,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}", "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"{↑ 5}"			, R)	; 5↑
 	SetEisu( KC_D | KC_F | KC_SLSH	,"{↓ 5}"			, R)	; 5↓
 
