@@ -4,9 +4,9 @@
 ; 【薙刀式】「から」＝「ぶ」化けを解消する解
 ; http://oookaworks.seesaa.net/article/488841086.html#gsc.tab=0
 ; (2022年6月12日)より
-; 【薙刀式】アイデアは癌のよう
-; http://oookaworks.seesaa.net/article/488905416.html#gsc.tab=0
-; (2022年6月15日)より
+; 【薙刀式】v15-B安定版？
+; http://oookaworks.seesaa.net/article/488939938.html#gsc.tab=0
+; (2022年6月17日)より
 ;
 ; DvorakJ版からの変更部分：
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
@@ -103,7 +103,7 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列 2022年6月15日付"
+	LayoutName := "薙刀式配列 2022年6月17日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 ;	ReadWorkmanLayout()		; Workman配列
@@ -117,7 +117,7 @@ ReadLayout()
 	AL_し	:= AL_ね				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
-	AL_BS	:= AL_ふ				:= KC_U
+	AL_BS	:= AL_さ				:= KC_U
 	AL_る	:= AL_よ				:= KC_I
 	AL_す	:= AL_え				:= KC_O
 	AL_へ	:= AL_ゆ				:= KC_P
@@ -130,8 +130,8 @@ ReadLayout()
 	AL_く	:= AL_や				:= KC_H
 	AL_あ	:= AL_の	:= AL_右濁	:= KC_J
 	AL_い	:= AL_も				:= KC_K
-	AL_う	:= AL_さ				:= KC_L
-	AL_ー	:= AL_つ				:= KC_SCLN
+	AL_う	:= AL_つ				:= KC_L
+	AL_ー	:= AL_ふ				:= KC_SCLN
 
 	AL_ほ							:= KC_Z
 	AL_ひ							:= KC_X
@@ -192,7 +192,7 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
 	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
 	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
-	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
+	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
 	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
@@ -208,8 +208,8 @@ KanaGroup := "DA"
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
 KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
-	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
+	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
