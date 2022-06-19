@@ -26,6 +26,7 @@ KeyTimer:	; 後置シフトの判定期限タイマー
 	InBufsKey[InBufWritePos] := "KeyTimer", InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest == 31 ? ++InBufWritePos & 31 : InBufWritePos)	; 入力バッファが空の時、保存
 		, (InBufRest == 31 ? InBufRest-- : )
+	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	Convert()	; 変換ルーチン
 	return
 
@@ -506,7 +507,7 @@ SendEachChar(Str1, Delay:=-2)
 ;		Delay := 0
 	else if (SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
 		PostDelay := 30	; 1文字目を必ずゆっくり出力する
-	LastDelay := (LastSendTime <= A_TickCount ? A_TickCount - LastSendTime : 0x100000000 + A_TickCount - LastSendTime)
+	LastDelay := Floor(QPC() - LastSendTime)
 
 	; 文字列を細切れにして出力
 	NoIME := False
@@ -536,7 +537,7 @@ SendEachChar(Str1, Delay:=-2)
 				while (++i <= len1)
 				{
 					SendRaw, % SubStr(Str1, i, 1)
-					LastSendTime := A_TickCount	; 最後に出力した時間を記録
+					LastSendTime := QPC()	; 最後に出力した時間を記録
 					; 出力直後のディレイ
 					Sleep, % LastDelay
 				}
@@ -708,7 +709,7 @@ SendEachChar(Str1, Delay:=-2)
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				Send, % Str2
-				LastSendTime := A_TickCount	; 最後に出力した時間を記録
+				LastSendTime := QPC()	; 最後に出力した時間を記録
 				; 出力直後のディレイ
 				LastDelay := (PostDelay < Delay ? Delay : PostDelay)
 				if (LastDelay > -2)
@@ -735,13 +736,13 @@ SendEachChar(Str1, Delay:=-2)
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
 				Send, {vkF3}	; 半角/全角
-				LastSendTime := A_TickCount	; 最後に出力した時間を記録
+				LastSendTime := QPC()	; 最後に出力した時間を記録
 				Sleep, % (LastDelay := PostDelay)
 				; IME入力モードを回復する
 				if (IMEConvMode)
 				{
 					IME_SetConvMode(IMEConvMode)
-					LastSendTime := A_TickCount	; 最後に出力した時間を記録
+					LastSendTime := QPC()	; 最後に出力した時間を記録
 					Sleep, % (LastDelay := (Delay > 0 ? Delay : 0))
 				}
 			}
@@ -761,7 +762,7 @@ SendBlind(Str1)
 	global LastSendTime
 
 	Send, % "{Blind}" . Str1
-	LastSendTime := A_TickCount	; 最後に出力した時間を記録
+	LastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
 ; 押し下げを出力中のキーを上げ、別のに入れ替え
@@ -855,7 +856,7 @@ OutBuf(i:=2)
 		{
 			SendKeyUp()				; 押し下げを出力中のキーを上げる
 			SendSP(Str1, CtrlNo)	; 特別出力(かな定義ファイルで操作)
-			LastSendTime := A_TickCount	; 最後に出力した時間を記録
+			LastSendTime := QPC()	; 最後に出力した時間を記録
 		}
 
 		OutStrs[1] := OutStrs[2]
@@ -998,6 +999,7 @@ Convert()
 		, CombinableBit := -1 ; 押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local KeyTime	; キーを押した時間
 ;		, PreDelay
+;		, forceEisuMode
 ;		, IMEState, IMEConvMode
 ;		, NowKey, len
 ;		, Term		; 入力の末端2文字
@@ -1048,14 +1050,15 @@ Convert()
 		}
 
 		; IME の状態を更新
+		forceEisuMode := True	; 強制英数モードを意味する仮の値
 		IMEConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			KanaMode := 0
 		else if ((Asc(NowKey) == 43 || sft || rsft) && SideShift <= 1)	; 左右シフト英数２
 			KanaMode := 0
-		else if (LastSendTime + IME_Get_Interval <= A_TickCount
-			|| (A_TickCount < LastSendTime && LastSendTime + IME_Get_Interval <= 0x100000000 + A_TickCount))
-		{	; IME検出が確実にできる時
+		else if (LastSendTime + IME_Get_Interval <= QPC())
+		{	; IME状態を確実に検出できる時
+			forceEisuMode := False	; 強制英数モードではない
 			IMEState := IME_GET()
 			if (IMEState == 0)
 				KanaMode := 0
@@ -1319,7 +1322,17 @@ Convert()
 				OutOfCombDelay := False
 			; 今押したキーで同時押しにならない
 			if !(CombinableBit & NowBit)
+			{
 				OutBuf()
+				if (!forceEisuMode && LastSendTime + IME_Get_Interval <= QPC())
+				{	; IMEの状態を再検出
+					IMEState := IME_GET()
+					if (IMEState == 0)
+						KanaMode := 0
+					else if (IMEState == 1 && IMEConvMode != "")	; かな入力中
+						KanaMode := IMEConvMode & 1
+				}
+			}
 
 			nBack := 0
 			while (!nkeys)
@@ -1653,7 +1666,6 @@ sc29::	; (JIS)半角/全角	(US)`
 	InBufsKey[InBufWritePos] := A_ThisHotkey, InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest > 16 ? ++InBufWritePos & 31 : InBufWritePos)	; キーを押す方はいっぱいまで使わない
 		, (InBufRest > 16 ? InBufRest-- : )
-	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	Convert()	; 変換ルーチン
 	return
 
