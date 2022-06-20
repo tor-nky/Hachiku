@@ -730,7 +730,7 @@ SendEachChar(Str1, Delay:=-2)
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
 			{
 				NoIME := False
-				PreDelay := 20
+				PreDelay := 30
 				PostDelay := 30
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
