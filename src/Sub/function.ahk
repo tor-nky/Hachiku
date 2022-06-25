@@ -548,7 +548,7 @@ SendEachChar(Str1, Delay:=-2)
 			else if (SubStr(StrChopped, 1, 5) = "{vkF2" || StrChopped = "{vkF3}")
 			{	; ひらがなキー、半角/全角キー
 				Str2 := StrChopped
-				PostDelay := 30
+				PostDelay := 40
 			}
 			else if (StrChopped == "{確定}")
 			{
@@ -1324,7 +1324,7 @@ Convert()
 			if !(CombinableBit & NowBit)
 			{
 				OutBuf()
-				if (!forceEisuMode && LastSendTime + IME_Get_Interval <= QPC())
+				if (NowBit && !forceEisuMode && LastSendTime + IME_Get_Interval <= QPC())
 				{	; IMEの状態を再検出
 					IMEState := IME_GET()
 					if (IMEState == 0)
