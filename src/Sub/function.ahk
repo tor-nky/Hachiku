@@ -26,7 +26,6 @@ KeyTimer:	; 後置シフトの判定期限タイマー
 	InBufsKey[InBufWritePos] := "KeyTimer", InBufsTime[InBufWritePos] := QPC()
 		, InBufWritePos := (InBufRest == 31 ? ++InBufWritePos & 31 : InBufWritePos)	; 入力バッファが空の時、保存
 		, (InBufRest == 31 ? InBufRest-- : )
-	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	Convert()	; 変換ルーチン
 	return
 
@@ -1013,7 +1012,9 @@ Convert()
 ;		, DefKeyCopy
 ;		, OutOfCombDelay
 ;		, EnableComb
+;		, interval
 
+	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	if (ConvRest || NextKey != "")
 		return	; 多重起動防止で戻る
 
@@ -1027,13 +1028,11 @@ Convert()
 			NowKey := InBufsKey[InBufReadPos], KeyTime := InBufsTime[InBufReadPos]
 				, InBufReadPos := ++InBufReadPos & 31, InBufRest++
 
-			; 判定期限到来
 			if (NowKey == "KeyTimer")
 			{
-				; タイマー割込みとキー割込みの行き違い防止 https://github.com/tor-nky/Hachiku/issues/19
-				if (InBufRest != 31 || EndOfTime == 0.0)	; 前者でタイマー割り込み中のキー入力を、
-					continue								; 後者でキー入力発生中のタイマー割り込みを排除する
-				if (KeyTime > EndOfTime)
+				if (InBufRest != 31)	; タイマー割り込み後にキー変化がないこと
+					continue
+				if (KeyTime > EndOfTime)	; 判定期限到来
 				{
 					OutBuf()
 					DispTime(LastKeyTime, "`n判定期限")	; キー変化からの経過時間を表示
@@ -1515,14 +1514,17 @@ Convert()
 					; 同時押しの判定期限
 					if (CombDelay > 0
 					&& ((CombLimitN && !(RealBit & KC_SPC)) || (CombLimitS && (RealBit & KC_SPC)) || (CombLimitE && !KanaMode)))
+					{
 						EndOfTime := KeyTime + CombDelay	; 期限の時間
-					; 後置シフトの判定期限
-					if ((CombinableBit == KC_SPC || (EndOfTime > 0.0 && ShiftDelay > 0 && (CombinableBit & KC_SPC)))	; 後者は、同時押しの判定期限があるなら後置シフトの判定期限を待つの意
-					&& (EndOfTime == 0.0 || ShiftDelay > CombDelay))
+						; 後置シフトの判定期限
+						if ((CombinableBit & KC_SPC) && ShiftDelay > CombDelay)
+							EndOfTime := KeyTime + ShiftDelay
+					}
+					else if (CombinableBit == KC_SPC)	; 後置シフトで出力確定
 						EndOfTime := KeyTime + ShiftDelay
-					; タイマー起動
-					if (EndOfTime != 0.0)
-						SetTimer, KeyTimer, % QPC() - EndOfTime	; 1回のみのタイマー
+						; タイマー起動
+					if (EndOfTime != 0.0 && (interval := QPC() - EndOfTime) < 0.0)
+						SetTimer, KeyTimer, %interval%	; 1回のみのタイマー
 				}
 			}
 			DispTime(KeyTime)	; キー変化からの経過時間を表示
