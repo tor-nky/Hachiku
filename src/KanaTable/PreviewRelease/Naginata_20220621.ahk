@@ -262,8 +262,8 @@ KanaGroup := "DA"
 
 ; 右の半濁音
 KanaGroup := "HA"
-	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
+	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 
 ; 左の半濁音
 	SetKana( AL_右半 | AL_ほ			,"po"	)	; ぽ
@@ -273,6 +273,7 @@ KanaGroup := "HA"
 ;****************************
 ; 小書き： Qと同時押し
 KanaGroup := "KO"
+	SetKana( AL_小 | AL_わ				,"xwa"	)	; (ゎ)
 	SetKana( AL_小 | AL_よ				,"xyo"	)	; (ょ)
 	SetKana( AL_小 | AL_え				,"xe"	)	; (ぇ)
 	SetKana( AL_小 | AL_ゆ				,"xyu"	)	; (ゅ)
@@ -281,7 +282,6 @@ KanaGroup := "KO"
 	SetKana( AL_小 | AL_い				,"xi"	)	; (ぃ)
 	SetKana( AL_小 | AL_う				,"xu"	)	; (ぅ)
 	SetKana( AL_小 | AL_お				,"xo"	)	; (ぉ)
-	SetKana( AL_小 | AL_わ				,"xwa"	)	; (ゎ)
 
 ;**********************************************
 ; 拗音、外来音(３キー同時を含む)

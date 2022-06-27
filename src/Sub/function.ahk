@@ -547,7 +547,7 @@ SendEachChar(Str1, Delay:=-2)
 			else if (SubStr(StrChopped, 1, 5) = "{vkF2" || StrChopped = "{vkF3}")
 			{	; ひらがなキー、半角/全角キー
 				Str2 := StrChopped
-				PostDelay := 40
+				PostDelay := (NoIME || i < len1 ? 30 : 40)
 			}
 			else if (StrChopped == "{確定}")
 			{
@@ -1522,7 +1522,7 @@ Convert()
 					}
 					else if (CombinableBit == KC_SPC)	; 後置シフトで出力確定
 						EndOfTime := KeyTime + ShiftDelay
-						; タイマー起動
+					; タイマー起動
 					if (EndOfTime != 0.0 && (interval := QPC() - EndOfTime) < 0.0)
 						SetTimer, KeyTimer, %interval%	; 1回のみのタイマー
 				}

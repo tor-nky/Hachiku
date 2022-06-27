@@ -233,11 +233,11 @@ KanaGroup := 0	; 0 はグループなし
 
 ; 右手の濁音
 KanaGroup := "DA"
-	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
+	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
 	SetKana( AL_左濁 | AL_す			,"zu"	)	; ず
 	SetKana( AL_左濁 | AL_へ			,"be"	)	; べ
 	SetKana( AL_左濁 | AL_く			,"gu"	)	; ぐ
-	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
+	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
 	SetKana( AL_左濁 | AL_つ			,"du"	)	; づ
 	SetKana( AL_左濁 | AL_た			,"da"	)	; だ
 
@@ -262,8 +262,8 @@ KanaGroup := "DA"
 
 ; 右の半濁音
 KanaGroup := "HA"
-	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
+	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 
 ; 左の半濁音
 	SetKana( AL_右半 | AL_ほ			,"po"	)	; ぽ
@@ -407,6 +407,14 @@ KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
 	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
 	SetKana( AL_左濁 | AL_く | AL_わ			,"guxwa"	)	; ぐゎ
+/*
+; ツ; ツァツィツェツォ
+KanaGroup := "HA"
+;	SetKana( AL_左半 | AL_つ | AL_え			,"tse"		)	; つぇ
+	SetKana( AL_左半 | AL_つ | AL_あ			,"tsa"		)	; つぁ
+;	SetKana( AL_左半 | AL_つ | AL_い			,"tsi"		)	; つぃ
+;	SetKana( AL_左半 | AL_つ | AL_お			,"tso"		)	; つぉ
+*/
 
 ; IME ON/OFF
 ; 事前に、MS-IMEのプロパティで、

@@ -407,6 +407,14 @@ KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
 	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
 	SetKana( AL_左濁 | AL_く | AL_わ			,"guxwa"	)	; ぐゎ
+/*
+; ツ; ツァツィツェツォ
+KanaGroup := "HA"
+;	SetKana( AL_左半 | AL_つ | AL_え			,"tse"		)	; つぇ
+	SetKana( AL_左半 | AL_つ | AL_あ			,"tsa"		)	; つぁ
+;	SetKana( AL_左半 | AL_つ | AL_い			,"tsi"		)	; つぃ
+;	SetKana( AL_左半 | AL_つ | AL_お			,"tso"		)	; つぉ
+*/
 
 ; IME ON/OFF
 ; 事前に、MS-IMEのプロパティで、
