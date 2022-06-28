@@ -558,10 +558,10 @@ SendEachChar(Str1, Delay:=-2)
 				}
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (LastDelay >= (DetectIME() = "ATOK" ? 90 : 40) && IME_GetConverting())
+					if (LastDelay >= (DetectIME() = "ATOK" ? 90 : 60) && IME_GetConverting())
 						; 文字確定から一定時間経っていて、IME窓あり
 						Str2 := "{Enter}"
-					else if (Hwnd != GoodHwnd || LastDelay < (DetectIME() = "ATOK" ? 90 : 40))
+					else if (Hwnd != GoodHwnd || LastDelay < (DetectIME() = "ATOK" ? 90 : 60))
 						; IME窓の検出を当てにできない
 						; あるいは文字確定から時間が経っていない(IME窓消失まで、旧MS-IMEは最大40ms、ATOKは最大90ms)
 					{
@@ -689,7 +689,7 @@ SendEachChar(Str1, Delay:=-2)
 			{
 				if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
-					PostDelay := 70	; IME_GetConverting() が確実に変化する時間
+					PostDelay := 100	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
 				else if ((LenChopped == 1 && Asc(LenChopped) >= 33)
