@@ -100,7 +100,7 @@ SendESCx3()
 	}
 	else
 	{	; その他
-		Send, +{Esc}{Esc 2}
+		Send, {Esc 5}
 		WinGet, process, ProcessName, ahk_id %Hwnd%
 		if (SubStr(process, 1, 4) != "Taro")
 			return
@@ -541,7 +541,7 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
 	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 
@@ -557,7 +557,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
 	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 

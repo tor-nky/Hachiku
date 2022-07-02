@@ -17,21 +17,17 @@
 SendSP(Str1, CtrlNo)
 {
 	global KoyuNumber, Version, LayoutName, IniFilePath
-;	local IMEName
+
+	SetKeyDelay, -1, -1
 
 	if (CtrlNo == "ESCx3")
-	{
-		WinGet, process, ProcessName, A
-		SendEachChar(Str1)	; "+{Esc}{Esc 2}" を出力
-		if (SubStr(process, 1, 4) == "Taro")	; 一太郎を使っているとき
-		{
-			IMEName := DetectIME()
-			Sleep, % (IMEName = "ATOK" ? 140 : (IMEName = "OldMSIME" ? 150 : 80))
-				; ATOK: 140, 旧MS-IME: 150, 新MS-IME: 80
-			IfWinActive, ahk_class #32770	; 一太郎のメニューが出た時
-				Send, a
-		}
-	}
+		SendESCx3()
+	else if (CtrlNo == "そのまま")
+		Send, % Str1
+	else if (CtrlNo == "横書き")
+		ChangeVertical(0)
+	else if (CtrlNo == "縦書き")
+		ChangeVertical(1)
 	; 固有名詞ショートカットを切り替える
 	else if (CtrlNo == "KoyuChange")
 	{
@@ -57,6 +53,53 @@ SendSP(Str1, CtrlNo)
 		SendEachChar(Str1)
 
 	return
+}
+
+SendESCx3()
+{
+	global	GoodHwnd, IME_Get_Interval, LastSendTime
+;	local	Hwnd, process, NeedDelay, IMEName, LastDelay
+
+	if (WinExist("ahk_class #32768"))
+	{	; コンテキストメニューは消えるまで Esc キーを押す
+		Loop, 5 {
+			Send, {Esc}
+		} until (!WinExist("ahk_class #32768"))
+		return
+	}
+	WinGet, Hwnd, ID, A
+	if (Hwnd == GoodHwnd)
+	{	; IME窓検出が当てになる(入力中のかながないのと変換1回目の区別がつく)
+		NeedDelay := IME_Get_Interval - Floor(QPC() - LastSendTime)
+		if (NeedDelay > 0)	; 時間を空けてIME検出へ
+			Sleep, %NeedDelay%
+		if (IME_GET() && IME_GetSentenceMode())
+		{	;　IME ONだが、無変換ではない
+			IMEName := DetectIME()
+			NeedDelay := (IMEName = "Google" ? 30 : (IMEName = "ATOK" ? 90 : 70))
+			LastDelay := Floor(QPC() - LastSendTime)
+			if (LastDelay < NeedDelay)	; 時間を空けてIME窓検出へ
+				Sleep, % NeedDelay - LastDelay
+			while (IME_GetConverting())
+			{
+				Send, {Esc}
+				Sleep, %NeedDelay%
+			}
+		}
+		return
+	}
+	else
+	{	; その他
+		Send, {Esc 5}
+		WinGet, process, ProcessName, ahk_id %Hwnd%
+		if (SubStr(process, 1, 4) != "Taro")
+			return
+		; 一太郎を使っている
+		Sleep, 240
+		IfWinActive, ahk_class #32770	; 一太郎のメニューが出ている
+			Send, a
+		return
+	}
 }
 
 ; ----------------------------------------------------------------------
@@ -581,7 +624,7 @@ KanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetKana( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
 	SetKana( KC_D | KC_F | KC_DOT	,"{↓ 5}"			, R)	; 5↓
-	SetKana( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
 	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
@@ -597,7 +640,7 @@ KanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
 	SetEisu( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"{↓ 5}"			, R)	; 5↓
-	SetEisu( KC_D | KC_F | KC_P		,"+{Esc}{Esc 2}",  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
 	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
