@@ -29,95 +29,6 @@
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
 ;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
 
-; 特別出力
-SendSP(Str1, CtrlNo)
-{
-	global KoyuNumber, Version, LayoutName, IniFilePath
-
-	SetKeyDelay, -1, -1
-
-	if (CtrlNo == "ESCx3")
-		SendESCx3()
-	else if (CtrlNo == "そのまま")
-		Send, % Str1
-	else if (CtrlNo == "横書き")
-		ChangeVertical(0)
-	else if (CtrlNo == "縦書き")
-		ChangeVertical(1)
-	; 固有名詞ショートカットを切り替える
-	else if (CtrlNo == "KoyuChange")
-	{
-		if (Str1 == KoyuNumber)	; 番号が変わらない
-		{
-			MsgBox, , , 固有名詞セット%KoyuNumber%
-			return
-		}
-		MsgBox, 1, , 固有名詞 セット%KoyuNumber% → %Str1%
-		IfMsgBox, Cancel	; キャンセル
-			return
-
-		KoyuNumber := Str1
-		; 設定ファイル書き込み
-		IniWrite, %KoyuNumber%, %IniFilePath%, Naginata, KoyuNumber
-		; ツールチップを変更する
-		menu, tray, tip, Hachiku %Version%`n%LayoutName%`n固有名詞セット%KoyuNumber%
-
-		KoyuReadAndRegist(KoyuNumber)	; 固有名詞ショートカットの読み込み・登録
-		SettingLayout()					; 出力確定する定義に印をつける
-	}
-	else	; その他、未定義のもの。念のため。
-		SendEachChar(Str1)
-
-	return
-}
-
-SendESCx3()
-{
-	global	GoodHwnd, IME_Get_Interval, LastSendTime
-;	local	Hwnd, process, NeedDelay, IMEName, LastDelay
-
-	if (WinExist("ahk_class #32768"))
-	{	; コンテキストメニューは消えるまで Esc キーを押す
-		Loop, 5 {
-			Send, {Esc}
-		} until (!WinExist("ahk_class #32768"))
-		return
-	}
-	WinGet, Hwnd, ID, A
-	if (Hwnd == GoodHwnd)
-	{	; IME窓検出が当てになる(入力中のかながないのと変換1回目の区別がつく)
-		NeedDelay := IME_Get_Interval - Floor(QPC() - LastSendTime)
-		if (NeedDelay > 0)	; 時間を空けてIME検出へ
-			Sleep, %NeedDelay%
-		if (IME_GET() && IME_GetSentenceMode())
-		{	;　IME ONだが、無変換ではない
-			IMEName := DetectIME()
-			NeedDelay := (IMEName = "Google" ? 30 : (IMEName = "ATOK" ? 90 : 70))
-			LastDelay := Floor(QPC() - LastSendTime)
-			if (LastDelay < NeedDelay)	; 時間を空けてIME窓検出へ
-				Sleep, % NeedDelay - LastDelay
-			while (IME_GetConverting())
-			{
-				Send, {Esc}
-				Sleep, %NeedDelay%
-			}
-		}
-		return
-	}
-	else
-	{	; その他
-		Send, {Esc 5}
-		WinGet, process, ProcessName, ahk_id %Hwnd%
-		if (SubStr(process, 1, 4) != "Taro")
-			return
-		; 一太郎を使っている
-		Sleep, 240
-		IfWinActive, ahk_class #32770	; 一太郎のメニューが出ている
-			Send, a
-		return
-	}
-}
-
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
 ;
@@ -139,6 +50,8 @@ SendESCx3()
 
 ; 薙刀式配列固有名詞ショートカットを実装するためのルーチン
 #Include %A_ScriptDir%/Sub/Naginata-Koyu.ahk
+; 特別出力
+#Include %A_ScriptDir%/KanaTable/SendSP.ahk
 
 ; かな配列読み込み
 ReadLayout()

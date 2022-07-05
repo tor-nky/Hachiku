@@ -193,7 +193,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ;	スペースキーを離した時の設定	0または空: 通常時, 他: スペース押下時
 		IniRead, CombKeyUpSPC, %IniFilePath%, Advanced, CombKeyUpSPC, 1
 ; キーを離せば常に全部出力する	0または空: いいえ, 他: はい
-	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 1
+	IniRead, KeyUpToOutputAll, %IniFilePath%, Advanced, KeyUpToOutputAll, 0
 ; 英数入力時のSandS		0または空: なし, 他: あり
 	IniRead, EisuSandS, %IniFilePath%, Advanced, EisuSandS, 1
 ; テストモード	1: 処理時間表示, 2: 表示待ち文字列表示, 他: なし ※iniになければ設定画面に表示しない
@@ -397,7 +397,6 @@ PrefMenu:
 		if (USLike)
 			GuiControl, , USLike, 1
 		Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
-		Gui, Add, Text, xm+18 y+1, ※ 左右シフトかなに設定してください
 	}
 
 	Gui, Add, Text, xm y+10, 左右シフト

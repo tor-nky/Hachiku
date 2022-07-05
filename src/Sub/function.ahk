@@ -532,7 +532,7 @@ SendEachChar(Str1, Delay:=-2)
 			; "{Raw}"からの残りは全部出力する
 			if (SubStr(StrChopped, LenChopped - 4, 5) = "{Raw}")
 			{
-				LastDelay := (IMEName = "ATOK" && class == "Hidemaru32Class" && PostDelay < 30 ? 30
+				LastDelay := (IMEName == "ATOK" && class == "Hidemaru32Class" && PostDelay < 30 ? 30
 					: (PostDelay < 10 ? 10 : PostDelay))
 
 				while (++i <= len1)
@@ -560,10 +560,10 @@ SendEachChar(Str1, Delay:=-2)
 				}
 				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
-					if (LastDelay >= (IMEName = "Google" ? 30 : (IMEName = "ATOK" ? 90 : 70)) && IME_GetConverting())
+					if (LastDelay >= (IMEName == "Google" ? 30 : (IMEName == "ATOK" ? 90 : 70)) && IME_GetConverting())
 						; 文字出力から一定時間経っていて、IME窓あり
 						Str2 := "{Enter}"
-					else if (Hwnd != GoodHwnd || LastDelay < (IMEName = "Google" ? 30 : (IMEName = "ATOK" ? 90 : 70)))
+					else if (Hwnd != GoodHwnd || LastDelay < (IMEName == "Google" ? 30 : (IMEName == "ATOK" ? 90 : 70)))
 						; IME窓の検出を当てにできない
 						; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 					{
@@ -612,7 +612,7 @@ SendEachChar(Str1, Delay:=-2)
 			}
 			else if (StrChopped == "{全英}")
 			{
-				if (IMEName = "Google")
+				if (IMEName == "Google")
 				{
 					Send, {vkF2}		; ひらがなキー
 					Sleep, 30
@@ -628,7 +628,7 @@ SendEachChar(Str1, Delay:=-2)
 			}
 			else if (StrChopped == "{半ｶﾅ}")
 			{
-				if (IMEName = "Google")
+				if (IMEName == "Google")
 					TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
 				else
 				{
@@ -641,12 +641,12 @@ SendEachChar(Str1, Delay:=-2)
 			else if (SubStr(StrChopped, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				Str2 := StrChopped
-				if (IMEName = "ATOK")
+				if (IMEName == "ATOK")
 				{
 					PreDelay := 80
 					PostDelay := 100
 				}
-				else if (IMEName = "Google")
+				else if (IMEName == "Google")
 				{
 					PreDelay := 10
 					PostDelay := 10
@@ -679,7 +679,7 @@ SendEachChar(Str1, Delay:=-2)
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
 			{
 				Str2 := StrChopped
-				if (IMEName = "ATOK" && PostDelay < 30
+				if (IMEName == "ATOK" && PostDelay < 30
 				 && (Asc(StrChopped) > 127
 				 || SubStr(StrChopped, 1, 3) = "{U+"
 				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
@@ -691,7 +691,7 @@ SendEachChar(Str1, Delay:=-2)
 			{
 				if (flag && (Str2 = "{vk20}" || Str2 = "{Space down}"))
 				{	; 変換1回目
-					PostDelay := (IMEName = "Google" ? 30 : (IMEName = "OldMSIME" ? 100 : 70))	; IME_GetConverting() が確実に変化する時間
+					PostDelay := (IMEName == "Google" ? 30 : (IMEName == "OldMSIME" ? 100 : 70))	; IME_GetConverting() が確実に変化する時間
 					flag++
 				}
 				else if ((LenChopped == 1 && Asc(LenChopped) >= 33)
