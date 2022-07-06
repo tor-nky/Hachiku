@@ -153,7 +153,7 @@ IniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ; [Basic]
 ; IMESelect		0または空: MS-IME専用, 1: ATOK使用, 他: Google 日本語入力
 	IniRead, IMESelect, %IniFilePath%, Basic, IMESelect, 0
-; USLike		0または空: 英数表記通り, 他: USキーボード風配列
+; USLike		0以下または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, USLike, %IniFilePath%, Basic, USLike, 0
 ; SideShift		左右シフト	1以下: 英数２, 他: かな
 	IniRead, SideShift, %IniFilePath%, Basic, SideShift, 1
@@ -354,9 +354,12 @@ ButtonOK:
 	if (TestMode != "ERROR")
 		IniWrite, %TestMode%, %IniFilePath%, Advanced, TestMode
 
+	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
 	DeleteDefs()	; 配列定義をすべて消去する
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
+	if (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在したら
+		ChangeVertical(Vertical)	; トレイアイコン変更
 GuiEscape:
 ButtonCancel:
 ButtonClose:
