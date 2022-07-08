@@ -1,10 +1,17 @@
 ﻿; **********************************************************************
-; 【薙刀式】「から」＝「ぶ」化けを解消する解
-; http://oookaworks.seesaa.net/article/488841086.html#gsc.tab=0
-; (2022年6月12日)より
-; 【薙刀式】v15B、迷宮の中
-; http://oookaworks.seesaa.net/article/489432623.html#gsc.tab=0
-; (2022年7月2日)より
+; 【薙刀式】v14集大成版
+; http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0
+; (2021年12月10日)より
+; 【薙刀式】私家版更新
+; http://oookaworks.seesaa.net/article/485726781.html#gsc.tab=0
+; (2022年2月24日より)
+; 【薙刀式】編集モードv14を私家版に改造
+; http://oookaworks.seesaa.net/article/485841978.html#gsc.tab=0
+; (2022年3月4日より)
+;
+; 【薙刀式】v15 fix版（仮）
+; http://oookaworks.seesaa.net/article/486333027.html#gsc.tab=0
+; (2022年4月7日より)
 ;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
@@ -47,33 +54,33 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列v15B 2022年7月2日付"
+	LayoutName := "薙刀式配列2022年3月4日/2022年4月7日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
 	; -----------------------------------------
 	; 別名登録
 	; -----------------------------------------
-	AL_ヴ				:= AL_小	:= KC_Q
+	AL_小							:= KC_Q
 	AL_き	:= AL_ぬ				:= KC_W
 	AL_て	:= AL_り				:= KC_E
 	AL_し	:= AL_ね				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
-	AL_BS	:= AL_ふ				:= KC_U
+	AL_BS	:= AL_さ				:= KC_U
 	AL_る	:= AL_よ				:= KC_I
 	AL_す	:= AL_え				:= KC_O
 	AL_へ	:= AL_ゆ				:= KC_P
 
 	AL_ろ	:= AL_せ				:= KC_A
-	AL_け	:= AL_わ				:= KC_S
+	AL_け	:= AL_め				:= KC_S
 	AL_と	:= AL_に				:= KC_D
 	AL_か	:= AL_ま	:= AL_左濁	:= KC_F
 	AL_っ	:= AL_ち				:= KC_G
 	AL_く	:= AL_や				:= KC_H
 	AL_あ	:= AL_の	:= AL_右濁	:= KC_J
 	AL_い	:= AL_も				:= KC_K
-	AL_う	:= AL_さ				:= KC_L
+	AL_う	:= AL_わ				:= KC_L
 	AL_ー	:= AL_つ				:= KC_SCLN
 
 	AL_ほ							:= KC_Z
@@ -84,7 +91,7 @@ ReadLayout()
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
 	AL_ん	:= AL_む				:= KC_COMM
-	AL_ら	:= AL_め				:= KC_DOT
+	AL_ら	:= AL_ふ				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
 
@@ -97,7 +104,7 @@ ReadLayout()
 
 ; 単打
 KanaGroup := 0	; 0 はグループなし
-	SetKana( AL_ヴ	,"vu"		)		; ヴ
+	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
 	SetKana( AL_し	,"si"		)		; し
@@ -129,25 +136,25 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_れ	,"re"		)		; れ
 
 ; センターシフト
-	SetKana( AL_ヴ | KC_SPC		,"vu"		)		; ヴ
+	SetKana( AL_小 | KC_SPC		,"{Null}"	)		; ダミー
 	SetKana( AL_ぬ | KC_SPC		,"nu"		)		; ぬ
 	SetKana( AL_り | KC_SPC		,"ri"		)		; り
 	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
 	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
 	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
-	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
+	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
 	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
 	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
-	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
+	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
 	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
 	SetKana( AL_や | KC_SPC		,"ya"		)		; や
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
-	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
+	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
@@ -157,7 +164,7 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
 	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
 	SetKana( AL_む | KC_SPC		,"mu"		)		; む
-	SetKana( AL_め | KC_SPC		,"me"		)		; め
+	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
 
 ;**********************************************
@@ -172,13 +179,14 @@ KanaGroup := 0	; 0 はグループなし
 
 ; 右手の濁音
 KanaGroup := "DA"
-	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
+	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
 	SetKana( AL_左濁 | AL_す			,"zu"	)	; ず
 	SetKana( AL_左濁 | AL_へ			,"be"	)	; べ
 	SetKana( AL_左濁 | AL_く			,"gu"	)	; ぐ
-	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
+	SetKana( AL_左濁 | AL_う			,"vu"	)	; ヴ
 	SetKana( AL_左濁 | AL_つ			,"du"	)	; づ
 	SetKana( AL_左濁 | AL_た			,"da"	)	; だ
+	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
 
 ; 左手の濁音
 	SetKana( AL_右濁 | AL_き			,"gi"	)	; ぎ
@@ -201,8 +209,8 @@ KanaGroup := "DA"
 
 ; 右の半濁音
 KanaGroup := "HA"
-	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
+	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 
 ; 左の半濁音
 	SetKana( AL_右半 | AL_ほ			,"po"	)	; ぽ
@@ -213,14 +221,22 @@ KanaGroup := "HA"
 ; 小書き： Qと同時押し
 KanaGroup := "KO"
 	SetKana( AL_小 | AL_よ				,"xyo"	)	; (ょ)
+	SetKana( AL_小 | AL_よ | KC_SPC		,"xyo"	)
 	SetKana( AL_小 | AL_え				,"xe"	)	; (ぇ)
+	SetKana( AL_小 | AL_え | KC_SPC		,"xe"	)
 	SetKana( AL_小 | AL_ゆ				,"xyu"	)	; (ゅ)
+	SetKana( AL_小 | AL_ゆ | KC_SPC		,"xyu"	)
 	SetKana( AL_小 | AL_や				,"xya"	)	; (ゃ)
+	SetKana( AL_小 | AL_や | KC_SPC		,"xya"	)
 	SetKana( AL_小 | AL_あ				,"xa"	)	; (ぁ)
+	SetKana( AL_小 | AL_あ | KC_SPC		,"xa"	)
 	SetKana( AL_小 | AL_い				,"xi"	)	; (ぃ)
+	SetKana( AL_小 | AL_い | KC_SPC		,"xi"	)
 	SetKana( AL_小 | AL_う				,"xu"	)	; (ぅ)
 	SetKana( AL_小 | AL_お				,"xo"	)	; (ぉ)
-	SetKana( AL_小 | AL_わ				,"xwa"	)	; (ゎ)
+	SetKana( AL_小 | AL_お | KC_SPC		,"xo"	)
+
+	SetKana( AL_小 | AL_わ | KC_SPC		,"xwa"	)	; (ゎ)
 
 ;**********************************************
 ; 拗音、外来音(３キー同時を含む)
@@ -317,15 +333,15 @@ KanaGroup := "HA"
 	SetKana( AL_左半 | AL_ふ | AL_お			,"fo"		)	; ふぉ
 
 ; ヴ; ヴァヴィヴェヴォヴュ
-;KanaGroup := "DA"
-	SetKana( AL_右半 | AL_ヴ | AL_え			,"ve"		)	; ヴぇ
-	SetKana( AL_右半 | AL_ヴ | AL_ゆ			,"vuxyu"	)	; ヴゅ
-	SetKana( AL_右半 | AL_ヴ | AL_あ			,"va"		)	; ヴぁ
-	SetKana( AL_右半 | AL_ヴ | AL_い			,"vi"		)	; ヴぃ
-	SetKana( AL_右半 | AL_ヴ | AL_お			,"vo"		)	; ヴぉ
+KanaGroup := "DA"
+	SetKana( AL_左濁 | AL_う | AL_え			,"ve"		)	; ヴぇ
+	SetKana( AL_左濁 | AL_う | AL_ゆ			,"vuxyu"	)	; ヴゅ
+	SetKana( AL_左濁 | AL_う | AL_あ			,"va"		)	; ヴぁ
+	SetKana( AL_左濁 | AL_う | AL_い			,"vi"		)	; ヴぃ
+	SetKana( AL_左濁 | AL_う | AL_お			,"vo"		)	; ヴぉ
 
 ; う; ウィウェウォ　い；イェ
-;KanaGroup := "HA"
+KanaGroup := "HA"
 	SetKana( AL_左半 | AL_う | AL_え			,"we"		)	; うぇ
 	SetKana( AL_左半 | AL_う | AL_い			,"wi"		)	; うぃ
 	SetKana( AL_左半 | AL_う | AL_お			,"uxo"		)	; うぉ
@@ -336,16 +352,16 @@ KanaGroup := "HA"
 	SetKana( AL_左半 | AL_く | AL_え			,"kuxe"		)	; くぇ
 	SetKana( AL_左半 | AL_く | AL_あ			,"kuxa"		)	; くぁ
 	SetKana( AL_左半 | AL_く | AL_い			,"kuxi"		)	; くぃ
-	SetKana( AL_左半 | AL_く | AL_お			,"kuxo"		)	; くぉ
 	SetKana( AL_左半 | AL_く | AL_わ			,"kuxwa"	)	; くゎ
+	SetKana( AL_左半 | AL_く | AL_お			,"kuxo"		)	; くぉ
 
 ; グ; グァグィグェグォ
 KanaGroup := "DA"
 	SetKana( AL_左濁 | AL_く | AL_え			,"guxe"		)	; ぐぇ
 	SetKana( AL_左濁 | AL_く | AL_あ			,"gwa"		)	; ぐぁ
 	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
-	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
 	SetKana( AL_左濁 | AL_く | AL_わ			,"guxwa"	)	; ぐゎ
+	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
 
 ; ツ; ツァツィツェツォ
 KanaGroup := "HA"
@@ -456,36 +472,36 @@ KanaGroup := "1R"
 ; 左手
 KanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						)	; カッコ外し
-	SetKana( KC_M | KC_COMM | KC_A	,"／{確定}"								)	; ／
-	SetKana( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
+	SetKana( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)	; 《》
+	SetKana( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
 	SetKana( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				)	; +『』
 	SetKana( KC_M | KC_COMM | KC_S	,"^x（^v）{確定}{C_Clr}"				)	; +（）
 	SetKana( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				)	; +【】
 	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)	; 行頭□□□挿入
 	SetKana( KC_M | KC_COMM | KC_D	,"　　　"								)	; □□□
-	SetKana( KC_M | KC_COMM | KC_C	,"{End}{Del 4}"							)	; 行頭□□□戻し
+	SetKana( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)	; 行頭□□□戻し
 	SetKana( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)	; 行頭□挿入
 	SetKana( KC_M | KC_COMM | KC_F	,"^x「^v」{確定}{C_Clr}"				)	; +「」
-	SetKana( KC_M | KC_COMM | KC_V	,"{End}{Del 2}"							)	; 行頭□戻し
+	SetKana( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)	; 行頭□戻し
 	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"								)	; ○
-	SetKana( KC_M | KC_COMM | KC_G	,"《》{確定}{↑}"						)	; 《》
-	SetKana( KC_M | KC_COMM | KC_B	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
+	SetKana( KC_M | KC_COMM | KC_G	,"／{確定}"								)	; ／
+	SetKana( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
 
 	SetEisu( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						)	; カッコ外し
-	SetEisu( KC_M | KC_COMM | KC_A	,"／{確定}"								)	; ／
-	SetEisu( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
+	SetEisu( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)	; 《》
+	SetEisu( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
 	SetEisu( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				)	; +『』
 	SetEisu( KC_M | KC_COMM | KC_S	,"^x（^v）{確定}{C_Clr}"				)	; +（）
 	SetEisu( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				)	; +【】
 	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)	; 行頭□□□挿入
 	SetEisu( KC_M | KC_COMM | KC_D	,"　　　"								)	; □□□
-	SetEisu( KC_M | KC_COMM | KC_C	,"{End}{Del 4}"							)	; 行頭□□□戻し
+	SetEisu( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)	; 行頭□□□戻し
 	SetEisu( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)	; 行頭□挿入
 	SetEisu( KC_M | KC_COMM | KC_F	,"^x「^v」{確定}{C_Clr}"				)	; +「」
-	SetEisu( KC_M | KC_COMM | KC_V	,"{End}{Del 2}"							)	; 行頭□戻し
+	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)	; 行頭□戻し
 	SetEisu( KC_M | KC_COMM | KC_T	,"〇{確定}"								)	; ○
-	SetEisu( KC_M | KC_COMM | KC_G	,"《》{確定}{↑}"						)	; 《》
-	SetEisu( KC_M | KC_COMM | KC_B	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
+	SetEisu( KC_M | KC_COMM | KC_G	,"／{確定}"								)	; ／
+	SetEisu( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
 
 ; 右手
 KanaGroup := "2R"
@@ -495,15 +511,15 @@ KanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_U		,"^x"		)		; Cut
 	SetKana( KC_C | KC_V | KC_J		,"{→ 5}"	, R)	; →5
 	SetKana( KC_C | KC_V | KC_M		,"{← 5}"	, R)	; ←5
-	SetKana( KC_C | KC_V | KC_I		,"{←}"		, R)	; ←
-	SetKana( KC_C | KC_V | KC_K		,"+{→}"	, R)	; +→
-	SetKana( KC_C | KC_V | KC_COMM	,"+{←}"	, R)	; +←
-	SetKana( KC_C | KC_V | KC_O		,"{→}"		, R)	; →
-	SetKana( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
-	SetKana( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
-	SetKana( KC_C | KC_V | KC_P		,"^v"		)		; Paste
-	SetKana( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, R)	; +→20
-	SetKana( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, R)	; +←20
+	SetKana( KC_C | KC_V | KC_I		,"^v"		)		; Paste
+	SetKana( KC_C | KC_V | KC_K		,"+{→ 5}"	, R)	; +→5
+	SetKana( KC_C | KC_V | KC_COMM	,"+{← 5}"	, R)	; +←5
+	SetKana( KC_C | KC_V | KC_O		,"^y"		)		; Redo
+	SetKana( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
+	SetKana( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
+	SetKana( KC_C | KC_V | KC_P		,"^z"		)		; Undo
+	SetKana( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; 一行前選択
+	SetKana( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; 一行後選択
 
 	SetEisu( KC_C | KC_V | KC_Y		,"+{Home}"	)		; +Home
 	SetEisu( KC_C | KC_V | KC_H		,"^c"		)		; Copy
@@ -511,15 +527,15 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_U		,"^x"		)		; Cut
 	SetEisu( KC_C | KC_V | KC_J		,"{→ 5}"	, R)	; →5
 	SetEisu( KC_C | KC_V | KC_M		,"{← 5}"	, R)	; ←5
-	SetEisu( KC_C | KC_V | KC_I		,"{←}"		, R)	; ←
-	SetEisu( KC_C | KC_V | KC_K		,"+{→}"	, R)	; +→
-	SetEisu( KC_C | KC_V | KC_COMM	,"+{←}"	, R)	; +←
-	SetEisu( KC_C | KC_V | KC_O		,"{→}"		, R)	; →
-	SetEisu( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
-	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
-	SetEisu( KC_C | KC_V | KC_P		,"^v"		)		; Paste
-	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, R)	; +→20
-	SetEisu( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, R)	; +←20
+	SetEisu( KC_C | KC_V | KC_I		,"^v"		)		; Paste
+	SetEisu( KC_C | KC_V | KC_K		,"+{→ 5}"	, R)	; +→5
+	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"	, R)	; +←5
+	SetEisu( KC_C | KC_V | KC_O		,"^y"		)		; Redo
+	SetEisu( KC_C | KC_V | KC_L		,"+{→ 20}"	, R)	; +→20
+	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 20}"	, R)	; +←20
+	SetEisu( KC_C | KC_V | KC_P		,"^z"		)		; Undo
+	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→}"	, R)	; 一行前選択
+	SetEisu( KC_C | KC_V | KC_SLSH	,"+{←}"	, R)	; 一行後選択
 
 KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_Q | KC_W			,"Null"		,"横書き")

@@ -5,9 +5,10 @@
 ;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
-;	編集モードD+F+Hは変換中の文字があれば確定し、なければそのまま所定の動作をします。
+;	編集モードD+F+Hは変換中かどうかを問わない
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
-;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは M+Comma+1 で１番、M+Comma+2 で２番、など。
+;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
+;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
@@ -628,6 +629,12 @@ KanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^{PgDn 5}"						, R)	; 次 5◀ページ先頭
 
 KanaGroup := 0	; 0 はグループなし
+	SetKana( KC_Q | KC_W			,"Null"		,"横書き")
+	SetEisu( KC_Q | KC_W			,"Null"		,"横書き")
+	SetKana( KC_Q | KC_A			,"Null"		,"縦書き")
+	SetEisu( KC_Q | KC_A			,"Null"		,"縦書き")
+
+
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	if (KeyDriver = "kbd101.dll")
 	{
@@ -731,6 +738,9 @@ KoyuRegist()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
 
+;**************************************
+; 固有名詞ショートカット
+; 上段人差指＋中指
 	KanaGroup := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_1		,"{直接}" . E01)
 		SetKana(KC_U | KC_I | KC_2		,"{直接}" . E02)
@@ -862,16 +872,11 @@ KoyuRegist()
 
 	KanaGroup := "2L"
 		; 固有名詞ショートカットを切り替える
-		SetKana( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
-		SetEisu( KC_M | KC_COMM | KC_1	, 1, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
-		SetEisu( KC_M | KC_COMM | KC_2	, 2, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
-		SetEisu( KC_M | KC_COMM | KC_3	, 3, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
-		SetEisu( KC_M | KC_COMM | KC_4	, 4, "KoyuChange")
-		SetKana( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
-		SetEisu( KC_M | KC_COMM | KC_5	, 5, "KoyuChange")
+		SetKana( KC_E | KC_R | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
+		SetKana( KC_E | KC_R | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
+		SetKana( KC_E | KC_R | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
+		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
+		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 
 	KanaGroup := 0	; 0 はグループなし
 	return

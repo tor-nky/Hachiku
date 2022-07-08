@@ -1,6 +1,4 @@
-﻿; ※※※ 不具合（19行目に記載）があるので注意！！
-;
-; **********************************************************************
+﻿; **********************************************************************
 ; 【薙刀式】v14集大成版
 ; http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0
 ; (2021年12月10日)より
@@ -15,19 +13,15 @@
 ; (2022年06月6日)より
 ;
 ; DvorakJ版からの変更部分：
-;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
-;	IME OFF、新(J+K+Q)は確定してから ← 範囲選択している部分を消去してしまう不具合がある
-;	スペース+F+G に全角英数入力、スペース+H+J に全角カタカナ入力
-;
 ;	記号はすべて全角文字を出力する
-;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中の文字があれば確定し、なければそのまま所定の動作をします。
+;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
+;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
-;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
 
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
@@ -62,7 +56,6 @@ ReadLayout()
 	LayoutName := "薙刀式配列 2022年6月6日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
-;	ReadWorkmanLayout()		; Workman配列
 
 	; -----------------------------------------
 	; 別名登録
@@ -155,14 +148,10 @@ KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
 	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
-KanaGroup := "DA"
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
-KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
 	SetKana( AL_や | KC_SPC		,"ya"		)		; や
-KanaGroup := "DA"
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
-KanaGroup := 0	; 0 はグループなし
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
@@ -388,16 +377,12 @@ KanaGroup := "HA"
 KanaGroup := 0	; 0 はグループなし
 	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
-	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
-	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")	; カタカナ入力
-	SetEisu( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")
-	SetKana( KC_F | KC_G | KC_SPC	,"{全英}"	)				; 全角英数入力
-	SetEisu( KC_F | KC_G | KC_SPC	,"{全英}"	)
+	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
 
 ; Enter
 ; VとMの同時押し
-KanaGroup := "ENT"
+KanaGroup := "HA"
 	SetKana( KC_V | KC_M			,"{Enter}"		)	; 行送り
 	SetKana( KC_V | KC_M | KC_SPC	,"{Enter}"		)
 	SetEisu( KC_V | KC_M			,"{Enter}"		)	; 行送り
@@ -415,7 +400,7 @@ KanaGroup := "ENT"
 
 ; 左手
 KanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -431,7 +416,7 @@ KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{確定}{↑}"	)	; ⏎「」
 	SetKana( KC_J | KC_K | KC_B		,"{確定}{End}{改行}　"				)	; ⏎□
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -649,11 +634,6 @@ KoyuRegist()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
 
-	; 固有名詞ショートカット(U+I)を押し続けて
-	; 前文字削除(U)のリピートが起きる場合があるので対策
-	KanaGroup := 0	; 0 はグループなし
-	SetKana( KC_U | KC_I				,"{Null}")	; ダミー
-
 ;**************************************
 ; 固有名詞ショートカット
 ; 上段人差指＋中指
@@ -803,10 +783,3 @@ KoyuRegist()
 ; ----------------------------------------------------------------------
 +^sc0B::Suspend On	; 薙刀式中断 Shift+Ctrl+0
 +^sc02::Suspend Off	; 薙刀式再開 Shift+Ctrl+1
-
-; 新MS-IME使用で
-#if (DetectIME() == "NewMSIME")
-; 変換
-sc79::Send, {sc79 9}
-+sc79::Send, +{sc79 9}
-#If		; End #If ()

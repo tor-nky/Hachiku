@@ -660,7 +660,8 @@ SendEachChar(Str1, Delay:=-2)
 			else if (StrChopped = "^v")
 			{
 				Str2 := StrChopped
-				PostDelay := 50
+				PreDelay := 10
+				PostDelay := 40
 			}
 			else if (StrChopped = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
@@ -1234,7 +1235,7 @@ Convert()
 			{
 				NowBit := SearchBit := 0
 				OutStr := "{" . NowKey . "}"
-				nkeys := -1	; 後の検索は不要
+				nkeys := -1	; かな定義の検索は不要
 			}
 			; スペースキーが押されていたら、シフトを加えておく(SandSの実装)
 			if (RealBit & KC_SPC)
@@ -1261,20 +1262,24 @@ Convert()
 			else
 				ShiftStyle := ((RealBit & KC_SPC) ? CombKeyUpS : CombKeyUpN)
 
-			if (KeyUpToOutputAll || (LastBit & NowBit) || NowBit == 0)
+			if (KeyUpToOutputAll || (LastBit & NowBit))
 			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
 				LastStr := ""
 				_lks := 0
 				if (ShiftStyle == 2)	; 全解除
-					Last2Bit := LastBit := 0
+					LastGroup := Last2Bit := LastBit := 0
 			}
 			else if (_usc == 2 && _lks == 1 && NowBit == Last2Bit)
 			{	; 同時押しにならなくなった
 				OutBuf(1)	; 1個出力
 				CombinableBit |= NowBit ; 次の入力で即確定しないキーに追加
 			}
+			else if (!NowBit)
+				SendKeyUp()	; 押し下げを出力中のキーを上げる
+			if (!RealBit)
+				LastGroup := 0
 			RepeatBit &= BitMask
 			ReuseBit := (ShiftStyle ? 0 : RealBit)	; 文字キーシフト全復活
 			Last2Bit &= BitMask
