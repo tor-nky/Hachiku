@@ -10,6 +10,10 @@
 ; http://oookaworks.seesaa.net/article/489564522.html#gsc.tab=0
 ; (2022年7月6日)より
 ;
+; 【薙刀式】「さ」と「つ」の連接の違い
+; http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0
+; (2022年7月9日)より
+;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -51,7 +55,8 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式配列2022年6月15日/2022年7月6日付v15B2"
+	LayoutName := "薙刀式15（仮）安定版"
+		; "薙刀式配列2022年6月15日/2022年7月6日/2022年7月9日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 

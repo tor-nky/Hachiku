@@ -1,8 +1,8 @@
 ﻿# Hachiku - Windows で薙刀式を使うスクリプト
 
-[【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0) 2021年12月10日付
+[【薙刀式】「さ」と「つ」の連接の違い](http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0) 2022年7月9日付
 
-Autohotkey に実装しました。
+薙刀式15（仮）安定版.txt を Autohotkey に実装しました。
 
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。
 トレイアイコンを右クリックしたところに、縦書き・横書きモード切り替え、設定メニューがあります。
@@ -17,9 +17,9 @@ https://github.com/tor-nky/Hachiku/releases
 
 ディレクトリ source の下にあるファイルをすべて保存します。
 
-Autohotkey をインストールし、ディレクトリ source にある Hachiku.ahk のスクリプトを実行してください。
+Autohotkey をインストールし、ディレクトリ src にある Hachiku.ahk のスクリプトを実行してください。
 
-Ahk2Exe.exe でコンパイルする場合は、Unicode版で出力してください。
+Ahk2Exe.exe で実行ファイル化する場合は、U32 Unicode 32-bit.bin を使ってください。
 
 # IME の設定
 
@@ -82,10 +82,11 @@ IME 入力モード切替の通知  → オフ: 画面中央に表示する
 
 # 不具合
 
+* 編集モードを素早く複数押すとうまくいかないことがある
+
 * 薙刀式に変換が正しく行われないことがある
 
-U64 Unicode 64-bit.bin で実行ファイル化したものは、まれに同時押しの変換に失敗するので、
-U32 Unicode 32-bit.bin を使ってください。
+U64 Unicode 64-bit.bin で実行ファイル化したものは、まれに同時押しの変換に失敗します。
 
 Autohotkey v1.1.33.03～v1.1.34.01 の一部で、新MS-IME(Win10 2004以降の標準)＋秀丸エディタ＋ノートパソコン内蔵キーボード の組み合わせで約1000文字に1回程度、英字に化けるようです。→コード修正しましたが Autohotkey の最新版でないため再検証していません。
 
@@ -119,8 +120,7 @@ Windows 7 の頃の古いIMEでは記号、固有名詞ショートカットが�
 # 参考
 
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
-* [【薙刀式】v14仮のバグフィックス](http://oookaworks.seesaa.net/article/483884499.html#gsc.tab=0)
-* [ 【薙刀式】v15 fix版（仮）](http://oookaworks.seesaa.net/article/486333027.html#gsc.tab=0)
+* [【薙刀式】「さ」と「つ」の連接の違い](http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0)
 
 ## 詳細メニューを出現させるには
 
