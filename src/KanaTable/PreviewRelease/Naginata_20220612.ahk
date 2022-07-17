@@ -7,9 +7,13 @@
 ; http://oookaworks.seesaa.net/article/489564522.html#gsc.tab=0
 ; (2022年7月6日)より
 ;
+; 【薙刀式】v15候補
+; http://oookaworks.seesaa.net/article/489739560.html#gsc.tab=0
+; (2022年07月14日)より
+;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
-;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
+;	編集モードD+F+Q、D+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
@@ -48,7 +52,8 @@ ReadLayout()
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global LayoutName, KoyuNumber
 
-	LayoutName := "薙刀式2022年6月12日/2022年7月6日付v15B1"
+	LayoutName := "薙刀式v15(仮)B1"
+		; "薙刀式2022年6月12日/2022年7月6日付v15B1"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
@@ -387,7 +392,7 @@ KanaGroup := "HA"
 
 ; 左手
 KanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
+	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -403,7 +408,7 @@ KanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{確定}{↑}"	)	; ⏎「」
 	SetKana( KC_J | KC_K | KC_B		,"{確定}{End}{改行}　"				)	; ⏎□
 
-	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
+	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』

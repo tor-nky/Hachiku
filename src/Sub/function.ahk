@@ -155,14 +155,14 @@ ControlReplace(Str1)
 Analysis(Str1)
 {
 ;	local i		; カウンタ
-;		, len1, StrChopped, LenChopped, Str2, c, bracket, Kakutei, NoIME
+;		, len1, StrChopped, LenChopped, strInBracket, Str2, c, bracket, Kakutei, NoIME
 
 	if (Str1 = "{Raw}" || Str1 = "{直接}")
 		return ""	; 有効な文字列がないので空白を返す
 
 	Kakutei := NoIME := False
 	Str2 := ""			; 変換後文字列
-	StrChopped := ""
+	StrChopped := strInBracket := ""
 	LenChopped := 0
 	bracket := 0
 	i := 1
@@ -175,6 +175,7 @@ Analysis(Str1)
 		else if (c == "{" || bracket)
 			bracket++
 		StrChopped .= c
+		strInBracket .= (bracket > 1 ? c : )
 		LenChopped++
 		if (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i == len1 )
@@ -203,19 +204,15 @@ Analysis(Str1)
 				Str2 .= "{NoIME}" . StrChopped
 				Kakutei := NoIME := True	; ASCIIコード以外の文字は IMEをオフにして出力する
 			}
-			else if (StrChopped = "{NoIME}")
+			else if (StrChopped = "{確定}" || StrChopped = "{NoIME}")
 			{
-				if (!Kakutei)
-					Str2 .= "{確定}"
 				if (!NoIME)
+				{
+					if (!Kakutei)
+						Str2 .= "{確定}"
 					Str2 .= "{NoIME}"
+				}
 				Kakutei := NoIME := True
-			}
-			else if (StrChopped = "{確定}")
-			{
-				if (!NoIME && !Kakutei)
-					Str2 .= "{確定}"
-				Kakutei := True
 			}
 			else if (SubStr(StrChopped, 1, 6) = "{Enter")
 			{
@@ -257,13 +254,19 @@ Analysis(Str1)
 				Str2 .= "{vk20}"
 				Kakutei := False
 			}
+			else if (strInBracket = "BS"	|| strInBracket = "Del"
+				  || strInBracket = "Up"	|| strInBracket = "Left"
+				  || strInBracket = "Right"	|| strInBracket = "Down"
+				  || strInBracket = "Home"	|| strInBracket = "End"
+				  || strInBracket = "PgUp"	|| strInBracket = "PgDn")
+				Str2 .= StrChopped
 			else
 			{
 				Str2 .= StrChopped
 				Kakutei := False
 			}
 
-			StrChopped := ""
+			StrChopped := strInBracket := ""
 			LenChopped := 0
 		}
 		i++
@@ -558,7 +561,8 @@ SendEachChar(Str1, Delay:=-2)
 					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
 					LastDelay := IME_Get_Interval
 				}
-				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
+				if (IME_GET() && IME_GetSentenceMode()		; 変換モード(無変換)ではない
+					&& (SubStr(Str1, i + 1, 7) != "{NoIME}" || IME_GetConvMode() & 1 == 0))
 				{
 					if (LastDelay >= (IMEName == "Google" ? 30 : (IMEName == "ATOK" ? 90 : 70)) && IME_GetConverting())
 						; 文字出力から一定時間経っていて、IME窓あり
@@ -591,16 +595,13 @@ SendEachChar(Str1, Delay:=-2)
 				{
 					NoIME := True
 					IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
-					Str2 := "{vkF3}"	; 半角/全角
-					PostDelay := 30
+					IME_SET(0)			; IMEオフ
+					Sleep, 10
 				}
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
 				NoIME := False
-				PreDelay := 50
-				if (LastDelay < PreDelay)
-					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
 				LastDelay := IME_Get_Interval
 			}
@@ -680,11 +681,11 @@ SendEachChar(Str1, Delay:=-2)
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
 			{
 				Str2 := StrChopped
-				if (IMEName == "ATOK" && PostDelay < 30
+				if (IMEName == "ATOK" && PostDelay < 10
 				 && (Asc(StrChopped) > 127
 				 || SubStr(StrChopped, 1, 3) = "{U+"
 				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
-					PostDelay := 30	; ATOK 使用で ASCIIコードでない
+					PostDelay := 10	; ATOK 使用で ASCIIコードでない
 			}
 
 			; 変換1回目を検出
@@ -732,21 +733,15 @@ SendEachChar(Str1, Delay:=-2)
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
 			{
 				NoIME := False
-				PreDelay := 30
-				PostDelay := 30
+				PreDelay := 40
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
-				Send, {vkF3}	; 半角/全角
-				LastSendTime := QPC()	; 最後に出力した時間を記録
-				Sleep, % (LastDelay := PostDelay)
-				; IME入力モードを回復する
+				IME_SET(1)			; IMEオン
 				if (IMEConvMode)
-				{
 					IME_SetConvMode(IMEConvMode)
-					LastSendTime := QPC()	; 最後に出力した時間を記録
-					Sleep, % (LastDelay := (Delay > 0 ? Delay : 0))
-				}
+				LastSendTime := QPC()	; 最後に出力した時間を記録
+				LastDelay := IME_Get_Interval
 			}
 
 			PreDelay := PostDelay := -2
@@ -1326,12 +1321,15 @@ Convert()
 			}
 			else
 				OutOfCombDelay := False
-			; 今押したキーで同時押しにならない
+			; 前のキーと同時押しにならない
 			if !(CombinableBit & NowBit)
 			{
 				OutBuf()
-				if (NowBit && !forceEisuMode && LastSendTime + IME_Get_Interval <= QPC())
+				if (NowBit && !forceEisuMode)
 				{	; IMEの状態を再検出
+					Delay := IME_Get_Interval - Floor(QPC() - LastSendTime)
+					if (Delay > 0)	; 時間を空けてIME検出へ
+						Sleep, %Delay%
 					IMEState := IME_GET()
 					if (IMEState == 0)
 						KanaMode := 0
