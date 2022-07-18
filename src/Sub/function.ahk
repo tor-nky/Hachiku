@@ -255,6 +255,7 @@ Analysis(Str1)
 				Kakutei := False
 			}
 			else if (strInBracket = "BS"	|| strInBracket = "Del"
+				  || strInBracket = "Esc"
 				  || strInBracket = "Up"	|| strInBracket = "Left"
 				  || strInBracket = "Right"	|| strInBracket = "Down"
 				  || strInBracket = "Home"	|| strInBracket = "End"
@@ -271,6 +272,9 @@ Analysis(Str1)
 		}
 		i++
 	}
+	; Google日本語入力で {確定}{NoIME} と並んでいれば、{確定} は不要
+	if (DetectIME() == "Google")
+		StringReplace, Str2, Str2, {確定}{NoIME}, {NoIME}, A
 
 	return Str2
 }
@@ -507,8 +511,6 @@ SendEachChar(Str1, Delay:=-2)
 	PreDelay := PostDelay := -2
 	if (class == "CabinetWClass" && Delay < 10)
 		Delay := 10	; エクスプローラーにはゆっくり出力する
-;	else if (class == "Hidemaru32Class")
-;		Delay := 0
 	else if (SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
 		PostDelay := 30	; 1文字目を必ずゆっくり出力する
 	LastDelay := Floor(QPC() - LastSendTime)
@@ -561,8 +563,7 @@ SendEachChar(Str1, Delay:=-2)
 					Sleep, % IME_Get_Interval - LastDelay	; 前回の出力から一定時間経ってから IME_GET()
 					LastDelay := IME_Get_Interval
 				}
-				if (IME_GET() && IME_GetSentenceMode()		; 変換モード(無変換)ではない
-					&& (SubStr(Str1, i + 1, 7) != "{NoIME}" || IME_GetConvMode() & 1 == 0))
+				if (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 				{
 					if (LastDelay >= (IMEName == "Google" ? 30 : (IMEName == "ATOK" ? 90 : 70)) && IME_GetConverting())
 						; 文字出力から一定時間経っていて、IME窓あり
@@ -595,13 +596,16 @@ SendEachChar(Str1, Delay:=-2)
 				{
 					NoIME := True
 					IMEConvMode := IME_GetConvMode()	; IME入力モードを保存する
-					IME_SET(0)			; IMEオフ
-					Sleep, 10
+					Str2 := "{vkF3}"	; 半角/全角
+					PostDelay := 30
 				}
 			}
 			else if (StrChopped = "{IMEOFF}")
 			{
 				NoIME := False
+				PreDelay := 50
+				if (LastDelay < PreDelay)
+					Sleep, % PreDelay - LastDelay
 				IME_SET(0)			; IMEオフ
 				LastDelay := IME_Get_Interval
 			}
@@ -649,7 +653,7 @@ SendEachChar(Str1, Delay:=-2)
 				}
 				else if (IMEName == "Google")
 				{
-					PreDelay := 10
+					PreDelay := 30
 					PostDelay := 10
 				}
 				else if (IMEName != "NewMSIME")
@@ -681,7 +685,7 @@ SendEachChar(Str1, Delay:=-2)
 			else if (StrChopped != "{Null}" && StrChopped != "{UndoIME}")
 			{
 				Str2 := StrChopped
-				if (IMEName == "ATOK" && PostDelay < 10
+				if (IMEName == "ATOK" && class == "Hidemaru32Class" && PostDelay < 10
 				 && (Asc(StrChopped) > 127
 				 || SubStr(StrChopped, 1, 3) = "{U+"
 				 || (SubStr(StrChopped, 1, 5) = "{ASC " && SubStr(StrChopped, 6, LenChopped - 6) > 127)))
@@ -733,15 +737,17 @@ SendEachChar(Str1, Delay:=-2)
 			if (NoIME && (i >= len1 || StrChopped = "{UndoIME}"))
 			{
 				NoIME := False
-				PreDelay := 40
+				PreDelay := 30
+				PostDelay := (IMEName == "ATOK" ? 60 : 30)
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				if (LastDelay < PreDelay)
 					Sleep, % PreDelay - LastDelay
-				IME_SET(1)			; IMEオン
-				if (IMEConvMode)
-					IME_SetConvMode(IMEConvMode)
+				Send, {vkF3}	; 半角/全角
 				LastSendTime := QPC()	; 最後に出力した時間を記録
-				LastDelay := IME_Get_Interval
+				Sleep, % (LastDelay := PostDelay)
+				; IME入力モードを回復する
+				if (IMEName == "ATOK")
+					IME_SetConvMode(IMEConvMode)
 			}
 
 			PreDelay := PostDelay := -2

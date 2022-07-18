@@ -1,4 +1,6 @@
-﻿; **********************************************************************
+﻿; ※※※ 不具合（19行目に記載）があるので注意！！
+;
+; **********************************************************************
 ; 【薙刀式】v14集大成版
 ; http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0
 ; (2021年12月10日)より
@@ -14,8 +16,10 @@
 ; (2022年4月7日より)
 ;
 ; DvorakJ版からの変更部分：
+;	IME OFF、新(J+K+Q)は確定してから ← 範囲選択している部分を消去してしまう不具合がある
+;
 ;	記号はすべて全角文字を出力する
-;	編集モードD+F+Q、D+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
+;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットのシフト面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
@@ -378,10 +382,10 @@ KanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 KanaGroup := 0	; 0 はグループなし
-	SetKana( KC_H | KC_J			,"{ひらがな 2}")	; IME ON
+	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
-	SetKana( KC_F | KC_G			,"{IMEOFF}"	)		; IME OFF
-	SetEisu( KC_F | KC_G			,"{IMEOFF}"	)		; (英語入力ON は "{ひらがな 2}{英数}")
+	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
 ;	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")	; カタカナ入力
 ;	SetEisu( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")
 ;	SetKana( KC_F | KC_G | KC_SPC	,"{全英}"	)				; 全角英数入力
