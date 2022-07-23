@@ -26,7 +26,7 @@ ReadStandardLayout()
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk
 
-KanaGroup := 0	; 0 はグループAll
+kanaGroup := 0	; 0 はグループAll
 	SetEisu( KC_1		,"{sc02}"	)
 	SetEisu( KC_2		,"{sc03}"	)
 	SetEisu( KC_3		,"{sc04}"	)
@@ -237,7 +237,7 @@ KanaGroup := 0	; 0 はグループAll
 	SetKana( KC_SPC | KC_INT1	,"+{sc73}"	)
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (KeyDriver = "kbd101.dll")
+	If (keyDriver = "kbd101.dll")
 	{
 		SetEisu( KC_GRV				,"{sc29}"	)
 		SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)
@@ -254,7 +254,7 @@ KanaGroup := 0	; 0 はグループAll
 		SetKana( KC_INT1 | KC_SPC	,"_"		)
 	}
 	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	else if (KeyDriver = "kbdnec.dll")
+	Else If (keyDriver = "kbdnec.dll")
 	{
 		SetEisu( KC_INT1	,"\"	)
 		SetKana( KC_INT1	,"\"	)

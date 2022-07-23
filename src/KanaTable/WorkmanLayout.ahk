@@ -25,11 +25,11 @@
 ReadWorkmanLayout()
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	global LayoutName, KoyuNumber
+	global layoutName, koyuNumber
 
-	LayoutName := "Workman Keyboard Layout"
+	layoutName := "Workman Keyboard Layout"
 
-KanaGroup := 0	; 0 はグループAll
+kanaGroup := 0	; 0 はグループAll
 	SetEisu( KC_1		,"1"	)
 	SetEisu( KC_2		,"2"	)
 	SetEisu( KC_3		,"3"	)
@@ -241,7 +241,7 @@ KanaGroup := 0	; 0 はグループAll
 
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (KeyDriver = "kbd101.dll")
+	If (keyDriver = "kbd101.dll")
 	{
 		SetEisu( KC_GRV				,"{sc29}"	)
 		SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)

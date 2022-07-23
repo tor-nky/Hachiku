@@ -4,4 +4,4 @@
 	, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_INT1
 	, KC_SPC
 	, R
-	, KanaGroup, KeyDriver, USLike
+	, kanaGroup, keyDriver, usLike
