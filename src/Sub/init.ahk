@@ -23,8 +23,8 @@ SetKeyDelay, -1, -1			; キーストローク間のディレイを変更
 ;Process, Priority, , High	; スクリプトを実行するプロセスの優先度を上げる
 #MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
 #UseHook					; ホットキーはすべてフックを使用する
-Thread, interrupt, 15, 12	; スレッド開始から15ミリ秒ないし12行以内の割り込みを、絶対禁止
-SetStoreCapslockMode, off	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
+Thread, Interrupt, 15, 12	; スレッド開始から15ミリ秒ないし12行以内の割り込みを、絶対禁止
+SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
 
 ;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
 ;CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
@@ -265,7 +265,7 @@ If (testMode != "ERROR")
 	Menu, TRAY, NoStandard
 
 	; 薙刀式配列用メニュー
-	If (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在したら
+	If (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在するか
 	{
 		; 縦書きモード切替を追加
 		Menu, TRAY, Add, 縦書きモード, VerticalMode
@@ -606,18 +606,21 @@ DispLogFunc()
 				If (c == "+" || c == "^" || c == "!" || c == "#"
 				 || c == "<" || c == ">")
 				{
+					; 先頭の文字を分離
 					preStr .= c
-					str := SubStr(str, 2)	; 先頭の文字を消去
+					str := SubStr(str, 2)
 				}
 				Else If (c == "*" || c == "~" || c == "$")
-					str := SubStr(str, 2)	; 先頭の文字を消去
+					; 表示させたくない先頭の文字を消去
+					str := SubStr(str, 2)
 				Else
 					Break
 			}
 			; キーの上げ下げを調べる
 			StringRight, term, str, 3	; term に入力末尾の2文字を入れる
-			If (term = " up")	; キーが離されたとき
+			If (term = " up")
 			{
+				; キーが離されたとき
 				term := "↑"
 				str := SubStr(str, 1, StrLen(str) - 3)
 			}
