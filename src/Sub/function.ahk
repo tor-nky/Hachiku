@@ -567,7 +567,7 @@ DetectIME()
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)
 {
-	global goodHwnd, badHwnd, lastSendTime, IME_Get_Interval
+	global goodHwnd, badHwnd, lastSendTime, IME_Get_Interval, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd, title, class, process
 ;		, strLength				; str の長さ
@@ -668,13 +668,15 @@ SendEachChar(str, delay:=-2)
 			{
 				If (lastDelay < IME_Get_Interval)
 				{
-					Sleep, % IME_Get_Interval - lastDelay	; 前回の出力から一定時間経ってから IME_GET()
+					; 前回の出力から一定時間空けて IME_GET() へ
+					Sleep, % IME_Get_Interval - lastDelay
 					lastDelay := IME_Get_Interval
 				}
 				If (IME_GET())
 				{
 					noIME := True
 					imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
+					kanaMode := imeConvMode & 1	; 英数入力かかな入力か保存する
 					out := "{vkF3}"	; 半角/全角
 					postDelay := 30
 				}
@@ -807,8 +809,10 @@ SendEachChar(str, delay:=-2)
 			If (noIME && (i >= strLength || strSub = "{UndoIME}"))
 			{
 				noIME := False
+
+			; ※半角/全角 を使う方法
 				preDelay := 30
-				postDelay := (imeName == "ATOK" ? 60 : 30)
+				postDelay := 30
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
@@ -817,7 +821,21 @@ SendEachChar(str, delay:=-2)
 				Sleep, % (lastDelay := postDelay)
 				; IME入力モードを回復する
 				If (imeName == "ATOK")
+				{
 					IME_SetConvMode(imeConvMode)
+					lastSendTime := QPC()	; ← 半角/全角 から IME_SetConvMode() ではなぜか必要
+					lastDelay := 0
+				}
+/*			; ※IME_SET(1) を使う方法
+				preDelay := (imeName == "ATOK" ? 80 : 10)
+				; 前回の出力からの時間が短ければ、ディレイを入れる
+				If (lastDelay < preDelay)
+					Sleep, % preDelay - lastDelay
+				IME_SET(1)			; IMEオン
+				If (imeName == "ATOK")
+					IME_SetConvMode(imeConvMode)
+				lastDelay := 0
+*/
 			}
 
 			preDelay := postDelay := -2
@@ -1045,7 +1063,7 @@ Convert()
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlNo, defBegin, defEnd
-		, _usc, lastSendTime, IME_Get_Interval
+		, _usc, lastSendTime, IME_Get_Interval, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
@@ -1057,7 +1075,6 @@ Convert()
 		, reuseBit	:= 0	; 復活したキービット
 		, lastKeyTime := 0	; 有効なキーを押した時間
 		, timeLimit := 0.0	; タイマーを止めたい時間
-		, kanaMode	:= 0	; 0: 英数入力, 1: かな入力
 		, toBuf		:= ""	; 出力バッファに送る文字列
 		, lastToBuf	:= ""	; 前回、出力バッファに送った文字列(リピート、後置シフト用)
 		, _lks		:= 0	; 前回、何キー同時押しだったか？
@@ -1121,7 +1138,7 @@ Convert()
 			nextKey := ""
 		}
 
-		; IME の状態を更新
+		; 英数入力かかな入力か検出
 		forceEisuMode := True	; 強制英数モードを意味する仮の値
 		imeConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
@@ -1398,7 +1415,7 @@ Convert()
 			{
 				OutBuf()
 				If (nowBit && !forceEisuMode)
-				{	; IMEの状態を再検出
+				{	; 英数入力かかな入力か再度検出
 					delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
 					If (delay > 0)	; 時間を空けてIME検出へ
 						Sleep, %delay%
