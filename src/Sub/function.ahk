@@ -1476,7 +1476,7 @@ Convert()
 								enableComb := False
 								Break
 							}
-							Else If ((!lastGroup && _lks < 3) || lastGroup == defsGroup[i])
+							Else If (!lastGroup || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
@@ -1511,7 +1511,7 @@ Convert()
 								enableComb := False
 								Break
 							}
-							Else If ((!lastGroup && _lks < 2) || lastGroup == defsGroup[i])
+							Else If (!lastGroup || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								If (_usc == 2)
