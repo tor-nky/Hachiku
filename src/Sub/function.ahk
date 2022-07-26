@@ -1159,7 +1159,13 @@ Convert()
 		If (Asc(nowKey) == 43)
 			nowKey := SubStr(nowKey, 2)
 		; 左右シフト処理
-		If (nowKey == "LShift")
+		If (nowKey == "~LShift")		; ATOK用
+		{
+			sft := 1
+			OutBuf()
+			nowKey := "sc39"	; センターシフト押す
+		}
+		Else If (nowKey == "LShift")	; ATOK以外用
 		{
 			sft := 1
 			OutBuf()
@@ -1173,7 +1179,24 @@ Convert()
 			SendBlind("{ShiftDown}")
 			nowKey := "sc39"	; センターシフト押す
 		}
-		Else If (nowKey == "LShift up")
+		Else If (nowKey == "~LShift up")	; ATOK用
+		{
+			sft := 0
+			If (rsft)	; 右シフトは離されていない
+			{
+				SendBlind("{ShiftDown}")
+				DispTime(keyTime)	; キー変化からの経過時間を表示
+				Continue
+			}
+			Else If (spc || ent)	; 他のシフトを押している時
+			{
+				DispTime(keyTime)	; キー変化からの経過時間を表示
+				Continue
+			}
+			Else
+				nowKey := "sc39 up"	; センターシフト上げ
+		}
+		Else If (nowKey == "LShift up")		; ATOK以外用
 		{
 			sft := 0
 			If (!rsft)	; 右シフトも離されている
@@ -1410,15 +1433,14 @@ Convert()
 			}
 			Else
 				outOfCombDelay := False
-			; 前のキーとは同時押しにならないので出力確定
-			If !(combinableBit & nowBit)
+			; 一つ前に押したキーとは同時押しにならないので出力
+			; 同時押しの判定期限が過ぎたものもここで出力
+			If (!(combinableBit & nowBit) || outOfCombDelay)
 			{
 				OutBuf()
-				If (nowBit && !forceEisuMode)
-				{	; 英数入力かかな入力か再度検出
-					delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
-					If (delay > 0)	; 時間を空けてIME検出へ
-						Sleep, %delay%
+				If (nowBit && !forceEisuMode && lastSendTime + IME_Get_Interval <= QPC())
+				{
+					; 英数入力かかな入力か再度検出
 					imeState := IME_GET()
 					If (imeState == 0)
 						kanaMode := 0
@@ -1426,8 +1448,8 @@ Convert()
 						kanaMode := imeConvMode & 1
 				}
 			}
-			; 前のキーが出力確定してなかったら同グループ優先で検索しない
-			Else If (!outOfCombDelay && _usc)
+			; 前のキーが出力確定していなかったら同グループ優先で検索しない
+			Else If (_usc)
 				lastGroup := 0
 			nBack := 0
 			While (!nkeys)
@@ -1454,7 +1476,7 @@ Convert()
 								enableComb := False
 								Break
 							}
-							Else If ((!lastGroup && _lks < 3 && !outOfCombDelay) || lastGroup == defsGroup[i])
+							Else If ((!lastGroup && _lks < 3) || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
@@ -1489,7 +1511,7 @@ Convert()
 								enableComb := False
 								Break
 							}
-							Else If ((!lastGroup && _lks < 2 && !outOfCombDelay) || lastGroup == defsGroup[i])
+							Else If ((!lastGroup && _lks < 2) || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								If (_usc == 2)
@@ -1913,13 +1935,20 @@ sc29 up::	; (JIS)半角/全角	(US)`
 	Return
 
 ; 左右シフト
+; ATOK
+#If (imeSelect == 1)
+~LShift::
+~LShift up::
+; ATOK以外
+#If (imeSelect != 1)
 LShift::
-RShift::
 +LShift::
-+RShift::
 LShift up::
-RShift up::
 +LShift up::
+#If		; End #If ()
+RShift::
++RShift::
+RShift up::
 +RShift up::
 	Suspend, Permit	; Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
