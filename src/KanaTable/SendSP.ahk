@@ -81,7 +81,7 @@ SendESCx3()
 	{	; 一太郎のメニューを消す
 		If (imeName == "Google")
 			Sleep, 160
-		Else If (imeName == "OldMSIME" || imeName == "MSIME")
+		Else If (imeName == "OldMSIME")
 			Sleep, 240
 		Else If (imeName == "ATOK")
 			Sleep, 260

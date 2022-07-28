@@ -169,6 +169,8 @@ ControlReplace(str)
 }
 
 ; {確定} の後の定義を見て、{確定} だけにするか、{NoIME} を付加するかを返す
+; ATOKでは「日本語入力オフにしたとき入力中の文字列を確定する」に設定した上で、
+; キーカスタマイズで「Shift+Ctrl+無変換」を「日本語入力OFF」に設定する
 ; Google日本語入力では「半角/全角」を押すと入力中のかなが確定するのを利用する
 AnalysisForKakutei(str)
 {
@@ -199,6 +201,8 @@ AnalysisForKakutei(str)
 			 || (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
 			 || strSub = "{NoIME}"	|| strSub = "{UndoIME}"
 			 || strSub = "{IMEOFF}" || strSub = "{IMEON}"
+			 || strSub = "{vkF3}"	|| strSub = "{vkF0}"
+			 || InStr(strSub, "{vkF2")	|| InStr(strSub, "{vkF1")
 			 || strSub == "{全英}"	|| strSub == "{半ｶﾅ}")
 			{
 				; {NoIME} も付加する
@@ -222,7 +226,7 @@ AnalysisForKakutei(str)
 		i++
 	}
 	Return (DetectIME() != "Google" ? "{確定}" : "{NoIME}")
- }
+}
 
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
@@ -259,7 +263,7 @@ Analysis(str)
 				Return ret . SubStr(str, i - strSubLength + 1)
 			Else If (RegExMatch(strSub, "\{直接\}$"))
 			{
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei && (DetectIME() != "Google"))
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -273,7 +277,7 @@ Analysis(str)
 				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127)))
 			{
 				; ASCIIコード以外の文字は IMEをオフにして出力
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei && (DetectIME() != "Google"))
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -282,7 +286,7 @@ Analysis(str)
 			}
 			Else If (strSub = "{NoIME}")
 			{
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei && (DetectIME() != "Google"))
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -330,7 +334,9 @@ Analysis(str)
 				noIME := False
 			}
 			Else If (strSub = "{IMEON}"
-				|| strSub == "{全英}" || strSub == "{半ｶﾅ}")
+				|| strSub = "{vkF3}"		|| strSub = "{vkF0}"
+				|| InStr(strSub, "{vkF2")	|| InStr(strSub, "{vkF1")
+				|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
 			{
 				ret .= strSub
 				noIME := False
@@ -528,8 +534,7 @@ ExistNewMSIME()
 }
 
 ; 使用している IME を調べる。MS-IME は 10秒経過していれば再調査。
-; 戻り値	"MSIME": 新MS-IME登場以前のもの,
-;			"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
+; 戻り値	"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
 ;			"ATOK": ATOK
 DetectIME()
 {
@@ -545,7 +550,7 @@ DetectIME()
 	Else If (imeSelect)
 		nowIME := "Google"
 	Else If (!existNewMSIME)
-		nowIME := "MSIME"
+		nowIME := "OldMSIME"
 	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
 	{
 		lastSearchTime := A_TickCount
@@ -636,31 +641,39 @@ SendEachChar(str, delay:=-2)
 			}
 
 			; 出力するキーを変換
-			Else If (SubStr(strSub, 1, 5) = "{vkF2" || strSub = "{vkF3}")
-			{	; ひらがなキー、半角/全角キー
-				out := strSub
-				postDelay := (noIME || i < strLength ? 30 : 40)
-			}
 			Else If (strSub == "{確定}")
 			{
-				If (lastDelay < IME_Get_Interval)
+;				If (imeName == "OldMSIME" || imeName == "ATOK")
+				If (imeName == "ATOK")
+					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
+				Else
 				{
-					Sleep, % IME_Get_Interval - lastDelay	; 前回の出力から一定時間経ってから IME_GET()
-					lastDelay := IME_Get_Interval
-				}
-				If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
-				{
-					If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
-						; 文字出力から一定時間経っていて、IME窓あり
-						out := "{Enter}"
-					Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
-						; IME窓の検出を当てにできない
-						; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
+					If (lastDelay < IME_Get_Interval)
 					{
-						Send, _
-						Send, {Enter}
-						Sleep, 40	; その他
-						out := "{BS}"
+						Sleep, % IME_Get_Interval - lastDelay	; 前回の出力から一定時間経ってから IME_GET()
+						lastDelay := IME_Get_Interval
+					}
+					If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
+					{
+						If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
+							; 文字出力から一定時間経っていて、IME窓あり
+							out := "{Enter}"
+						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
+							; IME窓の検出を当てにできない
+							; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
+						{
+							Send, _
+							Send, {Enter}
+/*							if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
+							|| process == "firefox.exe")
+								Sleep, 140	; ブラウザ
+							else if (class == "Hidemaru32Class")
+								Sleep, 60
+							else
+*/
+								Sleep, 40	; その他
+							out := "{BS}"
+						}
 					}
 				}
 			}
@@ -677,7 +690,7 @@ SendEachChar(str, delay:=-2)
 					noIME := True
 					imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 					kanaMode := imeConvMode & 1	; 英数入力かかな入力か保存する
-					out := "{vkF3}"	; 半角/全角
+					out := "{vkF3}"		; 半角/全角
 					postDelay := 30
 				}
 			}
@@ -687,17 +700,54 @@ SendEachChar(str, delay:=-2)
 				preDelay := 50
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
-				IME_SET(0)			; IMEオフ
+				IME_SET(0)		; IMEオフ
 				lastDelay := IME_Get_Interval
 			}
 			Else If (strSub = "{IMEON}")
 			{
 				noIME := False
-				IME_SET(1)			; IMEオン
+				IME_SET(1)		; IMEオン
 				lastDelay := IME_Get_Interval
+			}
+			Else If (strSub = "{vkF3}" || strSub = "{vkF0}")	; 半角/全角キー、英数キー
+			{
+				noIME := False
+				out := strSub
+				postDelay := (noIME || i < strLength ? 30 : 40)
+			}
+			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがなキー
+			{
+				noIME := False
+				If (imeName == "Google")
+				{
+					out := strSub
+					postDelay := (noIME || i < strLength ? 30 : 40)
+				}
+				Else
+				{
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(25)	; IME 入力モード	ひらがな
+					lastDelay := IME_Get_Interval
+				}
+			}
+			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナキー
+			{
+				noIME := False
+				If (imeName == "Google")
+				{
+					out := strSub
+					postDelay := (noIME || i < strLength ? 30 : 40)
+				}
+				Else
+				{
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(27)	; IME 入力モード	カタカナ
+					lastDelay := IME_Get_Interval
+				}
 			}
 			Else If (strSub == "{全英}")
 			{
+				noIME := False
 				If (imeName == "Google")
 				{
 					Send, {vkF2}		; ひらがなキー
@@ -706,7 +756,6 @@ SendEachChar(str, delay:=-2)
 				}
 				Else
 				{
-					noIME := False
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(24)	; IME 入力モード	全英数
 					lastDelay := IME_Get_Interval
@@ -714,11 +763,11 @@ SendEachChar(str, delay:=-2)
 			}
 			Else If (strSub == "{半ｶﾅ}")
 			{
+				noIME := False
 				If (imeName == "Google")
 					TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
 				Else
 				{
-					noIME := False
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 					lastDelay := IME_Get_Interval
@@ -766,7 +815,7 @@ SendEachChar(str, delay:=-2)
 			Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 			{
 				out := strSub
-				If (imeName != "OldMSIME" && imeName != "MSIME" && postDelay < 10
+				If (imeName != "OldMSIME" && postDelay < 10
 				 && (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
 				 || (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127)))
 					postDelay := 10	; ASCIIコードでないとき
@@ -1165,13 +1214,6 @@ Convert()
 			OutBuf()
 			nowKey := "sc39"	; センターシフト押す
 		}
-		Else If (nowKey == "LShift")	; ATOK以外用
-		{
-			sft := 1
-			OutBuf()
-			SendBlind("{ShiftDown}")
-			nowKey := "sc39"	; センターシフト押す
-		}
 		Else If (nowKey == "RShift")
 		{
 			rsft := 1
@@ -1189,19 +1231,6 @@ Convert()
 				Continue
 			}
 			Else If (spc || ent)	; 他のシフトを押している時
-			{
-				DispTime(keyTime)	; キー変化からの経過時間を表示
-				Continue
-			}
-			Else
-				nowKey := "sc39 up"	; センターシフト上げ
-		}
-		Else If (nowKey == "LShift up")		; ATOK以外用
-		{
-			sft := 0
-			If (!rsft)	; 右シフトも離されている
-				SendBlind("{ShiftUp}")
-			If (rsft || spc || ent)	; 他のシフトを押している時
 			{
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
@@ -1935,22 +1964,13 @@ sc29 up::	; (JIS)半角/全角	(US)`
 	Return
 
 ; 左右シフト
-; ATOK
-#If (imeSelect == 1)
 ~LShift::
 ~LShift up::
-; ATOK以外
-#If (imeSelect != 1)
-LShift::
-+LShift::
-LShift up::
-+LShift up::
-#If		; End #If ()
 RShift::
 +RShift::
 RShift up::
 +RShift up::
-	Suspend, Permit	; Suspendの対象でないことを示す
+	Suspend, Permit	; 右シフトと ATOK の左シフトが Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
 		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)

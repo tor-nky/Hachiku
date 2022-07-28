@@ -806,3 +806,13 @@ KoyuRegist()
 sc79::Send, {sc79 9}
 +sc79::Send, +{sc79 9}
 #If		; End #If ()
+
+; Analisis() のテスト用
+/*
+F1::
+	out := Analysis("^x「^v」{確定}{C_Clr}")
+	If (!vertical)
+		out := ConvTateYoko(out)	; 縦横変換
+	SendRaw, %out%
+	Return
+*/
