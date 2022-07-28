@@ -169,8 +169,6 @@ ControlReplace(str)
 }
 
 ; {確定} の後の定義を見て、{確定} だけにするか、{NoIME} を付加するかを返す
-; ATOKでは「日本語入力オフにしたとき入力中の文字列を確定する」に設定した上で、
-; キーカスタマイズで「Shift+Ctrl+無変換」を「日本語入力OFF」に設定する
 ; Google日本語入力では「半角/全角」を押すと入力中のかなが確定するのを利用する
 AnalysisForKakutei(str)
 {
@@ -263,7 +261,7 @@ Analysis(str)
 				Return ret . SubStr(str, i - strSubLength + 1)
 			Else If (RegExMatch(strSub, "\{直接\}$"))
 			{
-				If (!kakutei && (DetectIME() != "Google"))
+				If (!kakutei && DetectIME() != "Google")
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -277,7 +275,7 @@ Analysis(str)
 				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127)))
 			{
 				; ASCIIコード以外の文字は IMEをオフにして出力
-				If (!kakutei && (DetectIME() != "Google"))
+				If (!kakutei && DetectIME() != "Google")
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -286,7 +284,7 @@ Analysis(str)
 			}
 			Else If (strSub = "{NoIME}")
 			{
-				If (!kakutei && (DetectIME() != "Google"))
+				If (!kakutei && DetectIME() != "Google")
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -1970,7 +1968,7 @@ RShift::
 +RShift::
 RShift up::
 +RShift up::
-	Suspend, Permit	; 右シフトと ATOK の左シフトが Suspendの対象でないことを示す
+	Suspend, Permit	; Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
 		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)

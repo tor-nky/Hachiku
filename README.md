@@ -1,4 +1,4 @@
-﻿# Hachiku - Windows で薙刀式を使うスクリプト
+﻿﻿# Hachiku - Windows で薙刀式を使うスクリプト
 [【薙刀式】v15候補](http://oookaworks.seesaa.net/article/489739560.html#gsc.tab=0) 2022年7月14日付
 薙刀式v15(仮)B1 を Autohotkey に実装しました。
 

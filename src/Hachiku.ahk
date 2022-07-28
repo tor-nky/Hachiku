@@ -42,6 +42,6 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
 ;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220703.ahk	; 薙刀式15（仮）安定版
-;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220612.ahk	; 薙刀式v15(仮)B1
+#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220612.ahk	; 薙刀式v15(仮)B1
 
-#Include %A_ScriptDir%/KanaTable/Naginata_tor.ahk
+;#Include %A_ScriptDir%/KanaTable/Naginata_tor.ahk
