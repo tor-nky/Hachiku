@@ -169,14 +169,13 @@ ControlReplace(str)
 }
 
 ; {確定} の後の定義を見て、{確定} だけにするか、{NoIME} を付加するかを返す
-; Google日本語入力では「半角/全角」を押すと入力中のかなが確定するのを利用する
 AnalysisForKakutei(str)
 {
 ;	local strLength, strSub, c
 ;		, i, bracket
 
 	If (str == "")
-		Return (DetectIME() != "Google" ? "{確定}" : "{NoIME}")
+		Return "{確定}"
 
 	strSub := ""
 	bracket := 0
@@ -204,7 +203,7 @@ AnalysisForKakutei(str)
 			 || strSub == "{全英}"	|| strSub == "{半ｶﾅ}")
 			{
 				; {NoIME} も付加する
-				Return (DetectIME() != "Google" ? "{確定}{NoIME}" : "{NoIME}")
+				Return "{確定}{NoIME}"
 			}
 			; 削除系、移動系、改行、カット、ペースト以外の定義が来たら「かな」入力とみなし
 			Else If !(InStr(strSub, "{BS}")		|| InStr(strSub, "{Del}")
@@ -223,7 +222,7 @@ AnalysisForKakutei(str)
 		}
 		i++
 	}
-	Return (DetectIME() != "Google" ? "{確定}" : "{NoIME}")
+	Return "{確定}"
 }
 
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
@@ -261,7 +260,7 @@ Analysis(str)
 				Return ret . SubStr(str, i - strSubLength + 1)
 			Else If (RegExMatch(strSub, "\{直接\}$"))
 			{
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei)
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -275,7 +274,7 @@ Analysis(str)
 				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127)))
 			{
 				; ASCIIコード以外の文字は IMEをオフにして出力
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei)
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -284,7 +283,7 @@ Analysis(str)
 			}
 			Else If (strSub = "{NoIME}")
 			{
-				If (!kakutei && DetectIME() != "Google")
+				If (!kakutei)
 					ret .= "{確定}"
 				If (!noIME)
 					ret .= "{NoIME}"
@@ -533,6 +532,7 @@ ExistNewMSIME()
 
 ; 使用している IME を調べる。MS-IME は 10秒経過していれば再調査。
 ; 戻り値	"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
+;			"CustomMSIME": 以前のバージョンのMS-IMEをキー設定して使用中
 ;			"ATOK": ATOK
 DetectIME()
 {
@@ -541,14 +541,21 @@ DetectIME()
 		, imeName := "", lastSearchTime := 0
 ;	local value, nowIME
 
-	nowIME := imeName
-
 	If (imeSelect == 1)
 		nowIME := "ATOK"
 	Else If (imeSelect)
 		nowIME := "Google"
 	Else If (!existNewMSIME)
+	{
 		nowIME := "OldMSIME"
+		If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
+		{
+			lastSearchTime := A_TickCount
+			RegRead, value, HKEY_CURRENT_USER, SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME, keystyle
+			if (value == "Custom")
+				nowIME := "CustomMSIME"
+		}
+	}
 	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
 	{
 		lastSearchTime := A_TickCount
@@ -558,7 +565,15 @@ DetectIME()
 			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
 			, NoTsf3Override2
 		nowIME := (ErrorLevel == 1 || !value ? "NewMSIME" : "OldMSIME")
+		if (nowIME == "OldMSIME")
+		{
+			RegRead, value, HKEY_CURRENT_USER, SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME, keystyle
+			if (value == "Custom")
+				nowIME := "CustomMSIME"
+		}
 	}
+	Else
+		Return imeName
 
 	If (nowIME != imeName)
 		goodHwnd := badHwnd := ""
@@ -585,11 +600,11 @@ SendEachChar(str, delay:=-2)
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
-	imeName := DetectIME()
 	WinGet, hwnd, ID, A
 	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
+	imeName := DetectIME()
 
 	; ディレイの初期値
 	If (delay < -1)
@@ -641,8 +656,7 @@ SendEachChar(str, delay:=-2)
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
-;				If (imeName == "OldMSIME" || imeName == "ATOK")
-				If (imeName == "ATOK")
+				If (imeName != "OldMSIME" && imeName != "NewMSIME")
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
 				Else
 				{
@@ -711,7 +725,7 @@ SendEachChar(str, delay:=-2)
 			{
 				noIME := False
 				out := strSub
-				postDelay := (noIME || i < strLength ? 30 : 40)
+				postDelay := (i < strLength ? 30 : 40)
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがなキー
 			{
@@ -719,7 +733,7 @@ SendEachChar(str, delay:=-2)
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := (noIME || i < strLength ? 30 : 40)
+					postDelay := (i < strLength ? 30 : 40)
 				}
 				Else
 				{
@@ -734,7 +748,7 @@ SendEachChar(str, delay:=-2)
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := (noIME || i < strLength ? 30 : 40)
+					postDelay := (i < strLength ? 30 : 40)
 				}
 				Else
 				{
@@ -813,7 +827,7 @@ SendEachChar(str, delay:=-2)
 			Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 			{
 				out := strSub
-				If (imeName != "OldMSIME" && postDelay < 10
+				If (imeName != "OldMSIME" && imeName != "CustomMSIME" && postDelay < 10
 				 && (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
 				 || (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127)))
 					postDelay := 10	; ASCIIコードでないとき
@@ -833,7 +847,8 @@ SendEachChar(str, delay:=-2)
 					If (flag && (out = "{vk20}" || out = "{Space down}"))
 					{
 						If (i >= strLength)
-							SetTimer, JudgeHwnd, % (imeName == "Google" ? -30 : (imeName == "OldMSIME" ? -100 : -70))
+							SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
+								: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
 						flag := False
 					}
 					Else If ((strSubLength == 1 && Asc(strSub) >= 33)
@@ -1006,7 +1021,7 @@ OutBuf(i:=2)
 }
 
 ; 仮出力バッファを最後から backCount 回分を削除して、Str1 と outCtrlNos を保存
-StoreBuf(backCount, str, ctrlNo:=0)
+StoreBuf(str, backCount:=0, ctrlNo:=0)
 {
 	global outStrsLength, outStrs, outCtrlNos
 
@@ -1255,14 +1270,14 @@ Convert()
 			If ((!imeConvMode && DetectIME() != "NewMSIME")	; Firefox と Thunderbird のスクロール対応(新MS-IMEは除外)
 				|| (!eisuSandS && !kanaMode))	; SandSなしの設定で英数入力時
 			{
-				StoreBuf(0, "{Space}", R)
+				StoreBuf("{Space}", 0, R)
 				OutBuf()
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
 			}
 			Else If (ent)	; 他のシフトを押している時
 			{
-				StoreBuf(0, "+{Space}", R)
+				StoreBuf("+{Space}", 0, R)
 				OutBuf()
 				If (ent == 1)
 					ent := 2	; 単独エンターではない
@@ -1275,7 +1290,7 @@ Convert()
 				Else
 				{
 					spc := 3	; 空白をリピート中
-					StoreBuf(0, "{Space}", R)
+					StoreBuf("{Space}", 0, R)
 					OutBuf()
 				}
 				If (ent == 1)
@@ -1434,7 +1449,7 @@ Convert()
 		Else If (repeatBit && nowBit == repeatBit && lastToBuf != "")
 		{	; 前回の文字列を出力
 			If (!outStrsLength)
-				StoreBuf(0, lastToBuf, ctrlNo)
+				StoreBuf(lastToBuf, 0, ctrlNo)
 			OutBuf()
 			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
@@ -1626,7 +1641,7 @@ Convert()
 			Else	; keyCount < 0
 				combinableBit := 0
 			; 仮出力バッファに入れる
-			StoreBuf(backCount, toBuf, ctrlNo)
+			StoreBuf(toBuf, backCount, ctrlNo)
 
 			; 次回の検索用に変数を更新
 			lastToBuf := toBuf		; 今回の文字列を保存

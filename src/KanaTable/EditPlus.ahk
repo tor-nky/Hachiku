@@ -509,26 +509,27 @@ sc3A::	; 英数キー単独で CapsLock をオンオフする
 sc7B::		; 無変換
 sc71 up::	; (Apple Pro Keyboard)英数	(旧方式)
 vk1A::		; (Apple Pro Keyboard)英数
-	Send, {vkF2}	; ひらがな(IMEオンを兼ねる)
-	Send, {vkF3}	; 半角/全角キー
+	StoreBuf("{vkF2}{vkF3}")	; ひらがな(IMEオンを兼ねる) → 半角/全角
+	OutBuf()
 	Return
 +sc7B::	; Shift + 無変換
 +sc71 up:: ; (Apple Pro Keyboard)Shift + 英数	(旧方式)
 +vk1A::	; (Apple Pro Keyboard)Shift + 英数
-	IME_SET(1)			; IMEオン
-	IME_SetConvMode(24)	; IME 入力モード	全英数
+	StoreBuf("{全英}")
+	OutBuf()
 	Return
 sc70::		; ひらがな
 sc72 up::	; (Apple Pro Keyboard)かな	(旧方式)
 vk16::		; (Apple Pro Keyboard)かな
 	if (A_PriorHotKey = A_ThisHotKey && A_TimeSincePriorHotkey < 200)
-		Send, {vk1C}	; 2連打で 変換キー 入力
+		StoreBuf("{vk1C}")		; 2連打で 変換キー 入力
 	else
-		Send, {vkF2 2}	; ひらがな(IMEオンを兼ねる)
+		StoreBuf("{vkF2}")		; ひらがな(IMEオンを兼ねる)
+	OutBuf()
 	Return
 +sc70::	; Shift + ひらがな
 +sc72 up:: ; (Apple Pro Keyboard)Shift + かな	(旧方式)
 +vk16::	; (Apple Pro Keyboard)Shift + かな
-	Send, {vkF2 2}	; ひらがな(IMEオンを兼ねる)
-	Send, {vkF1}	; カタカナ
+	StoreBuf("{vkF1}")			; カタカナ
+	OutBuf()
 	Return
