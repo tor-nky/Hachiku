@@ -524,12 +524,12 @@ vk16::		; (Apple Pro Keyboard)かな
 	if (A_PriorHotKey = A_ThisHotKey && A_TimeSincePriorHotkey < 200)
 		StoreBuf("{vk1C}")		; 2連打で 変換キー 入力
 	else
-		StoreBuf("{vkF2}")		; ひらがな(IMEオンを兼ねる)
+		StoreBuf("{vkF2 2}")	; ひらがな(IMEオンを兼ねる)
 	OutBuf()
 	Return
 +sc70::	; Shift + ひらがな
 +sc72 up:: ; (Apple Pro Keyboard)Shift + かな	(旧方式)
 +vk16::	; (Apple Pro Keyboard)Shift + かな
-	StoreBuf("{vkF1}")			; カタカナ
+	StoreBuf("{vkF2 2}{vkF1}")	; ひらがな(IMEオンを兼ねる) → カタカナ
 	OutBuf()
 	Return
