@@ -22,7 +22,7 @@
 ; ----------------------------------------------------------------------
 
 ; キーボード初期配列
-ReadStandardLayout()
+ReadStandardLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk
 

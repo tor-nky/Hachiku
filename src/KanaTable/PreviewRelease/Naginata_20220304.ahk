@@ -49,7 +49,7 @@
 #Include %A_ScriptDir%/KanaTable/SendSP.ahk
 
 ; かな配列読み込み
-ReadLayout()
+ReadLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
@@ -59,7 +59,7 @@ ReadLayout()
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
 	; -----------------------------------------
-	; 別名登録
+	; 別名登録	Int64型
 	; -----------------------------------------
 	AL_小							:= KC_Q
 	AL_き	:= AL_ぬ				:= KC_W
@@ -557,7 +557,7 @@ kanaGroup := 0	; 0 はグループなし
 		SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
 	}
 
-	If (USLike > 0)
+	If (usLike > 0)
 		USLikeLayout()	; USキーボード風の配列へ
 
 	KoyuReadAndRegist(koyuNumber)	; 固有名詞ショートカットの読み込み・登録
@@ -566,7 +566,7 @@ kanaGroup := 0	; 0 はグループなし
 }
 
 ; USキーボード風の配列へ
-USLikeLayout()
+USLikeLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 
@@ -630,7 +630,7 @@ kanaGroup := 0	; 0 はグループなし
 }
 
 ; 固有名詞ショートカットの登録
-KoyuRegist()
+KoyuRegist()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk

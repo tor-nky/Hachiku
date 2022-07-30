@@ -35,7 +35,7 @@ KeyTimer:
 JudgeHwnd:
 	; 原理は、変換1回目でIME窓が検出できれば良しというもの
 	SetTimer, JudgeHwnd, Off
-	WinGet, hwnd, ID, A
+	WinGet, hwnd, ID, A			; hwnd: Int型
 	If (IME_GET())
 	{
 		If (IME_GetConverting())
@@ -56,18 +56,18 @@ RemoveToolTip:
 
 ; タイマー関数
 ; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
-QPCInit() {
-	DllCall("QueryPerformanceFrequency", "Int64P", freq)
+QPCInit() {	; () -> Int64
+	DllCall("QueryPerformanceFrequency", "Int64P", freq)	; freq: Int64型
 	Return freq
 }
-QPC() {	; ミリ秒単位
-	static coefficient := 1000.0 / QPCInit()
-	DllCall("QueryPerformanceCounter", "Int64P", count)
+QPC() {	; () -> Double	ミリ秒単位
+	static coefficient := 1000.0 / QPCInit()			; Double型
+	DllCall("QueryPerformanceCounter", "Int64P", count)	; count: Int64型
 	Return count * coefficient
 }
 
 ; str をツールチップに表示し、time ミリ秒後に消す(デバッグ用)
-ToolTip2(str, time:=0)
+ToolTip2(str, time:=0)	; (str: String, time: Int) -> Void
 {
 	ToolTip, %str%
 	If (time != 0)
@@ -75,18 +75,18 @@ ToolTip2(str, time:=0)
 }
 
 ; 配列定義をすべて消去する
-DeleteDefs()
+DeleteDefs()	; () -> Void
 {
-	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlNo
+	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, defBegin, defEnd
 
 	; かな配列の入れ物
 	defsKey := []		; キービットの集合
-	defsGroup := []		; 定義のグループ番号 ※0はグループなし
+	defsGroup := []		; 定義のグループ名 ※0または空はグループなし
 	defsKanaMode := []	; 0: 英数入力用, 1: かな入力用
 	defsTateStr := []	; 縦書き用定義
 	defsYokoStr := []	; 横書き用定義
-	defsCtrlNo := []	; 0: なし, 1: リピートできる, 2以上: 特別出力(かな定義ファイルで操作)
+	defsCtrlName := []	; 0または空: なし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
 	defsCombinableBit := []	; 0: 出力確定しない,
 							; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
 	defBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
@@ -94,10 +94,10 @@ DeleteDefs()
 }
 
 ; 何キー同時か数える
-CountBit(keyComb)
+CountBit(keyComb)	; (keyComb: Int64) -> Int
 {
 	global KC_SPC
-;	local count, i
+;	local count, i	; Int型
 
 	; スペースキーは数えない
 	keyComb &= KC_SPC ^ (-1)
@@ -115,7 +115,7 @@ CountBit(keyComb)
 }
 
 ; 縦書き用定義から横書き用に変換
-ConvTateYoko(str)
+ConvTateYoko(str)	; (str: String) -> String
 {
 	StringReplace, str, str, {Up,		{Temp,	A
 	StringReplace, str, str, {Right,	{Up,	A
@@ -127,7 +127,7 @@ ConvTateYoko(str)
 }
 
 ; 機能置き換え処理 - DvorakJ との互換用
-ControlReplace(str)
+ControlReplace(str)	; (str: String) -> String
 {
 	StringReplace, str, str, {→,			{Right,		A
 	StringReplace, str, str, {->,			{Right,		A
@@ -169,7 +169,7 @@ ControlReplace(str)
 }
 
 ; {確定} の後の定義を見て、{確定} だけにするか、{NoIME} を付加するかを返す
-AnalysisForKakutei(str)
+AnalysisForKakutei(str)	; (str: String) -> String
 {
 ;	local strLength, strSub, c
 ;		, i, bracket
@@ -227,7 +227,7 @@ AnalysisForKakutei(str)
 
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
-Analysis(str)
+Analysis(str)	; (str: String) -> String
 {
 ;	local strLength, strSub, strSubLength, ret, c
 ;		, i, bracket, kakutei, noIME
@@ -367,16 +367,16 @@ Analysis(str)
 ; keyComb	キーをビットに置き換えたものの集合
 ; convYoko	False: tate - 縦書き定義, yoko - 横書き定義
 ;			True:  tate - 縦書き定義, yoko - tate から変換必要
-; ctrlNo	0: リピートなし, R: リピートあり, それ以外: かな配列ごとの特殊コード
-SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlNo)
+; ctrlName	0または空: なし, R: リピートあり, 他: かな配列ごとの特殊コード
+SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, convYoko: Bool, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlNo
+	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, defBegin, defEnd
 		, kanaGroup, R
-;	local keyCount	; 何キー同時押しか
-;		, i, imax	; カウンタ用
+;	local keyCount	; Int型	何キー同時押しか
+;		, i, imax	; Int型	カウンタ用
 
-	If (!ctrlNo || ctrlNo == R)
+	If (!ctrlName || ctrlName == R)
 	{
 		; 機能を置き換え、ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 		; "{直接}"は"{Raw}"に書き換え
@@ -404,7 +404,7 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlNo)
 			defsKanaMode.RemoveAt(i)
 			defsTateStr.RemoveAt(i)
 			defsYokoStr.RemoveAt(i)
-			defsCtrlNo.RemoveAt(i)
+			defsCtrlName.RemoveAt(i)
 
 			defEnd[1]--
 			If (keyCount > 1)
@@ -415,7 +415,7 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlNo)
 		}
 		i++
 	}
-	If ((ctrlNo && ctrlNo != R) || tate != "" || yoko != "")
+	If ((!ctrlName && ctrlName != R) || tate != "" || yoko != "")
 	{
 		; 定義あり
 		i := defEnd[keyCount]
@@ -424,7 +424,7 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlNo)
 		defsKanaMode.InsertAt(i, kanaMode)
 		defsTateStr.InsertAt(i, tate)
 		defsYokoStr.InsertAt(i, yoko)
-		defsCtrlNo.InsertAt(i, ctrlNo)
+		defsCtrlName.InsertAt(i, ctrlName)
 
 		defEnd[1]++
 		If (keyCount > 1)
@@ -436,46 +436,46 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlNo)
 }
 
 ; かな定義登録
-SetKana(keyComb, str, ctrlNo:=0)
+SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
 	; 横書き用は自動変換
-	SetDefinition(1, keyComb, True, str, "", ctrlNo)
+	SetDefinition(1, keyComb, True, str, "", ctrlName)
 	Return
 }
-SetKana2(keyComb, tate, yoko, ctrlNo:=0)
+SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	SetDefinition(1, keyComb, False, tate, yoko, ctrlNo)
+	SetDefinition(1, keyComb, False, tate, yoko, ctrlName)
 	Return
 }
 ; 英数定義登録
-SetEisu(keyComb, str, ctrlNo:=0)
+SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
 	; 横書き用は自動変換
 	global eisuSandS, KC_SPC
 	; 英数入力時のSandSが無効なら定義を削除する
 	If (!eisuSandS && (keyComb & KC_SPC))
 		str := ""
-	SetDefinition(0, keyComb, True, str, "", ctrlNo)
+	SetDefinition(0, keyComb, True, str, "", ctrlName)
 	Return
 }
-SetEisu2(keyComb, tate, yoko, ctrlNo:=0)
+SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
 	global eisuSandS, KC_SPC
 	; 英数入力時のSandSが無効なら定義を削除する
 	If (!eisuSandS && (keyComb & KC_SPC))
 		tate := yoko := ""
-	SetDefinition(0, keyComb, False, tate, yoko, ctrlNo)
+	SetDefinition(0, keyComb, False, tate, yoko, ctrlName)
 	Return
 }
 
 ; 一緒に押すと同時押しになるキーを探す
-FindCombinableBit(searchBit, kanaMode, keyCount, group:=0)
+FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64, kanaMode: Bool, keyCount: Int, group: String) -> Int64
 {
 	global defsKey, defsKanaMode, defsGroup, defBegin, defEnd
 		, KC_SPC
-;	local j, jmax	; カウンタ用
-;		, bit
-;		, defKeyCopy
+;	local j, jmax		; Int型		カウンタ用
+;		, bit			; Int64型
+;		, defKeyCopy	; Int64型
 
 	bit := (keyCount > 1 ? 0 : KC_SPC)
 	j := defBegin[3]
@@ -495,11 +495,11 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:=0)
 }
 
 ; 一緒に押すと同時押しになるキーを defsCombinableBit[] に記録
-SettingLayout()
+SettingLayout()	; () -> Void
 {
 	global defsKey, defsKanaMode, defsCombinableBit, defBegin, defEnd
-;	local i, imax	; カウンタ用
-;		, searchBit
+;	local i, imax	; Int型	カウンタ用
+;		, searchBit	; Int64型
 
 	; 出力確定するか検索
 	i := defBegin[3]
@@ -513,9 +513,9 @@ SettingLayout()
 	Return
 }
 
-ExistNewMSIME()
+ExistNewMSIME()	; () -> Bool
 {
-;	local build
+;	local build	; Int型
 
 	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
 	If A_OSVersion in WIN_8.1,WIN_8,WIN_7,WIN_VISTA,WIN_2003,WIN_XP,WIN_2000	; Note: No spaces around commas.
@@ -534,12 +534,12 @@ ExistNewMSIME()
 ; 戻り値	"NewMSIME":	新MS-IME, "OldMSIME": 以前のバージョンのMS-IMEを選んでいる
 ;			"CustomMSIME": 以前のバージョンのMS-IMEをキー設定して使用中
 ;			"ATOK": ATOK
-DetectIME()
+DetectIME()	; () -> String
 {
 	global imeSelect, goodHwnd, badHwnd
 	static existNewMSIME := existNewMSIME()
 		, imeName := "", lastSearchTime := 0
-;	local value, nowIME
+;	local value, nowIME	; String型
 
 	If (imeSelect == 1)
 		nowIME := "ATOK"
@@ -576,27 +576,31 @@ DetectIME()
 		Return imeName
 
 	If (nowIME != imeName)
-		goodHwnd := badHwnd := ""
+		goodHwnd := badHwnd := 0
 	Return (imeName := nowIME)
 }
 
 ; 文字列 str を適宜スリープを入れながら出力する
 ;	delay:	-1未満	Sleep をなるべく入れない
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
-SendEachChar(str, delay:=-2)
+SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
 	global goodHwnd, badHwnd, lastSendTime, IME_Get_Interval, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
-;	local hwnd, title, class, process
-;		, strLength				; str の長さ
-;		, strSub, strSubLength	; 細切れにした文字列と、その長さを入れる変数
-;		, out
-;		, i, c, bracket
-;		, noIME, imeConvMode	; IME入力モードの保存、復元に関するフラグと変数
-;		, preDelay, postDelay	; 出力前後のディレイの値
-;		, lastDelay				; 前回出力時のディレイの値
+;	local hwnd					; Int型
+;		, title, class, process	; String型
+;		, strLength				; Int型		str の長さ
+;		, strSub				; String型	細切れにした文字列
+;		, strSubLength			; Int型 	と、その長さを入れる変数
+;		, out					; String型
+;		, i, bracket			; Int型
+;		, c						; String型
+;		, noIME					; Bool型	IME入力モードの保存、復元に関するフラグ
+;		, imeConvMode			; Int型		と変数
+;		, preDelay, postDelay	; Int型		出力前後のディレイの値
+;		, lastDelay				; Int型		前回出力時のディレイの値
 ;		, clipSaved
-;		, imeName
+;		, imeName				; String型
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
@@ -909,7 +913,7 @@ SendEachChar(str, delay:=-2)
 	Return
 }
 
-SendBlind(str)
+SendBlind(str)	; (str: String) -> Void
 {
 	global lastSendTime
 
@@ -918,7 +922,7 @@ SendBlind(str)
 }
 
 ; 押し下げを出力中のキーを上げ、別のに入れ替え
-SendKeyUp(str:="")
+SendKeyUp(str:="")	; (str: String) -> Void
 {
 	global restStr
 
@@ -941,7 +945,7 @@ SendKeyUp(str:="")
 ; キーの上げ下げを分離
 ;	返り値: 下げるキー
 ;	restStr: 後で上げるキー
-SplitKeyUpDown(str)
+SplitKeyUpDown(str)	; (str: String) -> String
 {
 	global restStr	; まだ上げていないキー
 	static keyDowns := Object("{Space}", "{Space down}"
@@ -950,7 +954,9 @@ SplitKeyUpDown(str)
 		, keyUps := Object("{Space}", "{Space up}"
 ;			, "{Home}", "{Home up}", "{End}", "{End up}", "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}"
 			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}")
-;	local ret, keyDown, keyUp
+								; keyDowns: [String : String]型定数
+								; keyUps: [String : String]型定数
+;	local ret, keyDown, keyUp	; String型
 
 	If (Asc(str) == 43)	; "+" から始まる
 	{
@@ -986,28 +992,33 @@ SplitKeyUpDown(str)
 
 ; 仮出力バッファの先頭から i 個出力する
 ; i の指定がないときは、全部出力する
-OutBuf(i:=2)
+OutBuf(i:=2)	; (i: Int) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNos, R, lastSendTime
-;	local out, ctrlNo
+;	local out		; String型
+;		, ctrlName	; String型
 
 	While (i > 0 && outStrsLength > 0)
 	{
 		out := outStrs[1]
-		ctrlNo := outCtrlNos[1]
-		If (!ctrlNo || ctrlNo == R)
-		{
-			If (ctrlNo == R)	; リピート可能
-				out := SplitKeyUpDown(out)	; キーの上げ下げを分離
-			Else
-				SendKeyUp()		; 押し下げを出力中のキーを上げる
+		ctrlName := outCtrlNos[1]
 
+		If (!ctrlName)
+		{
+			; リピートなし
+			SendKeyUp()		; 押し下げを出力中のキーを上げる
+			SendEachChar(out)
+		}
+		Else If (ctrlName == R)
+		{
+			; リピート可能
+			out := SplitKeyUpDown(out)	; キーの上げ下げを分離
 			SendEachChar(out)
 		}
 		Else
 		{
 			SendKeyUp()				; 押し下げを出力中のキーを上げる
-			SendSP(out, ctrlNo)		; 特別出力(かな定義ファイルで操作)
+			SendSP(out, ctrlName)	; 特別出力(かな定義ファイルで操作)
 			lastSendTime := QPC()	; 最後に出力した時間を記録
 		}
 
@@ -1021,7 +1032,7 @@ OutBuf(i:=2)
 }
 
 ; 仮出力バッファを最後から backCount 回分を削除して、Str1 と outCtrlNos を保存
-StoreBuf(str, backCount:=0, ctrlNo:=0)
+StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNos
 
@@ -1035,25 +1046,25 @@ StoreBuf(str, backCount:=0, ctrlNo:=0)
 		OutBuf(1)
 	outStrsLength++
 	outStrs[outStrsLength] := str
-	outCtrlNos[outStrsLength] := ctrlNo
+	outCtrlNos[outStrsLength] := ctrlName
 	DispStr()	; 表示待ち文字列表示
 	Return
 }
 
 ; 縦書き・横書き切り替え
-ChangeVertical(number)
+ChangeVertical(mode)	; (mode: Bool) -> Void
 {
 	global iniFilePath, vertical
 
 	static icon_H_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
-					. Path_RemoveExtension(A_ScriptName) . "_H.ico"
+					. Path_RemoveExtension(A_ScriptName) . "_H.ico"	; String型
 		, icon_V_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
-					. Path_RemoveExtension(A_ScriptName) . "_V.ico"
+					. Path_RemoveExtension(A_ScriptName) . "_V.ico"	; String型
 
 	; 設定ファイル書き込み
-	If (vertical != number)
+	If (vertical != mode)
 	{
-		vertical := number
+		vertical := mode
 		IniWrite, %vertical%, %iniFilePath%, Naginata, vertical
 	}
 
@@ -1077,7 +1088,7 @@ ChangeVertical(number)
 }
 
 ; 出力する文字列を選択
-SelectStr(i)
+SelectStr(i)	; (i: Int) -> String
 {
 	global vertical, defsTateStr, defsYokoStr
 
@@ -1085,10 +1096,10 @@ SelectStr(i)
 }
 
 ; timeA からの時間を表示[ミリ秒単位]
-DispTime(timeA, str:="")
+DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 {
 	global testMode
-;	local timeAtoB
+;	local timeAtoB	; Double型
 
 	If (testMode == 1)
 	{
@@ -1099,10 +1110,10 @@ DispTime(timeA, str:="")
 }
 
 ; 表示待ち文字列表示
-DispStr()
+DispStr()	; () -> Void
 {
 	global testMode, outStrsLength, outStrs
-;	local std
+;	local str	; String型
 
 	If (testMode == 2)
 	{
@@ -1120,51 +1131,53 @@ DispStr()
 }
 
 ; 変換、出力
-Convert()
+Convert()	; () -> Void
 {
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
-		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlNo, defBegin, defEnd
+		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName, defBegin, defEnd
 		, outStrsLength, lastSendTime, IME_Get_Interval, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
-	static convRest	:= 0	; 入力バッファに積んだ数/多重起動防止フラグ
-		, nextKey	:= ""	; 次回送りのキー入力
-		, realBit	:= 0	; 今押している全部のキービットの集合
-		, lastBit	:= 0	; 前回のキービット
-		, last2Bit	:= 0	; 前々回のキービット
-		, reuseBit	:= 0	; 復活したキービット
-		, lastKeyTime := 0	; 有効なキーを押した時間
-		, timeLimit := 0.0	; タイマーを止めたい時間
-		, toBuf		:= ""	; 出力バッファに送る文字列
-		, lastToBuf	:= ""	; 前回、出力バッファに送った文字列(リピート、後置シフト用)
-		, lastKeyCount := 0	; 前回、何キー同時押しだったか？
-		, lastGroup	:= 0	; 前回、何グループだったか？ 0はグループなし
-		, repeatBit	:= 0	; リピート中のキーのビット
-		, ctrlNo	:= 0	; 0: リピートなし, R: リピートあり, それ以外: かな配列ごとの特殊コード
-		; シフト用キーの状態 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
-		, spc		:= 0	; スペースキー
-		, sft		:= 0	; 左シフト
-		, rsft		:= 0	; 右シフト
-		, ent		:= 0	; エンター
-		, combinableBit := -1 ; 押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
-;	local keyTime	; キーを押した時間
-;		, forceEisuMode
-;		, imeState, imeConvMode
-;		, nowKey, nowKeyLength
-;		, term		; 入力の末端2文字
-;		, keyCount	; 今回は何キー同時押しか
-;		, nowBit	; 今回のキービット
-;		, bitMask
-;		, backCount
-;		, searchBit	; いま検索しようとしているキーの集合
-;		, shiftStyle
-;		, i, imax	; カウンタ用
-;		, defKeyCopy
-;		, outOfCombDelay	; 同時押しの判定期限が来たか
-;		, enableComb
-;		, interval
+	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
+		, nextKey	:= ""	; String型	次回送りのキー入力
+		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
+		, lastBit	:= 0	; Int64型	前回のキービット
+		, last2Bit	:= 0	; Int64型	前々回のキービット
+		, reuseBit	:= 0	; Int64型	復活したキービット
+		, lastKeyTime := 0	; Double型	有効なキーを押した時間
+		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
+		, toBuf		:= ""	; String型	出力バッファに送る文字列
+		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
+		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
+		, lastGroup	:= 0	; String型	前回、何グループだったか？ 0または空はグループなし
+		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
+		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
+		; シフト用キーの状態
+		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
+		, sft		:= 0	; Bool型	左シフト
+		, rsft		:= 0	; Bool型	右シフト
+		, ent		:= 0	; Bool型	エンター
+		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
+;	local keyTime			; Double型	キーを押した時間
+;		, forceEisuMode		; Bool型
+;		, imeState			; Bool型
+;		, imeConvMode		; Int型
+;		, nowKey			; String型
+;		, nowKeyLength		; Int型
+;		, term				; String型	入力の末端2文字
+;		, keyCount			; Int型		今回は何キー同時押しか
+;		, nowBit			; Int64型	今回のキービット
+;		, bitMask			; Int64型
+;		, backCount			; Int型
+;		, searchBit			; Int64型	いま検索しようとしているキーの集合
+;		, shiftStyle		; Int型
+;		, i, imax			; Int型		カウンタ用
+;		, defKeyCopy		; Int64型
+;		, outOfCombDelay	; Bool型	IME同時押しの判定期限が来たか
+;		, enableComb		; Bool型
+;		, interval			; Double型
 
 	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
 	If (convRest || nextKey != "")
@@ -1449,7 +1462,7 @@ Convert()
 		Else If (repeatBit && nowBit == repeatBit && lastToBuf != "")
 		{	; 前回の文字列を出力
 			If (!outStrsLength)
-				StoreBuf(lastToBuf, 0, ctrlNo)
+				StoreBuf(lastToBuf, 0, ctrlName)
 			OutBuf()
 			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
@@ -1462,7 +1475,7 @@ Convert()
 				shiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
 			Else
 				shiftStyle := ((realBit & KC_SPC) ? combStyleS : combStyleN)
-;			lastGroup := (shiftStyle == 0 ? 0 : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
+;			lastGroup := (!shiftStyle ? 0 : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 同時押しの判定期限到来
 			enableComb := True
@@ -1629,10 +1642,10 @@ Convert()
 			{
 				; 定義が見つかった時
 				toBuf := SelectStr(i)
-				ctrlNo := defsCtrlNo[i]
+				ctrlName := defsCtrlName[i]
 			}
 			Else
-				ctrlNo := R
+				ctrlName := R
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)
 				combinableBit := defsCombinableBit[i]
@@ -1641,7 +1654,7 @@ Convert()
 			Else	; keyCount < 0
 				combinableBit := 0
 			; 仮出力バッファに入れる
-			StoreBuf(toBuf, backCount, ctrlNo)
+			StoreBuf(toBuf, backCount, ctrlName)
 
 			; 次回の検索用に変数を更新
 			lastToBuf := toBuf		; 今回の文字列を保存
@@ -1664,7 +1677,7 @@ Convert()
 			; 何グループだったか保存
 			lastGroup := (keyCount > 0 ? defsGroup[i] : 0)
 			; キーリピート用
-			If (ctrlNo == R)
+			If (ctrlName == R)
 				repeatBit := nowBit	; キーリピートする
 			Else
 				repeatBit := 0

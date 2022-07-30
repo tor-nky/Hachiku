@@ -1,6 +1,4 @@
-﻿; ※※※ 不具合（19行目に記載）があるので注意！！
-;
-; **********************************************************************
+﻿; **********************************************************************
 ; 【薙刀式】v14集大成版
 ; http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0
 ; (2021年12月10日)より
@@ -16,8 +14,6 @@
 ; (2022年4月7日より)
 ;
 ; DvorakJ版からの変更部分：
-;	IME OFF、新(J+K+Q)は確定してから ← 範囲選択している部分を消去してしまう不具合がある
-;
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
@@ -54,7 +50,7 @@
 #Include %A_ScriptDir%/KanaTable/SendSP.ahk
 
 ; かな配列読み込み
-ReadLayout()
+ReadLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
@@ -65,7 +61,7 @@ ReadLayout()
 ;	ReadWorkmanLayout()		; Workman配列
 
 	; -----------------------------------------
-	; 別名登録
+	; 別名登録	Int64型
 	; -----------------------------------------
 	AL_小							:= KC_Q
 	AL_き	:= AL_ぬ				:= KC_W
@@ -567,7 +563,7 @@ kanaGroup := 0	; 0 はグループなし
 		SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
 	}
 
-	If (USLike > 0)
+	If (usLike > 0)
 		USLikeLayout()	; USキーボード風の配列へ
 
 	KoyuReadAndRegist(koyuNumber)	; 固有名詞ショートカットの読み込み・登録
@@ -576,7 +572,7 @@ kanaGroup := 0	; 0 はグループなし
 }
 
 ; USキーボード風の配列へ
-USLikeLayout()
+USLikeLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 
@@ -640,7 +636,7 @@ kanaGroup := 0	; 0 はグループなし
 }
 
 ; 固有名詞ショートカットの登録
-KoyuRegist()
+KoyuRegist()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
@@ -806,13 +802,3 @@ KoyuRegist()
 sc79::Send, {sc79 9}
 +sc79::Send, +{sc79 9}
 #If		; End #If ()
-
-; Analisis() のテスト用
-/*
-F1::
-	out := Analysis("^x「^v」{確定}{C_Clr}")
-	If (!vertical)
-		out := ConvTateYoko(out)	; 縦横変換
-	SendRaw, %out%
-	Return
-*/

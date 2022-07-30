@@ -22,7 +22,7 @@
 ; ----------------------------------------------------------------------
 
 ; かな配列読み込み
-ReadWorkmanLayout()
+ReadWorkmanLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber

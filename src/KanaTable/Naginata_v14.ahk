@@ -39,7 +39,7 @@
 #Include %A_ScriptDir%/KanaTable/SendSP.ahk
 
 ; かな配列読み込み
-ReadLayout()
+ReadLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
@@ -49,7 +49,7 @@ ReadLayout()
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
 	; -----------------------------------------
-	; 別名登録
+	; 別名登録	Int64型
 	; -----------------------------------------
 	AL_小							:= KC_Q
 	AL_き	:= AL_む				:= KC_W
@@ -535,7 +535,7 @@ kanaGroup := 0	; 0 はグループなし
 
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (keyDriver = "kbd101.dll")
+	If (keyDriver = "kbd101.dll")
 	{
 	; おまけ
 		SetEisu( JP_YEN				,"\"	)	; ￥
@@ -547,22 +547,22 @@ kanaGroup := 0	; 0 はグループなし
 		SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
 	}
 
-	if (usLike > 0)
+	If (usLike > 0)
 		USLikeLayout()	; USキーボード風の配列へ
 
 	KoyuReadAndRegist(koyuNumber)	; 固有名詞ショートカットの読み込み・登録
 
-	return
+	Return
 }
 
 ; USキーボード風の配列へ
-USLikeLayout()
+USLikeLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (keyDriver = "kbd101.dll")
-		return
+	If (keyDriver = "kbd101.dll")
+		Return
 
 kanaGroup := 0	; 0 はグループなし
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
@@ -607,7 +607,7 @@ kanaGroup := 0	; 0 はグループなし
 	SetKana( KC_SPC | KC_NUHS	,"+{sc0D}"	)	; ~
 
 	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (keyDriver = "kbdnec.dll")
+	If (keyDriver = "kbdnec.dll")
 	{
 		SetEisu( KC_NUHS			,"+{sc0D}"	)	; `
 		SetEisu( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
@@ -616,11 +616,11 @@ kanaGroup := 0	; 0 はグループなし
 		SetKana( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
 	}
 
-	return
+	Return
 }
 
 ; 固有名詞ショートカットの登録
-KoyuRegist()
+KoyuRegist()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
@@ -749,7 +749,7 @@ KoyuRegist()
 		SetKana(KC_SPC | KC_E | KC_R | KC_INT1	,"{直接}" . B11S)
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	if (keyDriver == "kbd101.dll")
+	If (keyDriver == "kbd101.dll")
 	{
 		SetKana(KC_E | KC_R | KC_BSLS			,"{直接}" . E13)
 		SetKana(KC_E | KC_R | KC_GRV			,"{直接}" . C12)
@@ -766,7 +766,7 @@ KoyuRegist()
 		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 
 	kanaGroup := 0	; 0 はグループなし
-	return
+	Return
 }
 
 ; ----------------------------------------------------------------------

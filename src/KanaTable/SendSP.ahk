@@ -1,20 +1,20 @@
 ﻿; 特別出力
-SendSP(strIn, ctrlNo)
+SendSP(strIn, ctrlStr)	; (strIn: String, ctrlStr: String) -> Void
 {
 	global koyuNumber, version, layoutName, iniFilePath
 
 	SetKeyDelay, -1, -1
 
-	If (ctrlNo == "ESCx3")
+	If (ctrlStr == "ESCx3")
 		SendESCx3()
-	Else If (ctrlNo == "そのまま")
+	Else If (ctrlStr == "そのまま")
 		Send, % strIn
-	Else If (ctrlNo == "横書き")
+	Else If (ctrlStr == "横書き")
 		ChangeVertical(0)
-	Else If (ctrlNo == "縦書き")
+	Else If (ctrlStr == "縦書き")
 		ChangeVertical(1)
 	; 固有名詞ショートカットを切り替える
-	Else If (ctrlNo == "KoyuChange")
+	Else If (ctrlStr == "KoyuChange")
 	{
 		If (strIn == koyuNumber)	; 番号が変わらない
 		{
@@ -40,7 +40,7 @@ SendSP(strIn, ctrlNo)
 	Return
 }
 
-SendESCx3()
+SendESCx3()	; () -> Void
 {
 	global	goodHwnd, IME_Get_Interval, lastSendTime
 ;	local	hwnd, process, imeName, delay, needDelay

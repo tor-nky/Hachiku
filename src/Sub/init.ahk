@@ -36,11 +36,11 @@ SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自�
 ; ----------------------------------------------------------------------
 ; 定数
 ; ----------------------------------------------------------------------
-IME_Get_Interval := 33	; Send から IME_GET までの必要時間(ミリ秒)
+IME_Get_Interval := 33	; Int型定数	Send から IME_GET までの必要時間(ミリ秒)
 
 ; ----------------------------------------------------------------------
-; 配列定義で使う定数
-;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk を利用
+; 配列定義で使う定数	Int64型定数
+;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk で利用可能
 ; ----------------------------------------------------------------------
 ; キーを64bitの各ビットに割り当てる
 ; 右側の数字は仮想キーコードになっている
@@ -105,50 +105,51 @@ KC_INT1	:= 1 << 0x38	; sc73
 KC_SPC	:= 1 << 0x39
 
 ; リピート定義用
-R := 1
+R := "Repeat"		; String型定数
 
 ; ----------------------------------------------------------------------
 ; 共用変数(メニュー用は別途)
 ; ----------------------------------------------------------------------
-lastSendTime := 0.0	; 最後に出力した時間
-kanaMode := 0		; 0: 英数入力, 1: かな入力
-kanaGroup := 0		; かな配列定義のグループ。0 はグループなし
-layoutName := ""	; かな配列の名前
+lastSendTime := 0.0	; Double型		最後に出力した時間
+kanaMode := 0		; Bool型		0: 英数入力, 1: かな入力
+kanaGroup := ""		; String型		かな配列定義のグループ名 ※0または空はグループなし
+layoutName := ""	; String型		かな配列の名前
 ; かな配列の入れ物
-defsKey := []		; キービットの集合
-defsGroup := []		; 定義のグループ番号 ※0はグループなし
-defsKanaMode := []	; 0: 英数入力用, 1: かな入力用
-defsTateStr := []	; 縦書き用定義
-defsYokoStr := []	; 横書き用定義
-defsCtrlNo := []	; 0: なし, 1: リピートできる, 2以上: 特別出力(かな定義ファイルで操作)
-defsCombinableBit := []	; 0: 出力確定しない,
-					; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
-defBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
-defEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
+defsKey := []		; [Int64]型		キービットの集合
+defsGroup := []		; [String]型	定義のグループ名
+defsKanaMode := []	; [Int]型		0: 英数入力用, 1: かな入力用
+defsTateStr := []	; [String]型	縦書き用定義
+defsYokoStr := []	; [String]型	横書き用定義
+defsCtrlName := []	; [String]型	0または空: なし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
+defsCombinableBit := []	; [Int64]型
+defBegin := [1, 1, 1]	; [Int]型	定義の始め 1キー, 2キー同時, 3キー同時
+defEnd	:= [1, 1, 1]	; [Int]型	定義の終わり+1 1キー, 2キー同時, 3キー同時
 ; 入力バッファ
-inBufsKey := []
-inBufsTime := []	; 入力の時間
-inBufReadPos := 0	; 読み出し位置
-inBufWritePos := 0	; 書き込み位置
-inBufRest := 31
+inBufsKey := []		; [String]型
+inBufsTime := []	; [Double]型	入力の時間
+inBufReadPos := 0	; Int型			読み出し位置
+inBufWritePos := 0	; Int型			書き込み位置
+inBufRest := 31		; Int型
 ; 仮出力バッファ
-outStrs := []
-outCtrlNos := []
-outStrsLength := 0	; 保存されている文字数
-restStr := ""
+outStrs := []		; [String]型
+outCtrlNos := []	; [Any]型
+outStrsLength := 0	; Int型			保存されている文字数
+restStr := ""		; [String]型
+
+goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
 
 ; ----------------------------------------------------------------------
 ; 設定ファイル読み込み
 ; ----------------------------------------------------------------------
 
 ; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
-iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
+iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 
 ; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
 ; [general]
 ; バージョン記録
 	IniRead, iniVersion, %iniFilePath%, general, Version, ""
-; AdvancedMenu	0: なし, 1: あり
+; AdvancedMenu	0または空: なし, 他: あり
 	IniRead, advancedMenu, %iniFilePath%, general, AdvancedMenu, 0
 
 ; [Basic]
@@ -156,7 +157,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	IniRead, imeSelect, %iniFilePath%, Basic, IMESelect, 0
 ; USLike		0以下または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, usLike, %iniFilePath%, Basic, USLike, 0
-; SideShift		左右シフト	1以下: 英数２, 他: かな
+; SideShift		左右シフト	1以下または空: 英数２, 他: かな
 	IniRead, sideShift, %iniFilePath%, Basic, SideShift, 1
 ; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
 	IniRead, enterShift, %iniFilePath%, Basic, EnterShift, 0
@@ -165,7 +166,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ; CombDelay		0または空: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
 	IniRead, combDelay, %iniFilePath%, Basic, CombDelay, 50
-; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 他: 空白リピート
+; SpaceKeyRepeat	スペースキーの長押し	0または空: 何もしない, 1: 空白キャンセル, 他: 空白リピート
 	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat, 0
 
 ;[Naginata]
@@ -178,16 +179,16 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 ;	通常時
 ;		同時打鍵の判定期限	0または空: なし, 他: あり
 		IniRead, combLimitN, %iniFilePath%, Advanced, CombLimitN, 0
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
+;		文字キーシフト		0または空: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
 		IniRead, combStyleN, %iniFilePath%, Advanced, CombStyleN, 3
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
+;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
 		IniRead, combKeyUpN, %iniFilePath%, Advanced, CombKeyUpN, 0
 ;	スペース押下時
 ;		同時打鍵の判定期限	0または空: なし, 他: あり
 		IniRead, combLimitS, %iniFilePath%, Advanced, CombLimitS, 1
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
+;		文字キーシフト		0または空: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
 		IniRead, combStyleS, %iniFilePath%, Advanced, CombStyleS, 3
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
+;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
 		IniRead, combKeyUpS, %iniFilePath%, Advanced, CombKeyUpS, 2
 ;	英数時の同時打鍵期限を強制する	0または空: なし, 他: あり
 		IniRead, combLimitE, %iniFilePath%, Advanced, CombLimitE, 0
@@ -212,14 +213,14 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")
 	; キーボードドライバを調べて keyDriver に格納する
 	; 参考: https://ixsvr.dyndns.org/blog/764
 	RegRead, keyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
-	USKB := (keyDriver = "kbd101.dll" ? True : False)
+	USKB := (keyDriver = "kbd101.dll" ? True : False)	; Bool型
 
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
 	DetectIME()
 
 ; ----------------------------------------------------------------------
-; メニューで使う変数
+; メニューで使う変数	Bool型
 ; ----------------------------------------------------------------------
 imeSelect0 := (imeSelect == 0 ? 1 : 0)
 imeSelect1 := (imeSelect == 1 ? 1 : 0)
@@ -365,7 +366,7 @@ GuiEscape:
 ButtonCancel:
 ButtonClose:
 GuiClose:
-	goodHwnd := badHwnd := ""	; IME窓の検出可否をリセット
+	goodHwnd := badHwnd := 0	; IME窓の検出可否をリセット
 	Gui, Destroy
 	Return
 
@@ -552,10 +553,13 @@ DispLog:
 	DispLogFunc()
 	Return
 ; ログ表示(本体)
-DispLogFunc()
+DispLogFunc()	; () -> Void型
 {
 	global inBufsKey, inBufReadPos, inBufsTime, USKB, testMode
-;	local scanCodeArray, lastKeyTime, keyTime, diff, pos, str, c, preStr, term, number, temp
+;	local scanCodeArray					; [String]型
+;		, lastKeyTime, keyTime, diff	; Double型
+;		, pos, number					; Int型
+;		, str, c, preStr, term, temp	; String型
 
 	If (USKB)	; USキーボード
 		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
