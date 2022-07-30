@@ -190,7 +190,7 @@ AnalysisForKakutei(str)	; (str: String) -> String
 			bracket++
 		strSub .= c
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i == strLength)
+			|| i >= strLength)
 		{
 		   	; ASCIIコード以外の文字が来た、またはIMEの状態を変更するまで「かな」の出力がない
 			If ((Asc(strSub) > 127
@@ -253,7 +253,7 @@ Analysis(str)	; (str: String) -> String
 		strSub .= c
 		strSubLength++
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i == strLength)
+			|| i >= strLength)
 		{
 			If (RegExMatch(strSub, "\{Raw\}$"))
 				; 残り全部を出力
@@ -639,7 +639,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		strSub .= c
 		strSubLength++
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i == strLength )
+			|| i >= strLength)
 		{
 			; "{Raw}"からの残りは全部出力する
 			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
@@ -1088,11 +1088,11 @@ ChangeVertical(mode)	; (mode: Bool) -> Void
 }
 
 ; 出力する文字列を選択
-SelectStr(i)	; (i: Int) -> String
+SelectStr(index)	; (index: Int) -> String
 {
 	global vertical, defsTateStr, defsYokoStr
 
-	Return (vertical ? defsTateStr[i] : defsYokoStr[i])
+	Return (vertical ? defsTateStr[index] : defsYokoStr[index])
 }
 
 ; timeA からの時間を表示[ミリ秒単位]
