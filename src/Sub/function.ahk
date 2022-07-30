@@ -994,14 +994,14 @@ SplitKeyUpDown(str)	; (str: String) -> String
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)	; (i: Int) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNos, R, lastSendTime
+	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
 ;	local out		; String型
 ;		, ctrlName	; String型
 
 	While (i > 0 && outStrsLength > 0)
 	{
 		out := outStrs[1]
-		ctrlName := outCtrlNos[1]
+		ctrlName := outCtrlNames[1]
 
 		If (!ctrlName)
 		{
@@ -1023,7 +1023,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 
 		outStrs[1] := outStrs[2]
-		outCtrlNos[1] := outCtrlNos[2]
+		outCtrlNames[1] := outCtrlNames[2]
 		outStrsLength--
 		i--
 	}
@@ -1031,10 +1031,10 @@ OutBuf(i:=2)	; (i: Int) -> Void
 	Return
 }
 
-; 仮出力バッファを最後から backCount 回分を削除して、Str1 と outCtrlNos を保存
+; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
 StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNos
+	global outStrsLength, outStrs, outCtrlNames
 
 	If (backCount > 0)
 	{
@@ -1046,7 +1046,7 @@ StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlNa
 		OutBuf(1)
 	outStrsLength++
 	outStrs[outStrsLength] := str
-	outCtrlNos[outStrsLength] := ctrlName
+	outCtrlNames[outStrsLength] := ctrlName
 	DispStr()	; 表示待ち文字列表示
 	Return
 }

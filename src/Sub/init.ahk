@@ -132,8 +132,8 @@ inBufWritePos := 0	; Int型			書き込み位置
 inBufRest := 31		; Int型
 ; 仮出力バッファ
 outStrs := []		; [String]型
-outCtrlNos := []	; [Any]型
-outStrsLength := 0	; Int型			保存されている文字数
+outCtrlNames := []	; [String]型
+outStrsLength := 0	; Int型			保存されている個数
 restStr := ""		; [String]型
 
 goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
