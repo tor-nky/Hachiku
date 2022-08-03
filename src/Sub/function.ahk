@@ -1730,6 +1730,10 @@ Convert()	; () -> Void
 						; 最大のスレッド数を設定
 
 ; キー入力部
+~LShift::
+RShift::
++RShift::
+	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02::	; 1
 sc03::	; 2
 sc04::	; 3
@@ -1860,6 +1864,10 @@ sc29::	; (JIS)半角/全角	(US)`
 	Return
 
 ; キー押上げ
+~LShift up::
+RShift up::
++RShift up::
+	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02 up::	; 1
 sc03 up::	; 2
 sc04 up::	; 3
@@ -1982,21 +1990,6 @@ sc29 up::	; (JIS)半角/全角	(US)`
 +sc29 up::	; (JIS)半角/全角	(US)`
 #If		; End #If ()
 ; 入力バッファへ保存
-	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
-	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
-		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)
-		, (inBufRest ? inBufRest-- : )
-	Convert()	; 変換ルーチン
-	Return
-
-; 左右シフト
-~LShift::
-~LShift up::
-RShift::
-+RShift::
-RShift up::
-+RShift up::
-	Suspend, Permit	; Suspendの対象でないことを示す
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
 		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)
