@@ -473,21 +473,21 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 {
 	global defsKey, defsKanaMode, defsGroup, defBegin, defEnd
 		, KC_SPC
-;	local j, jmax		; Int型		カウンタ用
+;	local i, imax		; Int型		カウンタ用
 ;		, bit			; Int64型
-;		, defKeyCopy	; Int64型
 
 	bit := (keyCount > 1 ? 0 : KC_SPC)
-	j := defBegin[3]
-	jmax := (keyCount >= 1 && keyCount <= 3 ? defEnd[keyCount] : defEnd[1])
-	While (j < jmax)
+	i := defBegin[3]
+	imax := (!group && keyCount >= 1 && keyCount <= 3 ? defEnd[keyCount] : defEnd[1])
+	While (i < imax)
 	{
-		defKeyCopy := defsKey[j]
 		; グループAll か同じグループ、「かな」モードも同じで、判定中のキーを含むのを登録
-		If ((!group || group := defsGroup[j])
-		 && kanaMode == defsKanaMode[j] && (defKeyCopy & searchBit) == searchBit)
-			bit |= defKeyCopy
-		j++
+		If ((!group || group == defsGroup[i])
+			&& (defsKey[i] & searchBit) == searchBit && kanaMode == defsKanaMode[i])
+		{
+			bit |= defsKey[i]
+		}
+		i++
 	}
 ;	bit &= searchBit ^ (-1)	; 検索中のキーを削除
 
@@ -716,7 +716,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				preDelay := 50
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
-				IME_SET(0)		; IMEオフ
+				IME_SET(kanaMode := 0)	; IMEオフ
 				lastDelay := IME_Get_Interval
 			}
 			Else If (strSub = "{IMEON}")
@@ -745,6 +745,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					IME_SetConvMode(25)	; IME 入力モード	ひらがな
 					lastDelay := IME_Get_Interval
 				}
+				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナキー
 			{
@@ -760,6 +761,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					IME_SetConvMode(27)	; IME 入力モード	カタカナ
 					lastDelay := IME_Get_Interval
 				}
+				kanaMode := 1
 			}
 			Else If (strSub == "{全英}")
 			{
@@ -776,6 +778,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					IME_SetConvMode(24)	; IME 入力モード	全英数
 					lastDelay := IME_Get_Interval
 				}
+				kanaMode := 0
 			}
 			Else If (strSub == "{半ｶﾅ}")
 			{
@@ -786,6 +789,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				{
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
+					kanaMode := 1
 					lastDelay := IME_Get_Interval
 				}
 			}
@@ -1151,7 +1155,7 @@ Convert()	; () -> Void
 		, toBuf		:= ""	; String型	出力バッファに送る文字列
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
 		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
-		, lastGroup	:= 0	; String型	前回、何グループだったか？ 0または空はグループなし
+		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		; シフト用キーの状態
@@ -1176,7 +1180,6 @@ Convert()	; () -> Void
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
 ;		, outOfCombDelay	; Bool型	IME同時押しの判定期限が来たか
-;		, enableComb		; Bool型
 ;		, interval			; Double型
 
 	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
@@ -1430,10 +1433,9 @@ Convert()	; () -> Void
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
 				lastToBuf := ""
 				lastKeyCount := 0
+				lastGroup := ""
 				If (shiftStyle == 2)	; 全解除
-					lastGroup := last2Bit := lastBit := 0
-				Else If (lastBit & nowBit)
-					lastGroup := 0
+					last2Bit := lastBit := 0
 			}
 			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == last2Bit)
 			{	; 同時押しにならなくなった
@@ -1475,22 +1477,21 @@ Convert()	; () -> Void
 				shiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
 			Else
 				shiftStyle := ((realBit & KC_SPC) ? combStyleS : combStyleN)
-;			lastGroup := (!shiftStyle ? 0 : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
+;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 同時押しの判定期限到来
-			enableComb := True
 			If (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
 			 && ((combLimitN && !(realBit & KC_SPC)) || (combLimitS && (realBit & KC_SPC)) || (combLimitE && !kanaMode)))
 			{
 				outOfCombDelay := True
 				If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
-					enableComb := False	; 同時押しを一時停止
+					reuseBit := last2Bit := lastBit := 0
 			}
 			Else
 				outOfCombDelay := False
 			; 一つ前に押したキーとは同時押しにならないので出力
 			; 同時押しの判定期限が過ぎたものもここで出力
-			If (!(combinableBit & nowBit) || outOfCombDelay)
+			If (outStrsLength && (!(combinableBit & nowBit) || outOfCombDelay))
 			{
 				OutBuf()
 				If (nowBit && !forceEisuMode && lastSendTime + IME_Get_Interval <= QPC())
@@ -1505,12 +1506,12 @@ Convert()	; () -> Void
 			}
 			; 前のキーが出力確定していなかったら同グループ優先で検索しない
 			Else If (outStrsLength)
-				lastGroup := 0
+				lastGroup := ""
 			backCount := 0
 			While (!keyCount)
 			{
 				; 3キー入力を検索
-				If ((last2Bit | reuseBit) && enableComb)
+				If (last2Bit | reuseBit)
 				{
 					; 検索場所の設定
 					i := defBegin[3]
@@ -1528,7 +1529,7 @@ Convert()	; () -> Void
 							If (shiftStyle == 3 && lastKeyCount >= 3 && nowBit != KC_SPC)
 							{
 								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								enableComb := False
+								reuseBit := last2Bit := lastBit := 0
 								Break
 							}
 							Else If (!lastGroup || lastGroup == defsGroup[i])
@@ -1545,7 +1546,7 @@ Convert()	; () -> Void
 					}
 				}
 				; 2キー入力を検索
-				If (!keyCount && (lastBit | reuseBit) && enableComb)
+				If (!keyCount && (lastBit | reuseBit))
 				{
 					; 検索場所の設定
 					i := defBegin[2]
@@ -1563,13 +1564,13 @@ Convert()	; () -> Void
 							If (shiftStyle == 3 && lastKeyCount >= 2 && nowBit != KC_SPC)
 							{
 								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								enableComb := False
+								reuseBit := last2Bit := lastBit := 0
 								Break
 							}
 							Else If (!lastGroup || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
-								If (outStrsLength == 2)
+								If (outStrsLength >= 2)
 									; 2つ前に押したキーを出力
 									OutBuf(1)
 								backCount := (lastKeyCount >= 2 && nowBit != KC_SPC ? 0 : 1)
@@ -1608,13 +1609,11 @@ Convert()	; () -> Void
 				If (!lastGroup || keyCount)
 					Break
 				; グループなしで再度検索
-				lastGroup := 0
+				lastGroup := ""
 				If (shiftStyle == 2)
 					; (同グループのみ継続)同グループが見つからなかった
-					enableComb := False
+					reuseBit := last2Bit := lastBit := 0
 			}
-			If (!enableComb)	; 同時押しを一時停止中
-				reuseBit := last2Bit := lastBit := 0
 
 			; スペースを押したが、定義がなかった時
 			If (nowBit == KC_SPC && !keyCount)
@@ -1646,20 +1645,18 @@ Convert()	; () -> Void
 			}
 			Else
 				ctrlName := R
-			; 一緒に押すと同時押しになるキーを探す
-			If (keyCount > 0 && !lastGroup)
-				combinableBit := defsCombinableBit[i]
-			Else If (keyCount >= 0)
-				combinableBit := FindCombinableBit(searchBit, kanaMode, keyCount, lastGroup)
-			Else	; keyCount < 0
-				combinableBit := 0
 			; 仮出力バッファに入れる
 			StoreBuf(toBuf, backCount, ctrlName)
+			; キーリピート用
+			If (ctrlName == R)
+				repeatBit := nowBit	; キーリピートする
+			Else
+				repeatBit := 0
 
-			; 次回の検索用に変数を更新
+			; 次回の検索用に変数を更新(グループの保存は後で)
 			lastToBuf := toBuf		; 今回の文字列を保存
 			lastKeyTime := keyTime	; 有効なキーを押した時間を保存
-			lastKeyCount := keyCount			; 何キー同時押しだったかを保存
+			lastKeyCount := keyCount	; 何キー同時押しだったかを保存
 			reuseBit := 0			; 復活したキービットを消去
 			; キービットを保存
 			If (keyCount >= 2)
@@ -1674,13 +1671,16 @@ Convert()	; () -> Void
 				last2Bit := lastBit
 				lastBit := searchBit
 			}
+
+			; 一緒に押すと同時押しになるキーを探す
+			If (keyCount > 0 && !lastGroup)
+				combinableBit := defsCombinableBit[i]
+			Else If (keyCount >= 0)
+				combinableBit := FindCombinableBit(lastBit, kanaMode, keyCount, lastGroup)
+			Else	; If (keyCount < 0)
+				combinableBit := 0
 			; 何グループだったか保存
-			lastGroup := (keyCount > 0 ? defsGroup[i] : 0)
-			; キーリピート用
-			If (ctrlName == R)
-				repeatBit := nowBit	; キーリピートする
-			Else
-				repeatBit := 0
+			lastGroup := (keyCount > 0 ? defsGroup[i] : "")
 
 			; 出力確定文字か？
 			; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外

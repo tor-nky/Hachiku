@@ -34,7 +34,7 @@ KoyuMenu:
 	Gui, Destroy
 	Gui, Add, Text, , 固有名詞ショートカット設定
 ;	Gui, Add, Text, x+15, 〈セット%koyuNumber%〉
-	Gui, Add, Tab2, xm+560 y+0 Section Buttons Center, 通常面|シフト面
+	Gui, Add, Tab2, xm+560 y+0 Section Buttons Center, 第一面|第二面
 
 ; E列
 	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
@@ -145,7 +145,7 @@ KoyuMenu:
 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11, %B11%
 
 
-	Gui, Tab, シフト面
+	Gui, Tab, 第二面
 ; E列
 	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
 	Gui, Add, Text, xp+95 W92 Center, 2

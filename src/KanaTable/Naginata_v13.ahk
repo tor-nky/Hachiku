@@ -92,7 +92,7 @@ ReadLayout()	; () -> Void
 ;**********************************************
 
 ; 単打
-kanaGroup := 0	; 0 はグループなし
+kanaGroup := ""	; グループなし
 	SetKana( AL_小	,"{Null}"	)		; ダミー
 	SetKana( AL_き	,"ki"		)		; き
 	SetKana( AL_て	,"te"		)		; て
@@ -260,7 +260,7 @@ kanaGroup := "KO"
 ;**********************************************
 ;****************************
 ; 清音拗音; やゆよと同時押しで、ゃゅょが付く
-kanaGroup := 0	; 0 はグループなし
+kanaGroup := ""	; グループなし
 	SetKana( AL_き | AL_や				,"kya"	)	; きゃ
 	SetKana( AL_き | AL_や | KC_SPC		,"kya"	)
 	SetKana( AL_り | AL_や				,"rya"	)	; りゃ
@@ -466,7 +466,7 @@ kanaGroup := "HA"
 ; ひらがなカタカナキー：IME ON、無変換キー：IME OFFに設定のこと
 ; HJ: ON / FG: OFF
 
-kanaGroup := 0	; 0 はグループなし
+kanaGroup := ""	; グループなし
 	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
 	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
@@ -628,7 +628,7 @@ kanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_SCLN	,"^{PgUp 5}"						, R)	; 前 5ページ▶先頭
 	SetEisu( KC_C | KC_V | KC_SLSH	,"^{PgDn 5}"						, R)	; 次 5◀ページ先頭
 
-kanaGroup := 0	; 0 はグループなし
+kanaGroup := ""	; グループなし
 	SetKana( KC_Q | KC_W			,"Null"		,"横書き")
 	SetEisu( KC_Q | KC_W			,"Null"		,"横書き")
 	SetKana( KC_Q | KC_A			,"Null"		,"縦書き")
@@ -671,7 +671,7 @@ USLikeLayout()	; () -> Void
 	If (keyDriver = "kbd101.dll")
 		Return
 
-kanaGroup := 0	; 0 はグループなし
+kanaGroup := ""	; グループなし
 	SetEisu( KC_EQL				,"+{sc0C}"	)	; =
 	SetEisu( KC_LBRC			,"{sc1B}"	)	; [
 	SetEisu( KC_RBRC			,"{sc2B}"	)	; ]
@@ -878,7 +878,7 @@ KoyuRegist()	; () -> Void
 		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
 		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 
-	kanaGroup := 0	; 0 はグループなし
+	kanaGroup := ""	; グループなし
 	Return
 }
 

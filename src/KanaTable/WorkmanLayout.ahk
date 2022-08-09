@@ -29,7 +29,7 @@ ReadWorkmanLayout()	; () -> Void
 
 	layoutName := "Workman Keyboard Layout"
 
-kanaGroup := 0	; 0 はグループAll
+kanaGroup := ""	; グループなし
 	SetEisu( KC_1		,"1"	)
 	SetEisu( KC_2		,"2"	)
 	SetEisu( KC_3		,"3"	)

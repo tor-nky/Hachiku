@@ -26,7 +26,7 @@ ReadStandardLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk
 
-kanaGroup := 0	; 0 はグループAll
+kanaGroup := ""	; グループなし
 	SetEisu( KC_1		,"{sc02}"	)
 	SetEisu( KC_2		,"{sc03}"	)
 	SetEisu( KC_3		,"{sc04}"	)

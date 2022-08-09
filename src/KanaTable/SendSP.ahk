@@ -86,7 +86,7 @@ SendESCx3()	; () -> Void
 		Else If (imeName == "ATOK")
 			Sleep, 260
 		Else
-			Sleep, 310
+			Sleep, 470	; Win10 + 一太郎2012 は 310
 		IfWinActive, ahk_class #32770
 			Send, a
 	}
