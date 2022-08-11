@@ -481,7 +481,7 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 	imax := (!group && keyCount >= 1 && keyCount <= 3 ? defEnd[keyCount] : defEnd[1])
 	While (i < imax)
 	{
-		; グループAll か同じグループ、「かな」モードも同じで、判定中のキーを含むのを登録
+		; グループが「なし」か同じ、「かな」モードも同じで、判定中のキーを含むのを登録
 		If ((!group || group == defsGroup[i])
 			&& (defsKey[i] & searchBit) == searchBit && kanaMode == defsKanaMode[i])
 		{
@@ -649,8 +649,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				While (++i <= strLength)
 				{
 					SendRaw, % SubStr(str, i, 1)
-					If (i >= strLength)
-						lastSendTime := QPC()	; 最後に出力した時間を記録
 					; 出力直後のディレイ
 					Sleep, % lastDelay
 				}
@@ -848,7 +846,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				Send, % out
-				lastSendTime := QPC()	; 最後に出力した時間を記録
 				; IME窓の検出が当てにできるか。変換1回目にはIME窓検出タイマーを起動
 				If (hwnd != goodHwnd && hwnd != badHwnd)
 				{
@@ -887,13 +884,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				Send, {vkF3}	; 半角/全角
-				lastSendTime := QPC()	; 最後に出力した時間を記録
 				Sleep, % (lastDelay := postDelay)
 				; IME入力モードを回復する
 				If (imeName == "ATOK")
 				{
 					IME_SetConvMode(imeConvMode)
-					lastSendTime := QPC()	; ← 半角/全角 から IME_SetConvMode() ではなぜか必要
 					lastDelay := 0
 				}
 /*			; ※IME_SET(1) を使う方法
@@ -1023,8 +1018,8 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		{
 			SendKeyUp()				; 押し下げを出力中のキーを上げる
 			SendSP(out, ctrlName)	; 特別出力(かな定義ファイルで操作)
-			lastSendTime := QPC()	; 最後に出力した時間を記録
 		}
+		lastSendTime := QPC()	; 最後に出力した時間を記録
 
 		outStrs[1] := outStrs[2]
 		outCtrlNames[1] := outCtrlNames[2]
@@ -1165,7 +1160,6 @@ Convert()	; () -> Void
 		, ent		:= 0	; Bool型	エンター
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local keyTime			; Double型	キーを押した時間
-;		, forceEisuMode		; Bool型
 ;		, imeState			; Bool型
 ;		, imeConvMode		; Int型
 ;		, nowKey			; String型
@@ -1217,7 +1211,6 @@ Convert()	; () -> Void
 		}
 
 		; 英数入力かかな入力か検出
-		forceEisuMode := True	; 強制英数モードを意味する仮の値
 		imeConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			kanaMode := 0
@@ -1225,7 +1218,6 @@ Convert()	; () -> Void
 			kanaMode := 0
 		Else If (lastSendTime + IME_Get_Interval <= QPC())
 		{	; IME状態を確実に検出できる時
-			forceEisuMode := False	; 強制英数モードではない
 			imeState := IME_GET()
 			If (imeState == 0)
 				kanaMode := 0
@@ -1492,18 +1484,7 @@ Convert()	; () -> Void
 			; 一つ前に押したキーとは同時押しにならないので出力
 			; 同時押しの判定期限が過ぎたものもここで出力
 			If (outStrsLength && (!(combinableBit & nowBit) || outOfCombDelay))
-			{
 				OutBuf()
-				If (nowBit && !forceEisuMode && lastSendTime + IME_Get_Interval <= QPC())
-				{
-					; 英数入力かかな入力か再度検出
-					imeState := IME_GET()
-					If (imeState == 0)
-						kanaMode := 0
-					Else If (imeState == 1 && imeConvMode != "")	; かな入力中
-						kanaMode := imeConvMode & 1
-				}
-			}
 			; 前のキーが出力確定していなかったら同グループ優先で検索しない
 			Else If (outStrsLength)
 				lastGroup := ""

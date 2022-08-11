@@ -79,14 +79,16 @@ SendESCx3()	; () -> Void
 
 	If (SubStr(process, 1, 4) = "Taro")
 	{	; 一太郎のメニューを消す
-		If (imeName == "Google")
+/*		If (imeName == "Google")
 			Sleep, 160
 		Else If (imeName == "OldMSIME")
 			Sleep, 240
 		Else If (imeName == "ATOK")
 			Sleep, 260
 		Else
-			Sleep, 470	; Win10 + 一太郎2012 は 310
+			Sleep, 310
+*/
+		Sleep, 500
 		IfWinActive, ahk_class #32770
 			Send, a
 	}
