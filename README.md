@@ -83,7 +83,7 @@ IME の設定を見直すのも良いかもしれません。
 * ~~「名前を付けて保存」で IMEオフの状態だと、2文字目以降に大文字を入力してから何も入力ができない~~
 秀丸エディタのみの現象です
 * 入力したはずのキーがごくまれに無視される  
-AutoHotkey の 64ビット版で起きやすいんですが、32ビット版でも起きることがあります。
+~~AutoHotkey の 64ビット版で起きやすいんですが、32ビット版でも起きることがあります。~~
 * IMEの設定変更をしなければ、編集モードや固有名詞の入力でIME 入力モード切替の通知が出る。  
 一部の記号を出力するために一旦、IMEをオフにしているためです。  
 MS-IMEをお使いでしたら、IMEに対する設定をご確認ください。
@@ -99,7 +99,8 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 * Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.03) U32 Unicode 32-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力
 * Windows 11 Pro version 21H2 + AutoHotkey (v1.1.34.03) U32 Unicode 32-bit.bin  
-新MS-IMEのみ
+新MS-IME ── 英字のまま出力することがたまにあります  
+旧MS-IME ── __変換したローマ字の頭文字だけ入力されるのがよく起きます__
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15候補](http://oookaworks.seesaa.net/article/489739560.html#gsc.tab=0)
