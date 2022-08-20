@@ -303,12 +303,6 @@ Analysis(str)	; (str: String) -> String
 				ret .= strSub
 				kakutei := True
 			}
-			Else If (strSub == "^x")
-			{
-				; 確定状態のときに "^x" を使うとみなし、IME 入力時のことは無視する
-				ret .= strSub
-				kakutei := True
-			}
 			Else If (str != "^v" && strSub == "^v")
 			{
 				; "^v" 単独は除外
@@ -679,7 +673,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							Send, _
 							Send, {Enter}
 /*							if ((process != "Code.exe" && class == "Chrome_WidgetWin_1")
-							|| process == "firefox.exe")
+							 || process == "firefox.exe")
 								Sleep, 140	; ブラウザ
 							else if (class == "Hidemaru32Class")
 								Sleep, 60
@@ -809,12 +803,17 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					preDelay := 60
 					postDelay := 10
 				}
+				Else If (imeName == "ATOK")
+				{
+					preDelay := 80
+					postDelay := 100
+				}
 			}
 			Else If (strSub = "^v")
 			{
 				out := strSub
 				preDelay := 10
-				postDelay := 40
+				postDelay := (imeName == "ATOK" ? 100 : 40)
 			}
 			Else If (strSub = "{C_Clr}")
 				clipboard =					;クリップボードを空にする
