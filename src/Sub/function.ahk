@@ -115,8 +115,10 @@ CountBit(keyComb)	; (keyComb: Int64) -> Int
 }
 
 ; 縦書き用定義から横書き用に変換
-ConvTateYoko(str)	; (str: String) -> String
+ConvTateYoko(tate)	; (tate: String) -> String
 {
+;	local str	; String型
+	str := tate
 	StringReplace, str, str, {Up,		{Temp,	A
 	StringReplace, str, str, {Right,	{Up,	A
 	StringReplace, str, str, {Down,		{Right,	A
@@ -127,8 +129,10 @@ ConvTateYoko(str)	; (str: String) -> String
 }
 
 ; 機能置き換え処理 - DvorakJ との互換用
-ControlReplace(str)	; (str: String) -> String
+ControlReplace(in)	; (in: String) -> String
 {
+;	local str	; String型
+	str := in
 	StringReplace, str, str, {→,			{Right,		A
 	StringReplace, str, str, {->,			{Right,		A
 	StringReplace, str, str, {右,			{Right,		A
@@ -365,10 +369,10 @@ Analysis(str)	; (str: String) -> String
 ; 定義登録
 ; kanaMode	0: 英数, 1: かな
 ; keyComb	キーをビットに置き換えたものの集合
-; convYoko	False: tate - 縦書き定義, yoko - 横書き定義
-;			True:  tate - 縦書き定義, yoko - tate から変換必要
+; tate		縦書き定義
+; yoko		横書き定義
 ; ctrlName	0または空: なし, R: リピートあり, 他: かな配列ごとの特殊コード
-SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, convYoko: Bool, tate: String, yoko: String, ctrlName: String) -> Void
+SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
 	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, defBegin, defEnd
@@ -376,18 +380,6 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlName)	; (kanaMode: Bo
 ;	local keyCount	; Int型	何キー同時押しか
 ;		, i, imax	; Int型	カウンタ用
 
-	If (!ctrlName || ctrlName == R)
-	{
-		; 機能を置き換え、ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
-		; "{直接}"は"{Raw}"に書き換え
-		tate := Analysis(tate)
-		If (convYoko)
-			yoko := ConvTateYoko(tate)	; 縦横変換
-		Else
-			yoko := Analysis(yoko)
-	}
-	Else If (convYoko)
-		yoko := ConvTateYoko(tate)	; 縦横変換
 
 	; 登録
 	keyCount := CountBit(keyComb)	; 何キー同時押しか
@@ -438,33 +430,30 @@ SetDefinition(kanaMode, keyComb, convYoko, tate, yoko, ctrlName)	; (kanaMode: Bo
 ; かな定義登録
 SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	; 横書き用は自動変換
-	SetDefinition(1, keyComb, True, str, "", ctrlName)
+;	local tate, yoko	; String型
+	tate := Analysis(str)		; 機能等を書き換え
+	yoko := ConvTateYoko(tate)	; 縦横変換
+	SetDefinition(1, keyComb, tate, yoko, ctrlName)
 	Return
 }
 SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	SetDefinition(1, keyComb, False, tate, yoko, ctrlName)
+	SetDefinition(1, keyComb, tate, yoko, ctrlName)
 	Return
 }
 ; 英数定義登録
 SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	; 横書き用は自動変換
-	global eisuSandS, KC_SPC
+;	local tate, yoko	; String型
+	tate := Analysis(str)		; 機能等を書き換え
+	yoko := ConvTateYoko(tate)	; 縦横変換
 	; 英数入力時のSandSが無効なら定義を削除する
-	If (!eisuSandS && (keyComb & KC_SPC))
-		str := ""
-	SetDefinition(0, keyComb, True, str, "", ctrlName)
+	SetDefinition(0, keyComb, tate, yoko, ctrlName)
 	Return
 }
 SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global eisuSandS, KC_SPC
-	; 英数入力時のSandSが無効なら定義を削除する
-	If (!eisuSandS && (keyComb & KC_SPC))
-		tate := yoko := ""
-	SetDefinition(0, keyComb, False, tate, yoko, ctrlName)
+	SetDefinition(0, keyComb, tate, yoko, ctrlName)
 	Return
 }
 
