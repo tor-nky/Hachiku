@@ -307,12 +307,6 @@ Analysis(str)	; (str: String) -> String
 				ret .= strSub
 				kakutei := True
 			}
-			Else If (strSub == "^x")
-			{
-				; 確定状態のときに "^x" を使うとみなし、IME 入力時のことは無視する
-				ret .= strSub
-				kakutei := True
-			}
 			Else If (str != "^v" && strSub == "^v")
 			{
 				; "^v" 単独は除外
