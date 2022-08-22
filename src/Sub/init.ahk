@@ -112,8 +112,9 @@ R := "Repeat"		; String型定数
 ; ----------------------------------------------------------------------
 lastSendTime := 0.0	; Double型		最後に出力した時間
 kanaMode := 0		; Bool型		0: 英数入力, 1: かな入力
-kanaGroup := ""		; String型		かな配列定義のグループ名 ※0または空はグループなし
+layoutNameE := ""	; String型		英語配列の名前
 layoutName := ""	; String型		かな配列の名前
+kanaGroup := ""		; String型		配列定義のグループ名 ※0または空はグループなし
 ; かな配列の入れ物
 defsKey := []		; [Int64]型		キービットの集合
 defsGroup := []		; [String]型	定義のグループ名
@@ -262,7 +263,10 @@ If (testMode != "ERROR")
 ; メニュー表示
 ; ----------------------------------------------------------------------
 	; ツールチップを変更する
-	Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
+	If (layoutNameE)
+		Menu, TRAY, Tip, Hachiku %version%`n%layoutNameE%`n+ %layoutName%`n固有名詞セット%koyuNumber%
+	Else
+		Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
 	; 標準メニュー項目を削除する
 	Menu, TRAY, NoStandard
 

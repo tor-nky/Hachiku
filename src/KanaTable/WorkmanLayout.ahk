@@ -25,9 +25,9 @@
 ReadWorkmanLayout()	; () -> Void
 {
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	global layoutName, koyuNumber
+	global layoutNameE, koyuNumber
 
-	layoutName := "Workman Keyboard Layout"
+	layoutNameE := "Workman Keyboard Layout"
 
 kanaGroup := ""	; グループなし
 	SetEisu( KC_1		,"1"	)

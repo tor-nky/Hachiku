@@ -513,10 +513,10 @@ kanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_I		,"^v"		)		; Paste
 	SetKana( KC_C | KC_V | KC_K		,"+{→}"	, R)	; +→
 	SetKana( KC_C | KC_V | KC_COMM	,"+{←}"	, R)	; +←
-	SetKana( KC_C | KC_V | KC_O		,"+{← 20}"	, R)	; +←20
+	SetKana( KC_C | KC_V | KC_O		,"+{← 20}"	)		; +←20
 	SetKana( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
 	SetKana( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
-	SetKana( KC_C | KC_V | KC_P		,"+{→ 20}"	, R)	; +→20
+	SetKana( KC_C | KC_V | KC_P		,"+{→ 20}"	)		; +→20
 	SetKana( KC_C | KC_V | KC_SCLN	,"{→}"		, R)	; →
 	SetKana( KC_C | KC_V | KC_SLSH	,"{←}"		, R)	; ←
 
@@ -529,10 +529,10 @@ kanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_I		,"^v"		)		; Paste
 	SetEisu( KC_C | KC_V | KC_K		,"+{→}"	, R)	; +→
 	SetEisu( KC_C | KC_V | KC_COMM	,"+{←}"	, R)	; +←
-	SetEisu( KC_C | KC_V | KC_O		,"+{← 20}"	, R)	; +←20
+	SetEisu( KC_C | KC_V | KC_O		,"+{← 20}"	)		; +←20
 	SetEisu( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
 	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
-	SetEisu( KC_C | KC_V | KC_P		,"+{→ 20}"	, R)	; +→20
+	SetEisu( KC_C | KC_V | KC_P		,"+{→ 20}"	)		; +→20
 	SetEisu( KC_C | KC_V | KC_SCLN	,"{→}"		, R)	; →
 	SetEisu( KC_C | KC_V | KC_SLSH	,"{←}"		, R)	; ←
 
