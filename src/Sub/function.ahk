@@ -172,63 +172,6 @@ ControlReplace(in)	; (in: String) -> String
 	Return str
 }
 
-; {確定} の後の定義を見て、{確定} だけにするか、{NoIME} を付加するかを返す
-AnalysisForKakutei(str)	; (str: String) -> String
-{
-;	local strLength, strSub, c
-;		, i, bracket
-
-	If (str == "")
-		Return "{確定}"
-
-	strSub := ""
-	bracket := 0
-	i := 1
-	strLength := StrLen(str)
-	While (i <= strLength)
-	{
-		c := SubStr(str, i, 1)
-		If (c == "}" && bracket != 1)
-			bracket := 0
-		Else If (c == "{" || bracket)
-			bracket++
-		strSub .= c
-		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i >= strLength)
-		{
-		   	; ASCIIコード以外の文字が来た、またはIMEの状態を変更するまで「かな」の出力がない
-			If ((Asc(strSub) > 127
-			 || RegExMatch(strSub, "^\{U\+")
-			 || (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
-			 || strSub = "{NoIME}"	|| strSub = "{UndoIME}"
-			 || strSub = "{IMEOFF}" || strSub = "{IMEON}"
-			 || strSub = "{vkF3}"	|| strSub = "{vkF0}"
-			 || InStr(strSub, "{vkF2")	|| InStr(strSub, "{vkF1")
-			 || strSub == "{全英}"	|| strSub == "{半ｶﾅ}")
-			{
-				; {NoIME} も付加する
-				Return "{確定}{NoIME}"
-			}
-			; 削除系、移動系、改行、カット、ペースト以外の定義が来たら「かな」入力とみなし
-			Else If !(InStr(strSub, "{BS}")		|| InStr(strSub, "{Del}")
-				  || InStr(strSub, "{Esc}")
-				  || InStr(strSub, "{Up}")		|| InStr(strSub, "{Left}")
-				  || InStr(strSub, "{Right}")	|| InStr(strSub, "{Down}")
-				  || InStr(strSub, "{Home}")	|| InStr(strSub, "{End}")
-				  || InStr(strSub, "{PgUp}")	|| InStr(strSub, "{PgDn}")
-				  || RegExMatch(strSub, "^\{Enter")
-				  || strSub == "^x" || strSub == "^v")
-			{
-				; {確定} のみとする
-				Return "{確定}"
-			}
-			strSub := ""
-		}
-		i++
-	}
-	Return "{確定}"
-}
-
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
 Analysis(str)	; (str: String) -> String
@@ -295,11 +238,9 @@ Analysis(str)	; (str: String) -> String
 			}
 			Else If (strSub = "{確定}")
 			{
-				If (!noIME && !kakutei)
-					ret .= AnalysisForKakutei(ControlReplace(SubStr(str, i + 1)))
+				If (!kakutei)
+					ret .= "{確定}"
 				kakutei := True
-				If (RegExMatch(ret, "\{NoIME\}$"))
-					noIME := True
 			}
 			Else If (RegExMatch(strSub, "^\{Enter"))
 			{
@@ -310,7 +251,7 @@ Analysis(str)	; (str: String) -> String
 			Else If (str != "^v" && strSub == "^v")
 			{
 				; "^v" 単独は除外
-				If (!noIME && !kakutei)
+				If (!kakutei)
 					ret .= "{確定}"
 				ret .= strSub
 				kakutei := True
@@ -652,10 +593,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					}
 					If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 					{
-						If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
+						If (lastDelay >= 70 && IME_GetConverting())
 							; 文字出力から一定時間経っていて、IME窓あり
 							out := "{Enter}"
-						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
+						Else If (hwnd != goodHwnd || lastDelay < 70)
 							; IME窓の検出を当てにできない
 							; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						{
