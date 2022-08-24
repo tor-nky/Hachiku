@@ -14,6 +14,10 @@
 ; http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0
 ; (2022年7月9日)より
 ;
+; 【薙刀式】淘汰圧こそ発明のエネルギー
+; http://oookaworks.seesaa.net/article/490966325.html#gsc.tab=0
+; (2022年8月24日)より
+;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -56,7 +60,7 @@ ReadLayout()	; () -> Void
 	global layoutName, koyuNumber
 
 	layoutName := "薙刀式15（仮）安定版"
-		; "薙刀式配列2022年6月15日/2022年7月6日/2022年7月9日付"
+		; "薙刀式配列2022年7月3日／7月6日／7月9日／8月24日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 

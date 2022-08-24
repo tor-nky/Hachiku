@@ -26,7 +26,7 @@
 ;		|変換中      |      〃         |        〃        |
 ;		|入力文字なし|      〃         |        〃        |
 ; **********************************************************************
-version := "1.9-beta.14"	; String型
+version := "1.9-beta.14a"	; String型
 
 ; --------〈起動処理〉--------------------------------------------------
 SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変更
@@ -44,7 +44,7 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
-;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220703.ahk	; 薙刀式15（仮）安定版
-#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220612.ahk	; 薙刀式v15(仮)B1
+#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220703.ahk	; 薙刀式15（仮）安定版
+;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20220612.ahk	; 薙刀式v15(仮)B1
 
 ;#Include %A_ScriptDir%/KanaTable/Naginata_tor.ahk

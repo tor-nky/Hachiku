@@ -1,7 +1,12 @@
 ﻿# Hachiku - Windows で薙刀式を使うスクリプト
-[【薙刀式】v15候補](http://oookaworks.seesaa.net/article/489739560.html#gsc.tab=0) 2022年7月14日付
-薙刀式v15(仮)B1 を Autohotkey に実装しました。
+2022年8月24日付[【薙刀式】淘汰圧こそ発明のエネルギー](http://oookaworks.seesaa.net/article/490966325.html#gsc.tab=0)
+の薙刀式を Autohotkey に実装しました。
 
+この配列は下記のところでも紹介があります。
+- 2022年7月3日付[【薙刀式】v15Bのいま](http://oookaworks.seesaa.net/article/489466649.html#gsc.tab=0)
+- 2022年7月6日付[【薙刀式】v15候補は現在みっつ](http://oookaworks.seesaa.net/article/489564522.html#gsc.tab=0) の【v15B2】にて
+- 2022年7月9日付[【薙刀式】「さ」と「つ」の連接の違い](http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0) にある [薙刀式15（仮）安定版.txt](https://oookaworks.up.seesaa.net/image/E89699E58880E5BC8F15EFBC88E4BBAEEFBC89E5AE89E5AE9AE78988.txt)
+---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
 トレイアイコンを右クリックしたところに、縦書き・横書きモード切り替え、設定メニューがあります。  
 レジストリの変更はしません。  

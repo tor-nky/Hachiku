@@ -162,12 +162,12 @@ ControlReplace(in)	; (in: String) -> String
 	StringReplace, str, str, {タブ,			{Tab,		A
 	StringReplace, str, str, {空白,			{vk20,		A
 	StringReplace, str, str, {メニュー,		{AppsKey,	A
-
 	StringReplace, str, str, {Caps Lock,	{vkF0,		A
 	StringReplace, str, str, {Back Space,	{BS,		A
 
 	StringReplace, str, str, {漢字,			{vk19,		A
 	StringReplace, str, str, {英数,			{vkF0,		A
+	StringReplace, str, str, {Space,		{vk20,		A
 
 	Return str
 }
@@ -236,7 +236,7 @@ Analysis(str)	; (str: String) -> String
 					ret .= "{NoIME}"
 				kakutei := noIME := True
 			}
-			Else If (strSub = "{確定}")
+			Else If (strSub == "{確定}")
 			{
 				If (!kakutei)
 					ret .= "{確定}"
@@ -270,19 +270,24 @@ Analysis(str)	; (str: String) -> String
 				noIME := False
 			}
 			Else If (strSub = "{IMEON}"
-				|| strSub = "{vkF3}"		|| strSub = "{vkF0}"
-				|| InStr(strSub, "{vkF2")	|| InStr(strSub, "{vkF1")
+				|| strSub = "{vkF3}"		|| strSub = "{vkF4}"		; 半角/全角
+				|| strSub = "{vk19}"									; 漢字	Alt+`
+				|| strSub = "{vkF0}"									; 英数
+				|| InStr(strSub, "{vk16")								; (Mac)かな
+				|| InStr(strSub, "{vk1A")								; (Mac)英数
+				|| InStr(strSub, "{vkF2")								; ひらがな
+				|| InStr(strSub, "{vkF1")								; カタカナ
 				|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
 			{
 				ret .= strSub
 				noIME := False
 			}
-			Else If (InStr(strSub, "{BS}")		|| InStr(strSub, "{Del}")
-				  || InStr(strSub, "{Esc}")
-				  || InStr(strSub, "{Up}")		|| InStr(strSub, "{Left}")
-				  || InStr(strSub, "{Right}")	|| InStr(strSub, "{Down}")
-				  || InStr(strSub, "{Home}")	|| InStr(strSub, "{End}")
-				  || InStr(strSub, "{PgUp}")	|| InStr(strSub, "{PgDn}"))
+			Else If (InStr(strSub, "{BS")		|| InStr(strSub, "{Del")
+				  || InStr(strSub, "{Esc")
+				  || InStr(strSub, "{Up")		|| InStr(strSub, "{Left")
+				  || InStr(strSub, "{Right")	|| InStr(strSub, "{Down")
+				  || InStr(strSub, "{Home")		|| InStr(strSub, "{End")
+				  || InStr(strSub, "{PgUp")		|| InStr(strSub, "{PgDn"))
 				ret .= strSub
 			Else
 			{
@@ -602,7 +607,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						{
 							Send, _
 							Send, {Enter}
-							Sleep, 40	; その他
+							Sleep, 90
 							out := "{BS}"
 						}
 					}
@@ -640,19 +645,23 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				IME_SET(1)		; IMEオン
 				lastDelay := IME_Get_Interval
 			}
-			Else If (strSub = "{vkF3}" || strSub = "{vkF0}")	; 半角/全角キー、英数キー
+			Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
+				|| strSub = "{vk19}"							; 漢字	Alt+`
+				|| strSub = "{vkF0}"							; 英数
+				|| InStr(strSub, "{vk16")						; 装飾 + (Mac)かな
+				|| InStr(strSub, "{vk1A"))						; 装飾 + (Mac)英数
 			{
 				noIME := False
 				out := strSub
-				postDelay := (i < strLength ? 30 : 40)
+				postDelay := 30
 			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがなキー
+			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがな
 			{
 				noIME := False
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := (i < strLength ? 30 : 40)
+					postDelay := 30
 				}
 				Else
 				{
@@ -662,13 +671,13 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				}
 				kanaMode := 1
 			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナキー
+			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナ
 			{
 				noIME := False
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := (i < strLength ? 30 : 40)
+					postDelay := 30
 				}
 				Else
 				{
@@ -745,7 +754,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub = "{C_Rstr}")
 			{
 				Clipboard := clipSaved		;クリップボードの内容を復元
-				clipSaved =					;保存用変数に使ったメモリを開放
+				clipSaved :=					;保存用変数に使ったメモリを開放
 			}
 			Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 			{
@@ -1077,8 +1086,8 @@ Convert()	; () -> Void
 		, ent		:= 0	; Bool型	エンター
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local keyTime			; Double型	キーを押した時間
-;		, imeState			; Bool型
-;		, imeConvMode		; Int型
+;		, imeState			; Bool?型
+;		, imeConvMode		; Int?型
 ;		, nowKey			; String型
 ;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
