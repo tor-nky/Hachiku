@@ -102,9 +102,9 @@ MS-IMEをお使いでしたら、IMEに対する設定をご確認ください�
 * (Google 日本語入力) 左右シフト英数に設定していると、左右シフトを離した後の英字がローマ字  
 Google 日本語入力 が一時的に英数入力になっていることを検出できないからです。
 # 動作確認
-* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.03) U32 Unicode 32-bit.bin  
+* Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.04) U32 Unicode 32-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力
-* Windows 11 Pro version 21H2 + AutoHotkey (v1.1.34.03) U32 Unicode 32-bit.bin  
+* Windows 11 Pro version 21H2 + AutoHotkey (v1.1.34.04) U32 Unicode 32-bit.bin  
 新MS-IME ── 不具合については上に記した通り  
 旧MS-IME ── __入力したかなのローマ字の頭文字だけ出力されても、Windowsを再起動すると直りそうです__
 # 参考

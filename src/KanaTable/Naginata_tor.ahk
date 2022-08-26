@@ -378,11 +378,11 @@ kanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 kanaGroup := ""	; グループなし
-	SetKana( KC_H | KC_J			,"{ひらがな 2}")		; IME ON
+	SetKana( KC_H | KC_J			,"{ひらがな}")			; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
-	SetKana( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{確定}{IMEOFF}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
-;	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")	; カタカナ入力
+	SetKana( KC_F | KC_G			,"{確定}{全角}"	)		; IME OFF
+	SetEisu( KC_F | KC_G			,"{確定}{ひらがな}{全角}")	; (ATOK)英語入力ON は "{ひらがな 2}{英数}")
+;	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな}{カタカナ}")	; カタカナ入力
 ;	SetEisu( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")
 ;	SetKana( KC_F | KC_G | KC_SPC	,"{全英}"	)				; 全角英数入力
 ;	SetEisu( KC_F | KC_G | KC_SPC	,"{全英}"	)

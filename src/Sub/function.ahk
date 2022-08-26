@@ -176,8 +176,10 @@ ControlReplace(in)	; (in: String) -> String
 ; "{直接}"は"{Raw}"に書き換え
 Analysis(str)	; (str: String) -> String
 {
-;	local strLength, strSub, strSubLength, ret, c
-;		, i, bracket, kakutei, noIME
+;	local strLength, strSubLength	; Int型
+;		, strSub, ret, c			; String型
+;		, i, bracket				; Int型
+;		, kakutei, noIME			; Bool型
 
 	If (str = "{Raw}" || str = "{直接}")
 		; 有効な文字列がないので空白を返す
@@ -217,8 +219,8 @@ Analysis(str)	; (str: String) -> String
 
 			strSub := ControlReplace(strSub)
 
-			If ((Asc(strSub) > 127 || RegExMatch(strSub, "^\{U\+")
-				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127)))
+			If (Asc(strSub) > 127 || RegExMatch(strSub, "^\{U\+")
+				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
 			{
 				; ASCIIコード以外の文字は IMEをオフにして出力
 				If (!kakutei)
@@ -607,7 +609,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						{
 							Send, _
 							Send, {Enter}
-							Sleep, 90
+							; {確定} のすぐ後に {IMEOFF} が続くときは Sleep を長めに
+							Sleep, % (SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90 : 40)
 							out := "{BS}"
 						}
 					}
