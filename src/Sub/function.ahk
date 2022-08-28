@@ -628,7 +628,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				{
 					noIME := True
 					imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
-					kanaMode := imeConvMode & 1	; 英数入力かかな入力か保存する
+					If (imeConvMode != "")
+						kanaMode := imeConvMode & 1	; 英数入力かかな入力か保存する
 					out := "{vkF3}"		; 半角/全角
 					postDelay := 30
 				}
@@ -746,9 +747,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				postDelay := (imeName == "ATOK" ? 100 : 40)
 			}
 			Else If (strSub = "{C_Clr}")
-				clipboard =					;クリップボードを空にする
+				clipboard :=				;クリップボードを空にする
 			Else If (SubStr(strSub, 1, 7) = "{C_Wait")
-			{	; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+			{
+				; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
 				Wait := SubStr(strSub, 9, strSubLength - 9)
 				ClipWait, (Wait ? Wait : 0.2), 1
 			}
@@ -857,7 +859,8 @@ SendKeyUp(str:="")	; (str: String) -> Void
 	If (restStr != "")
 	{
 		If (SubStr(restStr, StrLen(restStr) - 9, 9) = "{ShiftUp}")
-		{	; 押し下げを出力中のキーは {ShiftUp} あり
+		{
+			; 押し下げを出力中のキーは {ShiftUp} あり
 			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))	; "{ShiftUp}" より左を出力
 			; 入れ替えるキーに {ShiftUp} なし
 			If (SubStr(str, StrLen(str) - 9, 9) != "{ShiftUp}")
@@ -1134,7 +1137,8 @@ Convert()	; () -> Void
 			}
 		}
 		Else
-		{	; 前回の残りを読み出し
+		{
+			; 前回の残りを読み出し
 			nowKey := nextKey
 			nextKey := ""
 		}
@@ -1143,10 +1147,11 @@ Convert()	; () -> Void
 		imeConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			kanaMode := 0
-		Else If ((Asc(nowKey) == 43 || sft || rsft) && sideShift <= 1)	; 左右シフト英数２
+		Else If (sideShift <= 1 && (sft || rsft || Asc(nowKey) == 43))	; 左右シフト英数２
 			kanaMode := 0
 		Else If (lastSendTime + IME_Get_Interval <= QPC())
-		{	; IME状態を確実に検出できる時
+		{
+			; IME状態を確実に検出できる時
 			imeState := IME_GET()
 			If (imeState == 0)
 				kanaMode := 0
@@ -1349,7 +1354,8 @@ Convert()	; () -> Void
 				shiftStyle := ((realBit & KC_SPC) ? combKeyUpS : combKeyUpN)
 
 			If (keyUpToOutputAll || (lastBit & nowBit))
-			{	; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
+			{
+				; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
 				lastToBuf := ""
@@ -1359,7 +1365,8 @@ Convert()	; () -> Void
 					last2Bit := lastBit := 0
 			}
 			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == last2Bit)
-			{	; 同時押しにならなくなった
+			{
+				; 同時押しにならなくなった
 				OutBuf(1)	; 1個出力
 				combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
 			}
@@ -1383,7 +1390,8 @@ Convert()	; () -> Void
 		}
 		; リピート中のキー
 		Else If (repeatBit && nowBit == repeatBit && lastToBuf != "")
-		{	; 前回の文字列を出力
+		{
+			; 前回の文字列を出力
 			If (!outStrsLength)
 				StoreBuf(lastToBuf, 0, ctrlName)
 			OutBuf()
