@@ -816,12 +816,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					Sleep, % preDelay - lastDelay
 				Send, {vkF3}	; 半角/全角
 				Sleep, % (lastDelay := postDelay)
-				; IME入力モードを回復する
-				If (imeName == "ATOK")
-				{
-					IME_SetConvMode(imeConvMode)
-					lastDelay := 0
-				}
 /*			; ※IME_SET(1) を使う方法
 				preDelay := (imeName == "ATOK" ? 80 : 10)
 				; 前回の出力からの時間が短ければ、ディレイを入れる
