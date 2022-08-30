@@ -609,8 +609,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						{
 							Send, _
 							Send, {Enter}
-							; {確定} のすぐ後に {IMEOFF} が続くときは Sleep を長めに
-							Sleep, % (SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90 : 40)
+							; {確定} のすぐ後に {IMEOFF} が続くときと
+							; Firefox で {NoIME} が続くときは Sleep を長めに
+							Sleep, % (SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90
+								: (process == "firefox.exe" && SubStr(str, i + 1, 7) = "{NoIME}" ? 70
+								: 40))
 							out := "{BS}"
 						}
 					}
