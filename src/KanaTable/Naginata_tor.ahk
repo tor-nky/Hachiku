@@ -55,7 +55,8 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式配列2022年3月4日/2022年4月7日付"
+	layoutName := "薙刀式v15 fix版（仮）"
+		; "長刀式配列2022年3月4日／4月7日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 ;	ReadWorkmanLayout()		; Workman配列
