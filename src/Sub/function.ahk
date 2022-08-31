@@ -609,11 +609,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						{
 							Send, _
 							Send, {Enter}
-							; {確定} のすぐ後に {IMEOFF} が続くときと
-							; Firefox で {NoIME} が続くときは Sleep を長めに
-							Sleep, % (SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90
-								: (process == "firefox.exe" && SubStr(str, i + 1, 7) = "{NoIME}" ? 70
-								: 40))
+							; {確定} のすぐ後に {IMEOFF} か {NoIME} が続くときは Sleep を長めに
+							Sleep, % (SubStr(str, i + 1, 7) = "{NoIME}" || SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90 : 40)
 							out := "{BS}"
 						}
 					}
@@ -1144,7 +1141,7 @@ Convert()	; () -> Void
 		imeConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ている時
 			kanaMode := 0
-		Else If (sideShift <= 1 && (sft || rsft || Asc(nowKey) == 43))	; 左右シフト英数２
+		Else If (sideShift <= 1 && (sft || rsft))	; 左右シフト英数２
 			kanaMode := 0
 		Else If (lastSendTime + IME_Get_Interval <= QPC())
 		{
