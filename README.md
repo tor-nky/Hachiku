@@ -1,12 +1,7 @@
 ﻿# Hachiku - Windows で薙刀式を使うスクリプト
-2022年8月30日付[【薙刀式】v15（仮）の現在の2候補](http://oookaworks.seesaa.net/article/491051071.html#gsc.tab=0)
-の薙刀式v15（仮）B101 を Autohotkey に実装しました。
+2022年9月1日付[【薙刀式】15B102（最新）](http://oookaworks.seesaa.net/article/491147874.html#gsc.tab=0)
+の薙刀式v15（仮）B102 を Autohotkey に実装しました。
 
-この配列は下記のところでも紹介があります。
-- 2022年7月3日付[【薙刀式】v15Bのいま](http://oookaworks.seesaa.net/article/489466649.html#gsc.tab=0)
-- 2022年7月6日付[【薙刀式】v15候補は現在みっつ](http://oookaworks.seesaa.net/article/489564522.html#gsc.tab=0) の【v15B2】にて
-- 2022年7月9日付[【薙刀式】「さ」と「つ」の連接の違い](http://oookaworks.seesaa.net/article/489626618.html#gsc.tab=0) にある [薙刀式15（仮）安定版.txt](https://oookaworks.up.seesaa.net/image/E89699E58880E5BC8F15EFBC88E4BBAEEFBC89E5AE89E5AE9AE78988.txt)
-- 2022年8月24日付[【薙刀式】淘汰圧こそ発明のエネルギー](http://oookaworks.seesaa.net/article/490966325.html#gsc.tab=0)
 ---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
 トレイアイコンを右クリックしたところに、縦書き・横書きモード切り替え、設定メニューがあります。  
@@ -91,10 +86,15 @@ IME の設定を見直すのも良いかもしれません。
 * 入力したはずのキーがごくまれに無視される  
 ~~AutoHotkey の 64ビット版で起きやすいんですが、32ビット版でも起きることがあります。~~
 * 薙刀式に変換が正しく行われないことがある  
-新MS-IME(Win10 2004以降の標準)ではたまに「かな」が英字に化けます。
+新MS-IME(Win10 2004以降の標準)ではよく「かな」が英字に化けます。  
+2022年9月1日現在
+|バージョン   |誤変換頻度                    |
+|-------------|------------------------------|
+|Windows 10 用|日本語変換後300～1000字に1回程|
+|Windows 11 用|日本語変換後20～300字に1回程  |
 * IMEの設定変更をしなければ、編集モードや固有名詞の入力でIME 入力モード切替の通知が出る。  
 一部の記号を出力するために一旦、IMEをオフにしているためです。  
-MS-IMEをお使いでしたら、IMEに対する設定をご確認ください。
+IMEに対する設定をご確認ください。
 * (新MS-IME) かな変換中に英数入力に切り替え、確定しないでキーを押すと最初の文字が入力されない。  
 新MS-IME の仕様です。
 * (新MS-IME) かな入力できなくなったり、入力中のかなが消せなくなることがある  
@@ -107,7 +107,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 新旧MS-IME、ATOK 2017、Google 日本語入力
 * Windows 11 Pro version 21H2 + AutoHotkey (v1.1.34.04) U64 Unicode 64-bit.bin  
 新MS-IME ── 不具合については上に記した通り  
-旧MS-IME ── __入力したかなのローマ字の頭文字だけ出力されても、Windowsを再起動すると直りそうです__
+旧MS-IME ── __かなのローマ字の頭文字だけ出力されるようになっても、Windowsを再起動すると直るようです__
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15候補](http://oookaworks.seesaa.net/article/489739560.html#gsc.tab=0)
