@@ -176,17 +176,16 @@ ControlReplace(in)	; (in: String) -> String
 ; "{直接}"は"{Raw}"に書き換え
 Analysis(str)	; (str: String) -> String
 {
-	global imeSelect
 ;	local strLength, strSubLength	; Int型
 ;		, strSub, ret, c			; String型
 ;		, i, bracket				; Int型
-;		, kakutei, noIME, nonAscii	; Bool型
+;		, kakutei, noIME			; Bool型
 
 	If (str = "{Raw}" || str = "{直接}")
 		; 有効な文字列がないので空白を返す
 		Return ""
 
-	kakutei := noIME := nonAscii := False
+	kakutei := noIME := False
 	ret := ""	; 変換後文字列
 	strSub := ""
 	strSubLength := 0
@@ -223,54 +222,34 @@ Analysis(str)	; (str: String) -> String
 			If (Asc(strSub) > 127 || RegExMatch(strSub, "^\{U\+")
 				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
 			{
-				; ASCIIコード以外の文字に変化したとき
-				If (!kakutei && !nonAscii)
+				; ASCIIコード以外の文字は IMEをオフにして出力
+				If (!kakutei)
 					ret .= "{確定}"
 				If (!noIME)
-				{
-					; MS-IME 使用時
-					If (!imeSelect)
-					{
-						ret .= "{NoIME}"
-						kakutei := noIME := True
-					}
-					; その他の IME 使用時
-					Else
-						kakutei := False
-				}
+					ret .= "{NoIME}"
 				ret .= strSub
-				nonAscii := True
+				kakutei := noIME := True
 			}
-			Else
+			Else If (strSub = "{NoIME}")
 			{
-				; ASCIIコード以外の文字から変化したとき
-				If (!kakutei && nonAscii)
-				{
+				If (!kakutei)
 					ret .= "{確定}"
-					kakutei := True
-				}
-				nonAscii := False
-
-				If (strSub = "{NoIME}")
-				{
-					If (!kakutei)
-						ret .= "{確定}"
-					If (!noIME)
-						ret .= "{NoIME}"
-					kakutei := noIME := True
-				}
-				Else If (strSub == "{確定}")
-				{
-					If (!kakutei)
-						ret .= "{確定}"
-					kakutei := True
-				}
-				Else If (RegExMatch(strSub, "^\{Enter"))
-				{
-					; "{Enter" で確定状態
-					ret .= strSub
-					kakutei := True
-				}
+				If (!noIME)
+					ret .= "{NoIME}"
+				kakutei := noIME := True
+			}
+			Else If (strSub == "{確定}")
+			{
+				If (!kakutei)
+					ret .= "{確定}"
+				kakutei := True
+			}
+			Else If (RegExMatch(strSub, "^\{Enter"))
+			{
+				; "{Enter" で確定状態
+				ret .= strSub
+				kakutei := True
+			}
 			Else If (str != "^v" && strSub == "^v")
 			{
 				; "^v" 単独は除外
@@ -279,46 +258,45 @@ Analysis(str)	; (str: String) -> String
 				ret .= strSub
 				kakutei := True
 			}
-				Else If (strSub = "{UndoIME}")
-				{
-					; IME入力モードの回復
-					If (noIME)
-						ret .= "{UndoIME}"
-					noIME := False
-				}
-				Else If (strSub = "{IMEOFF}")
-				{
-					ret .= strSub
-					kakutei := True
-					noIME := False
-				}
-				Else If (strSub = "{IMEON}"
-					|| strSub = "{vkF3}"		|| strSub = "{vkF4}"		; 半角/全角
-					|| strSub = "{vk19}"									; 漢字	Alt+`
-					|| strSub = "{vkF0}"									; 英数
-					|| InStr(strSub, "{vk16")								; (Mac)かな
-					|| InStr(strSub, "{vk1A")								; (Mac)英数
-					|| InStr(strSub, "{vkF2")								; ひらがな
-					|| InStr(strSub, "{vkF1")								; カタカナ
-					|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
-				{
-					ret .= strSub
-					noIME := False
-				}
-				Else If (InStr(strSub, "{BS")		|| InStr(strSub, "{Del")
-					|| InStr(strSub, "{Esc")
-					|| InStr(strSub, "{Up")		|| InStr(strSub, "{Left")
-					|| InStr(strSub, "{Right")	|| InStr(strSub, "{Down")
-					|| InStr(strSub, "{Home")		|| InStr(strSub, "{End")
-					|| InStr(strSub, "{PgUp")		|| InStr(strSub, "{PgDn"))
-					ret .= strSub
-				Else
-				{
-					; 空白は {vk20} に変える
-					ret .= (strSub == " " ? "{vk20}" : strSub)
-					If (!noIME)
-						kakutei := False
-				}
+			Else If (strSub = "{UndoIME}")
+			{
+				; IME入力モードの回復
+				If (noIME)
+					ret .= "{UndoIME}"
+				noIME := False
+			}
+			Else If (strSub = "{IMEOFF}")
+			{
+				ret .= strSub
+				kakutei := True
+				noIME := False
+			}
+			Else If (strSub = "{IMEON}"
+				|| strSub = "{vkF3}"		|| strSub = "{vkF4}"		; 半角/全角
+				|| strSub = "{vk19}"									; 漢字	Alt+`
+				|| strSub = "{vkF0}"									; 英数
+				|| InStr(strSub, "{vk16")								; (Mac)かな
+				|| InStr(strSub, "{vk1A")								; (Mac)英数
+				|| InStr(strSub, "{vkF2")								; ひらがな
+				|| InStr(strSub, "{vkF1")								; カタカナ
+				|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
+			{
+				ret .= strSub
+				noIME := False
+			}
+			Else If (InStr(strSub, "{BS")		|| InStr(strSub, "{Del")
+				  || InStr(strSub, "{Esc")
+				  || InStr(strSub, "{Up")		|| InStr(strSub, "{Left")
+				  || InStr(strSub, "{Right")	|| InStr(strSub, "{Down")
+				  || InStr(strSub, "{Home")		|| InStr(strSub, "{End")
+				  || InStr(strSub, "{PgUp")		|| InStr(strSub, "{PgDn"))
+				ret .= strSub
+			Else
+			{
+				; 空白は {vk20} に変える
+				ret .= (strSub == " " ? "{vk20}" : strSub)
+				If (!noIME)
+					kakutei := False
 			}
 
 			strSub := ""
@@ -326,10 +304,6 @@ Analysis(str)	; (str: String) -> String
 		}
 		i++
 	}
-
-	; 最後の文字がASCIIコード以外だったら、"{確定}"を入れる
-	If (!kakutei && nonAscii)
-		ret .= "{確定}"
 
 	Return ret
 }
@@ -494,7 +468,7 @@ ExistNewMSIME()	; () -> Bool
 DetectIME()	; () -> String
 {
 	global imeSelect, goodHwnd, badHwnd
-	static existNewMSIME := existNewMSIME()
+	static existNewMSIME := ExistNewMSIME()
 		, imeName := "", lastSearchTime := 0
 ;	local value, nowIME	; String型
 
@@ -750,10 +724,20 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (SubStr(strSub, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				out := strSub
-				If (imeName != "NewMSIME")
+				If (imeName == "ATOK")
+				{
+					preDelay := 80
+					postDelay := 100
+				}
+				Else If (imeName == "Google")
 				{
 					preDelay := 30
-					postDelay := 30
+					postDelay := 10
+				}
+				Else If (imeName != "NewMSIME")
+				{
+					preDelay := 60
+					postDelay := 10
 				}
 			}
 			Else If (strSub = "^v")
@@ -804,7 +788,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
 						flag := False
 					}
-					Else If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
+					Else If ((strSubLength == 1 && Asc(strSub) >= 33)
 					|| (strSubLength == 3 && Asc(strSub) == 123))
 						flag := True	; 文字が入力されたとき(ほぼローマ字の文字)
 					Else
