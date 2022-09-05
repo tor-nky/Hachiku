@@ -1408,7 +1408,7 @@ Convert()	; () -> Void
 			{
 				outOfCombDelay := True
 				If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
-					reuseBit := last2Bit := lastBit := 0
+					last2Bit := lastBit := 0
 			}
 			Else
 				outOfCombDelay := False
