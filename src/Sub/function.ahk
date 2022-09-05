@@ -349,7 +349,7 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 		}
 		i++
 	}
-	If ((!ctrlName && ctrlName != R) || tate != "" || yoko != "")
+	If ((ctrlName && ctrlName != R) || tate != "" || yoko != "")
 	{
 		; 定義あり
 		i := defEnd[keyCount]
