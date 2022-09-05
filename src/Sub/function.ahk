@@ -322,7 +322,6 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 ;	local keyCount	; Int型	何キー同時押しか
 ;		, i, imax	; Int型	カウンタ用
 
-
 	; 登録
 	keyCount := CountBit(keyComb)	; 何キー同時押しか
 	i := defBegin[keyCount]			; 始まり
@@ -1100,7 +1099,6 @@ Convert()	; () -> Void
 ;		, shiftStyle		; Int型
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
-;		, outOfCombDelay	; Bool型	IME同時押しの判定期限が来たか
 ;		, interval			; Double型
 
 	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
@@ -1353,6 +1351,7 @@ Convert()	; () -> Void
 				; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
 				OutBuf()
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
+				combinableBit := -1 ; 次の入力でどのキーでも即確定しない
 				lastToBuf := ""
 				lastKeyCount := 0
 				lastGroup := ""
@@ -1396,6 +1395,7 @@ Convert()	; () -> Void
 		Else If (!(realBit & nowBit) || repeatBit)
 		{
 			realBit |= nowBit
+
 			; 文字キーによるシフトの適用範囲
 			If (combLimitE && !kanaMode)
 				shiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
@@ -1403,23 +1403,25 @@ Convert()	; () -> Void
 				shiftStyle := ((realBit & KC_SPC) ? combStyleS : combStyleN)
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
-			; 同時押しの判定期限到来
-			If (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
-			 && ((combLimitN && !(realBit & KC_SPC)) || (combLimitS && (realBit & KC_SPC)) || (combLimitE && !kanaMode)))
+			; 仮出力バッファに何か入っている
+			If (outStrsLength)
 			{
-				outOfCombDelay := True
-				If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
-					reuseBit := last2Bit := lastBit := 0
+				; 一つ前に押したキーと同時押しにならない
+				; または同時押しの判定期限到来
+				If (!(combinableBit & nowBit)
+					|| (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
+					&& ((combLimitN && !(realBit & KC_SPC)) || (combLimitS && (realBit & KC_SPC)) || (combLimitE && !kanaMode))))
+				{
+					OutBuf()
+					If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
+						reuseBit := last2Bit := lastBit := 0
+				}
+				; 前のキーが出力確定していなかったら同グループ優先で検索しない
+				Else
+					lastGroup := ""
 			}
-			Else
-				outOfCombDelay := False
-			; 一つ前に押したキーとは同時押しにならないので出力
-			; 同時押しの判定期限が過ぎたものもここで出力
-			If (outStrsLength && (!(combinableBit & nowBit) || outOfCombDelay))
-				OutBuf()
-			; 前のキーが出力確定していなかったら同グループ優先で検索しない
-			Else If (outStrsLength)
-				lastGroup := ""
+
+			; 検索ループ
 			backCount := 0
 			While (!keyCount)
 			{
@@ -1435,17 +1437,11 @@ Convert()	; () -> Void
 					{
 						defKeyCopy := defsKey[i]
 						If ((defKeyCopy & nowBit) ; 今回のキーを含み
-							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーはいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == (searchBit & KC_SPC) ; シフトの相違はなく
 							&& defsKanaMode[i] == kanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							If (shiftStyle == 3 && lastKeyCount >= 3 && nowBit != KC_SPC)
-							{
-								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								reuseBit := last2Bit := lastBit := 0
-								Break
-							}
-							Else If (!lastGroup || lastGroup == defsGroup[i])
+							If (!lastGroup || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
@@ -1470,17 +1466,11 @@ Convert()	; () -> Void
 					{
 						defKeyCopy := defsKey[i]
 						If ((defKeyCopy & nowBit) ; 今回のキーを含み
-							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索中のキー集合が、いま調べている定義内にあり
+							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーはいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == (searchBit & KC_SPC) ; シフトの相違はなく
 							&& defsKanaMode[i] == kanaMode)	; 英数用、かな用の種別が一致していること
 						{
-							If (shiftStyle == 3 && lastKeyCount >= 2 && nowBit != KC_SPC)
-							{
-								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								reuseBit := last2Bit := lastBit := 0
-								Break
-							}
-							Else If (!lastGroup || lastGroup == defsGroup[i])
+							If (!lastGroup || lastGroup == defsGroup[i])
 							{
 								; 見つかった!
 								If (outStrsLength >= 2)
@@ -1602,8 +1592,12 @@ Convert()	; () -> Void
 
 			; 出力処理
 			If (combinableBit == 0 || (shiftDelay <= 0 && combinableBit == KC_SPC))
+			{
 				; 出力確定
 				OutBuf()
+				If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
+					last2Bit := lastBit := 0
+			}
 			Else
 			{
 				SendKeyUp()	; 押し下げを出力したままのキーを上げる
