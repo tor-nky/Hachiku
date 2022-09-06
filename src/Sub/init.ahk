@@ -189,7 +189,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		IniRead, combLimitS, %iniFilePath%, Advanced, CombLimitS, 1
 ;		文字キーシフト		0または空: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
 		IniRead, combStyleS, %iniFilePath%, Advanced, CombStyleS, 3
-;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全解除 ※他は1と同じ
+;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全部出力なら解除 ※他は1と同じ
 		IniRead, combKeyUpS, %iniFilePath%, Advanced, CombKeyUpS, 2
 ;	英数時の同時打鍵期限を強制する	0または空: なし, 他: あり
 		IniRead, combLimitE, %iniFilePath%, Advanced, CombLimitE, 0
@@ -473,7 +473,7 @@ PrefMenu:
 				Gui, Add, Text, xm+20 y+5, キーを離すと
 				Gui, Add, Radio, xm+105 yp+0 Group VcombKeyUpN0, 全復活
 				Gui, Add, Radio, x+0 VcombKeyUpN1, そのまま
-				Gui, Add, Radio, x+0 VcombKeyUpN2, 全解除
+				Gui, Add, Radio, x+0 VcombKeyUpN2, 全部出力なら解除
 				If (combKeyUpN0)
 					GuiControl, , combKeyUpN0, 1
 				Else If (combKeyUpN1)
@@ -502,7 +502,7 @@ PrefMenu:
 				Gui, Add, Text, xm+20 y+5, キーを離すと
 				Gui, Add, Radio, xm+105 yp+0 Group VcombKeyUpS0, 全復活
 				Gui, Add, Radio, x+0 VcombKeyUpS1, そのまま
-				Gui, Add, Radio, x+0 VcombKeyUpS2, 全解除
+				Gui, Add, Radio, x+0 VcombKeyUpS2, 全部出力なら解除
 				If (combKeyUpS0)
 					GuiControl, , combKeyUpS0, 1
 				Else If (combKeyUpS1)

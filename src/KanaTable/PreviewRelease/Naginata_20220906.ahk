@@ -7,6 +7,10 @@
 ; http://oookaworks.seesaa.net/article/491147874.html#gsc.tab=0
 ; (2022年09月01日)より
 ;
+; 【薙刀式】v15（仮）B103
+; http://oookaworks.seesaa.net/article/491260509.html#gsc.tab=0
+; (2022年09月06日)より
+;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -17,7 +21,6 @@
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
-;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
 
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
@@ -49,11 +52,10 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式v15(仮)B102"
-		; "薙刀式2022年9月1日付"
+	layoutName := "薙刀式v15(仮)B103"
+		; "薙刀式2022年9月6日付"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
-;	ReadWorkmanLayout()		; Workman配列
 
 	; -----------------------------------------
 	; 別名登録	Int64型
@@ -64,7 +66,7 @@ ReadLayout()	; () -> Void
 	AL_し	:= AL_ね				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
-	AL_BS	:= AL_さ				:= KC_U
+	AL_BS	:= AL_せ				:= KC_U
 	AL_る	:= AL_よ				:= KC_I
 	AL_す	:= AL_え				:= KC_O
 	AL_へ	:= AL_ゆ				:= KC_P
@@ -77,7 +79,7 @@ ReadLayout()	; () -> Void
 	AL_く	:= AL_や				:= KC_H
 	AL_あ	:= AL_の	:= AL_右濁	:= KC_J
 	AL_い	:= AL_も				:= KC_K
-	AL_う	:= AL_せ				:= KC_L
+	AL_う	:= AL_さ				:= KC_L
 	AL_ー	:= AL_つ				:= KC_SCLN
 
 	AL_ほ							:= KC_Z
@@ -139,7 +141,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
 	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
 	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
-	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
+	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
 	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
@@ -151,7 +153,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_や | KC_SPC		,"ya"		)		; や
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
-	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
+	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
@@ -176,11 +178,11 @@ kanaGroup := ""	; グループなし
 
 ; 右手の濁音
 kanaGroup := "DA"
-	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
+	SetKana( AL_左濁 | AL_せ			,"ze"	)	; ぜ
 	SetKana( AL_左濁 | AL_す			,"zu"	)	; ず
 	SetKana( AL_左濁 | AL_へ			,"be"	)	; べ
 	SetKana( AL_左濁 | AL_く			,"gu"	)	; ぐ
-	SetKana( AL_左濁 | AL_せ			,"ze"	)	; ぜ
+	SetKana( AL_左濁 | AL_さ			,"za"	)	; ざ
 	SetKana( AL_左濁 | AL_つ			,"du"	)	; づ
 	SetKana( AL_左濁 | AL_た			,"da"	)	; だ
 
@@ -366,12 +368,8 @@ kanaGroup := "HA"
 kanaGroup := ""	; グループなし
 	SetKana( KC_H | KC_J			,"{ひらがな}")			; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
-	SetKana( KC_F | KC_G			,"{確定}{全角}"	)		; IME OFF
-	SetEisu( KC_F | KC_G			,"{確定}{ひらがな}{全角}")	; (ATOK)英語入力ON は "{ひらがな 2}{英数}")
-;	SetKana( KC_H | KC_J | KC_SPC	,"{ひらがな}{カタカナ}")	; カタカナ入力
-;	SetEisu( KC_H | KC_J | KC_SPC	,"{ひらがな 2}{カタカナ}")
-;	SetKana( KC_F | KC_G | KC_SPC	,"{全英}"	)				; 全角英数入力
-;	SetEisu( KC_F | KC_G | KC_SPC	,"{全英}"	)
+	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
 
 ; Enter
 ; VとMの同時押し
@@ -393,7 +391,7 @@ kanaGroup := "HA"
 
 ; 左手
 kanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetKana( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -409,7 +407,7 @@ kanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_G		,"{確定}{End}{改行}「」{確定}{↑}"	)	; ⏎「」
 	SetKana( KC_J | KC_K | KC_B		,"{確定}{End}{改行}　"				)	; ⏎□
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 新
+	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"							)	; 新
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
 	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
 	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"					)	; 『』
@@ -627,11 +625,6 @@ KoyuRegist()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
 
-	; 固有名詞ショートカット(U+I)を押し続けて
-	; 前文字削除(U)のリピートが起きる場合があるので対策
-	kanaGroup := ""	; グループなし
-		SetKana( KC_U | KC_I				,"{Null}")	; ダミー
-
 ;**************************************
 ; 固有名詞ショートカット
 ; 上段人差指＋中指
@@ -781,10 +774,3 @@ KoyuRegist()	; () -> Void
 ; ----------------------------------------------------------------------
 +^sc0B::Suspend, On		; 薙刀式中断 Shift+Ctrl+0
 +^sc02::Suspend, Off	; 薙刀式再開 Shift+Ctrl+1
-
-; 新MS-IME使用で
-#If (DetectIME() == "NewMSIME")
-; 変換
-sc79::Send, {sc79 9}
-+sc79::Send, +{sc79 9}
-#If		; End #If ()

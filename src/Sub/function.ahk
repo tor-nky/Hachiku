@@ -1099,7 +1099,6 @@ Convert()	; () -> Void
 ;		, shiftStyle		; Int型
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
-;		, outOfCombDelay	; Bool型	IME同時押しの判定期限が来たか
 ;		, interval			; Double型
 
 	SetTimer, KeyTimer, Off		; 判定期限タイマー停止
@@ -1355,7 +1354,7 @@ Convert()	; () -> Void
 				lastToBuf := ""
 				lastKeyCount := 0
 				lastGroup := ""
-				If (shiftStyle == 2)	; 全解除
+				If (shiftStyle == 2)	; 全部出力なら解除
 					last2Bit := lastBit := 0
 			}
 			; 一つ前に押したキーを離した
@@ -1364,10 +1363,11 @@ Convert()	; () -> Void
 			; カーソルキー等
 			Else If (!nowBit)
 				SendKeyUp()	; 押し下げを出力中のキーを上げる
+
 			repeatBit &= bitMask
-			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			last2Bit &= bitMask
 			lastBit &= bitMask
+			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
@@ -1391,7 +1391,7 @@ Convert()	; () -> Void
 			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
-		Else If (!(realBit & nowBit) || repeatBit)
+		Else If !(realBit & nowBit)
 		{
 			realBit |= nowBit
 
@@ -1402,23 +1402,17 @@ Convert()	; () -> Void
 				shiftStyle := ((realBit & KC_SPC) ? combStyleS : combStyleN)
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
-			; 同時押しの判定期限到来
-			If (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
-			 && ((combLimitN && !(realBit & KC_SPC)) || (combLimitS && (realBit & KC_SPC)) || (combLimitE && !kanaMode)))
-			{
-				outOfCombDelay := True
-				If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
-					last2Bit := lastBit := 0
-			}
-			Else
-				outOfCombDelay := False
-			; 一つ前に押したキーとは同時押しにならないので出力
-			; 同時押しの判定期限が過ぎたものもここで出力
-			If (outStrsLength && (!(combinableBit & nowBit) || outOfCombDelay))
+			; 前に押したキーと同時押しにならない
+			; または同時押しの判定期限到来
+			If (outStrsLength
+			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
+			 && ((combLimitN && !(realBit & KC_SPC)) || (combLimitS && (realBit & KC_SPC)) || (combLimitE && !kanaMode)) )))
 				OutBuf()
-			; 前のキーが出力確定していなかったら同グループ優先で検索しない
-			Else If (outStrsLength)
+			; 前に押したキーが出力確定にならなかったら同グループ優先で検索しない
+			If (outStrsLength)
 				lastGroup := ""
+			Else If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
+				last2Bit := lastBit := 0
 
 			; 検索ループ
 			backCount := 0
@@ -1438,23 +1432,15 @@ Convert()	; () -> Void
 						If ((defKeyCopy & nowBit) ; 今回のキーを含み
 							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == (searchBit & KC_SPC) ; シフトの相違はなく
-							&& defsKanaMode[i] == kanaMode)	; 英数用、かな用の種別が一致していること
+							&& defsKanaMode[i] == kanaMode	; 英数用、かな用の種別が一致していること
+							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
-							If (shiftStyle == 3 && lastKeyCount >= 3 && nowBit != KC_SPC)
-							{
-								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								reuseBit := last2Bit := lastBit := 0
-								Break
-							}
-							Else If (!lastGroup || lastGroup == defsGroup[i])
-							{
-								; 見つかった!
-								; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
-								; 前回が1キー入力だったら仮出力バッファの2文字消す
-								backCount := (lastKeyCount >= 2 ? 1 : 2)
-								keyCount := 3
-								Break
-							}
+							; 見つかった!
+							; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
+							; 前回が1キー入力だったら仮出力バッファの2文字消す
+							backCount := (lastKeyCount >= 2 ? 1 : 2)
+							keyCount := 3
+							Break
 						}
 						i++
 					}
@@ -1473,24 +1459,16 @@ Convert()	; () -> Void
 						If ((defKeyCopy & nowBit) ; 今回のキーを含み
 							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == (searchBit & KC_SPC) ; シフトの相違はなく
-							&& defsKanaMode[i] == kanaMode)	; 英数用、かな用の種別が一致していること
+							&& defsKanaMode[i] == kanaMode	; 英数用、かな用の種別が一致していること
+							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
-							If (shiftStyle == 3 && lastKeyCount >= 2 && nowBit != KC_SPC)
-							{
-								; 文字キーシフト「1回のみ」で再びなので、1キー入力の検索へ
-								reuseBit := last2Bit := lastBit := 0
-								Break
-							}
-							Else If (!lastGroup || lastGroup == defsGroup[i])
-							{
-								; 見つかった!
-								If (outStrsLength >= 2)
-									; 2つ前に押したキーを出力
-									OutBuf(1)
-								backCount := (lastKeyCount >= 2 && nowBit != KC_SPC ? 0 : 1)
-								keyCount := 2
-								Break
-							}
+							; 見つかった!
+							If (outStrsLength >= 2)
+								; 2つ前に押したキーを出力
+								OutBuf(1)
+							backCount := (lastKeyCount >= 2 && nowBit != KC_SPC ? 0 : 1)
+							keyCount := 2
+							Break
 						}
 						i++
 					}
