@@ -36,7 +36,7 @@ SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自�
 ; ----------------------------------------------------------------------
 ; 定数
 ; ----------------------------------------------------------------------
-IME_Get_Interval := 17	; Int型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
+IME_Get_Interval := 17		; Int型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
 
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数	Int64型定数
@@ -361,16 +361,18 @@ ButtonOK:
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
 
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
-	DeleteDefs()	; 配列定義をすべて消去する
-	ReadLayout()	; かな配列読み込み
-	SettingLayout()	; 出力確定する定義に印をつける
-	If (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在したら
-		ChangeVertical(vertical)	; トレイアイコン変更
+	DeleteDefs()		; 配列定義をすべて消去する
+	ReadLayout()		; かな配列読み込み
+	SettingLayout()		; 出力確定する定義に印をつける
+	; 関数 KoyuRegist が存在したらトレイアイコン変更
+	If (IsFunc("KoyuRegist"))
+		ChangeVertical(vertical)
 GuiEscape:
 ButtonCancel:
 ButtonClose:
 GuiClose:
-	goodHwnd := badHwnd := 0	; IME窓の検出可否をリセット
+	; IME窓の検出可否をリセット
+	goodHwnd := badHwnd := 0
 	Gui, Destroy
 	Return
 
@@ -380,13 +382,15 @@ PrefMenu:
 	Gui, -MinimizeBox
 	Gui, Add, Text, , 設定
 
-	If (advancedMenu)	; 詳細メニュー
+	; 詳細メニューあり
+	If (advancedMenu)
 	{
 		Gui, Add, Text, x+200 W180 Right, %version%
 		Gui, Add, Tab2, xm+168 y+0 Section W120 Buttons Center, 基本|詳細
 		Gui, Tab, 基本
 	}
-	Else	; 詳細メニュー不要の時
+	; 詳細メニュー不要の時
+	Else
 		Gui, Add, Text, x+0 W230 Right Section, %version%
 
 	Gui, Add, Text, xm ys+25, IMEの選択
@@ -400,7 +404,8 @@ PrefMenu:
 	Else
 		GuiControl, , imeSelect2, 1
 
-	If (IsFunc("USLikeLayout"))	; 関数 USLikeLayout が存在したら
+	; 関数 USLikeLayout が存在したら
+	If (IsFunc("USLikeLayout"))
 	{
 		Gui, Add, Checkbox, xm y+10 VusLike, 記号をUSキーボード風にする
 		If (usLike)
@@ -446,7 +451,8 @@ PrefMenu:
 	Else
 		GuiControl, , spaceKeyRepeat2, 1
 
-	If (advancedMenu)	; 詳細メニュー
+	; 詳細メニュー
+	If (advancedMenu)
 	{
 		Gui, Tab, 詳細
 
@@ -544,11 +550,13 @@ PrefMenu:
 		Gui, Add, Button, W60 xm+146 ys+240 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 	}
-	Else	; 詳細メニュー不要の時
+	; 詳細メニュー不要の時
+	Else
 	{
 		Gui, Add, Button, W60 xm+71 y+10 Default, OK
 		Gui, Add, Button, W60 x+0, Cancel
 	}
+
 	Gui, Show
 	Return
 
@@ -565,7 +573,8 @@ DispLogFunc()	; () -> Void型
 ;		, pos, number					; Int型
 ;		, str, c, preStr, term, temp	; String型
 
-	If (USKB)	; USキーボード
+	; USキーボード
+	If (USKB)
 		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
 			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
 			, "D", "F", "G", "H", "J", "K", "L", ";", "'", "`", "LShift", "\", "Z", "X", "C", "V"
@@ -575,7 +584,8 @@ DispLogFunc()	; () -> Void型
 			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
 			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
 			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
-	Else		; USキーボード以外
+	; USキーボード以外
+	Else
 		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
 			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
 			, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
@@ -652,7 +662,8 @@ DispLogFunc()	; () -> Void型
 			}
 			Gui, Add, Text, xm+60 yp, % preStr . str . term
 		}
-		lastKeyTime := keyTime	; 押した時間を保存
+		; 押した時間を保存
+		lastKeyTime := keyTime
 	}
 	Gui, Add, Button, W60 xm+30 y+10 Default, Close
 	Gui, Show

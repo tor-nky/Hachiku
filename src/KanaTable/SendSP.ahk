@@ -16,13 +16,15 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 	; 固有名詞ショートカットを切り替える
 	Else If (ctrlName == "KoyuChange")
 	{
-		If (strIn == koyuNumber)	; 番号が変わらない
+		; 番号が変わらない時
+		If (strIn == koyuNumber)
 		{
 			MsgBox, , , 固有名詞セット%koyuNumber%
 			Return
 		}
 		MsgBox, 1, , 固有名詞 セット%koyuNumber% → %strIn%
-		IfMsgBox, Cancel	; キャンセル
+		; キャンセル
+		IfMsgBox, Cancel
 			Return
 
 		koyuNumber := strIn
@@ -31,10 +33,13 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 		; ツールチップを変更する
 		menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
 
-		KoyuReadAndRegist(koyuNumber)	; 固有名詞ショートカットの読み込み・登録
-		SettingLayout()					; 出力確定する定義に印をつける
+		; 固有名詞ショートカットの読み込み・登録
+		KoyuReadAndRegist(koyuNumber)
+		; 出力確定する定義に印をつける
+		SettingLayout()
 	}
-	Else	; その他、未定義のもの。念のため。
+	; その他、未定義のもの。念のため。
+	Else
 		SendEachChar(strIn)
 
 	Return
@@ -49,40 +54,44 @@ SendESCx3()	; () -> Void
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
 
+	; コンテキストメニューは消えるまで Esc キーを押す
 	If (WinExist("ahk_class #32768"))
 	{
-		; コンテキストメニューは消えるまで Esc キーを押す
 		Loop, 5 {
 			Send, {Esc}
 		} Until (!WinExist("ahk_class #32768"))
 	}
+	; IME窓検出が当てになる時(入力中のかながないのと変換1回目の区別がつく)
 	Else If (hwnd == goodHwnd)
 	{
-		; IME窓検出が当てになる(入力中のかながないのと変換1回目の区別がつく)
 		delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
-		If (delay > 0)	; 時間を空けてIME検出へ
+		; 時間を空けてIME検出へ
+		If (delay > 0)
 			Sleep, %delay%
 		If (IME_GET() && IME_GetSentenceMode())
 		{
 			;　IME ONだが、無変換ではない
 			needDelay := (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70))
 			delay := needDelay - Floor(QPC() - lastSendTime)
-			If (delay > 0)	; 時間を空けてIME窓検出へ
+			; 時間を空けてIME窓検出へ
+			If (delay > 0)
 				Sleep, %delay%
 			Loop, 5 {
 				If (!IME_GetConverting())
-					Break	; IME窓がなければループ終了
+					; IME窓がなければループ終了
+					Break
 				Send, {Esc}
 				Sleep, %needDelay%
 			}
 		}
 	}
-	Else	; その他
+	; その他
+	Else
 		Send, {Esc 5}
 
+	; 一太郎のメニューを消す
 	If (SubStr(process, 1, 4) = "Taro")
 	{
-		; 一太郎のメニューを消す
 /*		If (imeName == "Google")
 			Sleep, 160
 		Else If (imeName == "OldMSIME")
