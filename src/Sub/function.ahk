@@ -1380,7 +1380,6 @@ Convert()	; () -> Void
 				SendKeyUp()		; 押し下げを出力中のキーを上げる
 				lastToBuf := ""
 				lastKeyCount := 0
-				lastGroup := ""
 				If (shiftStyle == 2)	; 全部出力なら解除
 					last2Bit := lastBit := 0
 			}
