@@ -845,16 +845,16 @@ SendBlind(str)	; (str: String) -> Void
 	lastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
-; 押し下げを出力中のキーを上げ、別のに入れ替え
+; 押し下げ出力中のキーを上げ、別のに入れ替え
 SendKeyUp(str:="")	; (str: String) -> Void
 {
 	global restStr
 
 	If (restStr != "")
 	{
+		; Shift も押し下げ中
 		If (SubStr(restStr, StrLen(restStr) - 9, 9) = "{ShiftUp}")
 		{
-			; 押し下げを出力中のキーは {ShiftUp} あり
 			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))	; "{ShiftUp}" より左を出力
 			; 入れ替えるキーに {ShiftUp} なし
 			If (SubStr(str, StrLen(str) - 9, 9) != "{ShiftUp}")
@@ -893,13 +893,13 @@ SplitKeyUpDown(str)	; (str: String) -> String
 		; 分離がいらない時
 		If (keyDown == "")
 		{
-			SendKeyUp()			; 押し下げを出力中のキーを上げる
+			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			Return str
 		}
 		keyUp := keyUps[ret] . "{ShiftUp}"
 		If (restStr != keyUp)
 		{
-			SendKeyUp(keyUp)	; 押し下げを出力中のキーを入れ替え
+			SendKeyUp(keyUp)	; 押し下げ出力中のキーを入れ替え
 			SendBlind("{ShiftDown}")
 		}
 	}
@@ -910,12 +910,12 @@ SplitKeyUpDown(str)	; (str: String) -> String
 		; 分離がいらない時
 		If (keyDown == "")
 		{
-			SendKeyUp()			; 押し下げを出力中のキーを上げる
+			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			Return str
 		}
 		keyUp := keyUps[str]
 		If (restStr != keyUp)
-			SendKeyUp(keyUp)	; 押し下げを出力中のキーを入れ替え
+			SendKeyUp(keyUp)	; 押し下げ出力中のキーを入れ替え
 	}
 	SendBlind(keyDown)
 	Return ""
@@ -937,7 +937,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		If (!ctrlName)
 		{
 			; リピートなし
-			SendKeyUp()				; 押し下げを出力中のキーを上げる
+			SendKeyUp()				; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
 		}
 		Else If (ctrlName == R)
@@ -948,7 +948,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 		Else
 		{
-			SendKeyUp()				; 押し下げを出力中のキーを上げ
+			SendKeyUp()				; 押し下げ出力中のキーを上げ
 			SendSP(out, ctrlName)	; 特別出力(かな定義ファイルで操作)
 		}
 		lastSendTime := QPC()	; 最後に出力した時間を記録
@@ -1236,7 +1236,7 @@ Convert()	; () -> Void
 			{
 				StoreBuf("+{Space}", 0, R)
 				OutBuf()
-				If (ent == 1)
+;				If (ent == 1)
 					ent := 2	; 単独エンターではない
 				DispTime(keyTime, "`nエンター+スペース")	; キー変化からの経過時間を表示
 			}
@@ -1262,7 +1262,7 @@ Convert()	; () -> Void
 		}
 		Else If (nowKey == "sc39 up")
 		{
-			SendKeyUp()			; 押し下げを出力中のキーを上げる
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
@@ -1276,7 +1276,7 @@ Convert()	; () -> Void
 				}
 			}
 			Else If (spc == 1)
-				nextKey := "vk20"	; スペース単独押し→センターシフト上げ
+				nextKey := "vk20"	; センターシフト上げ→スペース単独押し
 			spc := 0
 		}
 		; エンターキー処理
@@ -1292,8 +1292,7 @@ Convert()	; () -> Void
 		}
 		Else If (nowKey == "Enter up")
 		{
-			nowKey := "sc39 up"	; センターシフト上げ
-			SendKeyUp()			; 押し下げを出力中のキーを上げる
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			; 他のシフトを押している時
 			If (sft || rsft || spc)
 			{
@@ -1307,7 +1306,10 @@ Convert()	; () -> Void
 				}
 			}
 			Else If (ent == 1)
-				nextKey := "vk0D"	; エンター単独押し→センターシフト上げ ※"Enter"としないこと
+			{
+				nowKey := "sc39 up"	; センターシフト上げ
+				nextKey := "vk0D"	; →エンター単独押し ※"Enter"としないこと
+			}
 			ent := 0
 		}
 		; スペースのリピートを止める
@@ -1316,7 +1318,7 @@ Convert()	; () -> Void
 			If (kanaMode)
 			{
 				nextKey := nowKey
-				nowKey := "vk1B"	; Shiftが付け加えられて Shift+Esc(変換取消)→シフト側文字
+				nowKey := "vk1B"	; Shiftが付け加えられるので Shift+Esc(変換取消)→シフト側文字
 			}
 			spc := 2	; シフト継続中
 		}
@@ -1327,6 +1329,8 @@ Convert()	; () -> Void
 		; キーが離れた時
 		If (term == "up")
 		{
+			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
+			; 行が変われば十六進数の数値として扱える
 			If (SubStr(nowKey, 1, 2) == "sc")
 				nowBit := "0x" . SubStr(nowKey, nowKeyLength - 4, 2)
 			Else
@@ -1337,10 +1341,12 @@ Convert()	; () -> Void
 			; sc** で入力
 			If (SubStr(nowKey, 1, 2) == "sc")
 			{
+			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
+			; 行が変われば十六進数の数値として扱える
 				nowBit := "0x" . term
+				; toBuf に "{sc○○}" の形式で入れる
 				toBuf := "{sc" . term . "}"
-			}	; ここで nowBit に sc○○ から 0x○○ に変換されたものが入っているが、
-				; 行が変われば十六進数の数値としてそのまま扱える
+			}
 			; sc** 以外で入力
 			Else
 			{
@@ -1348,7 +1354,7 @@ Convert()	; () -> Void
 				toBuf := "{" . nowKey . "}"
 				keyCount := -1	; かな定義の検索は不要
 			}
-			; スペースキーが押されていたら、シフトを加えておく(SandSの実装)
+			; スペースキーが押されていたら、toBuf にシフトを加える(SandSの実装)
 			If (realBit & KC_SPC)
 				toBuf := "+" . toBuf
 		}
@@ -1377,7 +1383,7 @@ Convert()	; () -> Void
 			If (keyUpToOutputAll || (lastBit & nowBit))
 			{
 				OutBuf()
-				SendKeyUp()		; 押し下げを出力中のキーを上げる
+				SendKeyUp()		; 押し下げ出力中のキーを上げる
 				lastToBuf := ""
 				lastKeyCount := 0
 				If (shiftStyle == 2)	; 全部出力なら解除
@@ -1388,7 +1394,7 @@ Convert()	; () -> Void
 				OutBuf(1)	; 1個出力
 			; カーソルキー等
 			Else If (!nowBit)
-				SendKeyUp()		; 押し下げを出力中のキーを上げる
+				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
 			repeatBit &= bitMask
 			last2Bit &= bitMask
@@ -1402,7 +1408,7 @@ Convert()	; () -> Void
 			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
 		{
 			OutBuf()
-			SendKeyUp()			; 押し下げを出力中のキーを上げる
+			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			realBit |= KC_SPC
 			repeatBit := 0		; リピート解除
 			DispTime(keyTime)	; キー変化からの経過時間を表示
@@ -1537,16 +1543,17 @@ Convert()	; () -> Void
 			; スペースを押したが、定義がなかった時
 			If (nowBit == KC_SPC && !keyCount)
 			{
+				; 仮出力バッファが空の時
 				If (!outStrsLength)
 				{
-					; 仮出力バッファが空の時
+					SendKeyUp()			; 押し下げ出力中のキーを上げる
 					repeatBit := 0		; リピート解除
 					DispTime(keyTime)	; キー変化からの経過時間を表示
 					Continue
 				}
+				; 直前の文字にシフトを加える(後置シフト)
 				Else
 				{
-					; 後置シフト
 					toBuf := "+" . lastToBuf
 					backCount := 1
 				}
@@ -1613,7 +1620,7 @@ Convert()	; () -> Void
 				OutBuf()
 			Else
 			{
-				SendKeyUp()	; 押し下げを出力したままのキーを上げる
+				SendKeyUp()	; 押し下げ出力中のキーを上げる
 				If (inBufRest == 31 && nextKey == "")
 				{
 					; 入力バッファが空なので、同時押し、後置シフトの判定タイマー起動処理
