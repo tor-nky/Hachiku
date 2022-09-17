@@ -1221,24 +1221,24 @@ Convert()	; () -> Void
 		; スペースキー処理
 		Else If (nowKey == "sc39")
 		{
+			If (ent == 1)
+				ent := 2	; 単独エンターではない
+			; 他のシフトを押している時
+			If (sft || rsft || ent)
+			{
+				StoreBuf("+{Space}", 0, R)
+				OutBuf()
+				DispTime(keyTime, "`nエンター+スペース")	; キー変化からの経過時間を表示
+			}
 			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
 			; またはSandSなしの設定をした英数入力中
-			If ((!imeConvMode && DetectIME() != "NewMSIME")
+			Else If ((!imeConvMode && DetectIME() != "NewMSIME")
 				|| (!eisuSandS && !kanaMode))
 			{
 				StoreBuf("{Space}", 0, R)
 				OutBuf()
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
-			}
-			; 他のシフトを押している時
-			Else If (ent)
-			{
-				StoreBuf("+{Space}", 0, R)
-				OutBuf()
-;				If (ent == 1)
-					ent := 2	; 単独エンターではない
-				DispTime(keyTime, "`nエンター+スペース")	; キー変化からの経過時間を表示
 			}
 			; スペースキーの長押し
 			Else If (spaceKeyRepeat && (spc & 1))
@@ -1252,8 +1252,6 @@ Convert()	; () -> Void
 					StoreBuf("{Space}", 0, R)
 					OutBuf()
 				}
-				If (ent == 1)
-					ent := 2	; 単独エンターではない
 				DispTime(keyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
 				Continue
 			}
@@ -1283,16 +1281,18 @@ Convert()	; () -> Void
 		Else If (nowKey == "Enter")
 ;		Else If (nowKey == "Enter" && (eisuSandS || kanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
-			; シフトキーを押していない時
+			; 他のシフトを押していない時
 			If !(sft || rsft || spc)
 			{
 				nowKey := "sc39"	; センターシフト押す
-				ent := 1
+				If (!ent)
+					ent := 1
 			}
 		}
 		Else If (nowKey == "Enter up")
 		{
-			SendKeyUp()		; 押し下げ出力中のキーを上げる
+			nowKey := "sc39 up"	; センターシフト上げ
+			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			; 他のシフトを押している時
 			If (sft || rsft || spc)
 			{
@@ -1306,10 +1306,7 @@ Convert()	; () -> Void
 				}
 			}
 			Else If (ent == 1)
-			{
-				nowKey := "sc39 up"	; センターシフト上げ
-				nextKey := "vk0D"	; →エンター単独押し ※"Enter"としないこと
-			}
+				nextKey := "vk0D"	; センターシフト上げ→エンター単独押し ※"Enter"としないこと
 			ent := 0
 		}
 		; スペースのリピートを止める
@@ -1766,6 +1763,7 @@ PgDn::
 +sc34::	; .
 +sc35::	; /
 +sc73::	; (JIS)_
++sc39::	; Space
 +Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
@@ -1777,6 +1775,7 @@ PgDn::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
++Enter::
 ; USキーボードの場合
 #If (USKB)
 sc29::	; (JIS)半角/全角	(US)`
@@ -1900,6 +1899,7 @@ PgDn up::
 +sc34 up::	; .
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
++sc39 up::	; Space
 +Up up::	; ※小文字にしてはいけない
 +Left up::
 +Right up::
@@ -1911,6 +1911,7 @@ PgDn up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
++Enter up::
 ; USキーボードの場合
 #If (USKB)
 sc29 up::	; (JIS)半角/全角	(US)`
