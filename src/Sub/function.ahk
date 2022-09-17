@@ -1174,12 +1174,20 @@ Convert()	; () -> Void
 		If (nowKey == "~LShift")
 		{
 			sft := 1
+			If (spc == 1)
+				spc := 2	; 単独スペースではない
+			If (ent == 1)
+				ent := 2	; 単独エンターではない
 			OutBuf()
 			nowKey := "sc39"	; センターシフト押す
 		}
 		Else If (nowKey == "RShift")
 		{
 			rsft := 1
+			If (spc == 1)
+				spc := 2	; 単独スペースではない
+			If (ent == 1)
+				ent := 2	; 単独エンターではない
 			OutBuf()
 			SendBlind("{ShiftDown}")
 			nowKey := "sc39"	; センターシフト押す
@@ -1297,7 +1305,7 @@ Convert()	; () -> Void
 			If (sft || rsft || spc)
 			{
 				If (ent == 1)
-					nowKey := "vk0D"	; エンター単独押しのみ
+					nowKey := "vk0D"	; Shiftが付け加えられるので Shift+Enter
 				Else
 				{
 					ent := 0
