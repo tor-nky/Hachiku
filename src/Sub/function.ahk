@@ -515,7 +515,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global goodHwnd, badHwnd, lastSendTime, IME_Get_Interval, kanaMode
+	global goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -531,6 +531,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, lastDelay				; Int型		前回出力時のディレイの値
 ;		, clipSaved				; Any?型
 ;		, imeName				; String型
+
+	; 定数
+	IME_Get_Interval := 30	; Int型定数	Send から IME_GET まで Sleep で必要な時間(ミリ秒)
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
@@ -742,11 +745,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub = "^v")
 			{
 				out := strSub
-				preDelay := 10
-				postDelay := (imeName == "ATOK" ? 100 : 40)
+				preDelay := 20
+				postDelay := (imeName == "ATOK" ? 70 : 30)
 			}
 			Else If (strSub = "{C_Clr}")
-				clipboard :=				;クリップボードを空にする
+				clipboard :=				; クリップボードを空にする
 			Else If (SubStr(strSub, 1, 7) = "{C_Wait")
 			{
 				; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
@@ -754,11 +757,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				ClipWait, (Wait ? Wait : 0.2), 1
 			}
 			Else If (strSub = "{C_Bkup}")
-				clipSaved := ClipboardAll	;クリップボードの全内容を保存
+				clipSaved := ClipboardAll	; クリップボードの全内容を保存
 			Else If (strSub = "{C_Rstr}")
 			{
-				Clipboard := clipSaved		;クリップボードの内容を復元
-				clipSaved :=				;保存用変数に使ったメモリを開放
+				Clipboard := clipSaved		; クリップボードの内容を復元
+				clipSaved :=				; 保存用変数に使ったメモリを開放
 			}
 			Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
 				|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
@@ -934,25 +937,26 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		out := outStrs[1]
 		ctrlName := outCtrlNames[1]
 
+		; リピートなし
 		If (!ctrlName)
 		{
-			; リピートなし
-			SendKeyUp()				; 押し下げ出力中のキーを上げる
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
 		}
+		; リピート可能
 		Else If (ctrlName == R)
 		{
-			; リピート可能
 			out := SplitKeyUpDown(out)	; キーの上げ下げを分離
 			SendEachChar(out)
 		}
+		; 特別出力(かな定義ファイルで操作)
 		Else
 		{
-			SendKeyUp()				; 押し下げ出力中のキーを上げ
-			SendSP(out, ctrlName)	; 特別出力(かな定義ファイルで操作)
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
+			SendSP(out, ctrlName)
 		}
-		lastSendTime := QPC()	; 最後に出力した時間を記録
 
+		lastSendTime := QPC()	; 最後に出力した時間を記録
 		outStrs[1] := outStrs[2]
 		outCtrlNames[1] := outCtrlNames[2]
 		outStrsLength--
@@ -1069,7 +1073,7 @@ Convert()	; () -> Void
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName, defBegin, defEnd
-		, outStrsLength, lastSendTime, IME_Get_Interval, kanaMode
+		, outStrsLength, lastSendTime, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
@@ -1109,6 +1113,9 @@ Convert()	; () -> Void
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
 ;		, interval			; Double型
+
+	; 定数
+	IME_Get_Interval := 17.0	; Double型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
 
 	; 判定期限タイマー停止
 	SetTimer, KeyTimer, Off
@@ -1251,7 +1258,7 @@ Convert()	; () -> Void
 			; スペースキーの長押し
 			Else If (spaceKeyRepeat && (spc & 1))
 			{
-				; 1: 空白キャンセル
+				; 空白キャンセル
 				If (spaceKeyRepeat == 1)
 					spc := 2	; シフト継続中
 				Else
@@ -1518,7 +1525,7 @@ Convert()	; () -> Void
 					i := defBegin[1]
 					imax := defEnd[1]
 					; 検索キーを設定
-					searchBit := nowBit | (nowBit == KC_SPC ? lastBit : realBitAndKC_SPC)
+					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBit : nowBit)
 					While (i < imax)
 					{
 						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i])
