@@ -391,37 +391,55 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 		If (keyCount > 2)
 			defBegin[2]++, defEnd[3]++
 	}
-	Return
 }
 
 ; かな定義登録
 SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
+	global R
 ;	local tate, yoko	; String型
-	tate := Analysis(str)		; 機能等を書き換え
-	yoko := ConvTateYoko(tate)	; 縦横変換
-	SetDefinition(1, keyComb, tate, yoko, ctrlName)
-	Return
+
+	If (!ctrlName || ctrlName == R)
+	{
+		tate := Analysis(str)		; 機能等を書き換え
+		yoko := ConvTateYoko(tate)	; 縦横変換
+		SetDefinition(1, keyComb, tate, yoko, ctrlName)
+	}
+	Else
+		SetDefinition(1, keyComb, str, str, ctrlName)
 }
 SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	SetDefinition(1, keyComb, tate, yoko, ctrlName)
-	Return
+	global R
+
+	If (!ctrlName || ctrlName == R)
+		SetDefinition(1, keyComb, Analysis(tate), Analysis(yoko), ctrlName)
+	Else
+		SetDefinition(1, keyComb, tate, yoko, ctrlName)
 }
 ; 英数定義登録
 SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
+	global R
 ;	local tate, yoko	; String型
-	tate := Analysis(str)		; 機能等を書き換え
-	yoko := ConvTateYoko(tate)	; 縦横変換
-	; 英数入力時のSandSが無効なら定義を削除する
-	SetDefinition(0, keyComb, tate, yoko, ctrlName)
-	Return
+
+	If (!ctrlName || ctrlName == R)
+	{
+		tate := Analysis(str)		; 機能等を書き換え
+		yoko := ConvTateYoko(tate)	; 縦横変換
+		SetDefinition(0, keyComb, tate, yoko, ctrlName)
+	}
+	Else
+		SetDefinition(0, keyComb, str, str, ctrlName)
 }
 SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	SetDefinition(0, keyComb, tate, yoko, ctrlName)
-	Return
+	global R
+
+	If (!ctrlName || ctrlName == R)
+		SetDefinition(0, keyComb, Analysis(tate), Analysis(yoko), ctrlName)
+	Else
+		SetDefinition(0, keyComb, tate, yoko, ctrlName)
 }
 
 ; 一緒に押すと同時押しになるキーを探す
@@ -466,7 +484,6 @@ SettingLayout()	; () -> Void
 		defsCombinableBit[i] := FindCombinableBit(searchBit, defsKanaMode[i], CountBit(searchBit))
 		i++
 	}
-	Return
 }
 
 ExistNewMSIME()	; () -> Bool
@@ -775,7 +792,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				postDelay := (imeName == "ATOK" ? 90 : 30)
 			}
 			Else If (strSub = "{C_Clr}")
-				clipboard :=				; クリップボードを空にする
+				Clipboard :=				; クリップボードを空にする
 			Else If (SubStr(strSub, 1, 7) = "{C_Wait")
 			{
 				; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
@@ -863,7 +880,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		}
 		i++
 	}
-	Return
 }
 
 SendBlind(str)	; (str: String) -> Void
@@ -893,7 +909,6 @@ SendKeyUp(str:="")	; (str: String) -> Void
 			SendBlind(restStr)
 	}
 	restStr := str
-	Return
 }
 
 ; キーの上げ下げを分離
@@ -989,7 +1004,6 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		i--
 	}
 	DispStr()	; 表示待ち文字列表示
-	Return
 }
 
 ; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
@@ -1011,7 +1025,6 @@ StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlNa
 	outStrs[outStrsLength] := str
 	outCtrlNames[outStrsLength] := ctrlName
 	DispStr()	; 表示待ち文字列表示
-	Return
 }
 
 ; 縦書き・横書き切り替え
@@ -1269,7 +1282,7 @@ Convert()	; () -> Void
 			{
 				StoreBuf("+{Space}", 0, R)
 				OutBuf()
-				DispTime(keyTime, "`nエンター+スペース")	; キー変化からの経過時間を表示
+				DispTime(keyTime, "`nシフト+スペース")	; キー変化からの経過時間を表示
 			}
 			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
 			; またはSandSなしの設定をした英数入力中
@@ -1683,8 +1696,6 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 	}
-
-	Return
 }
 
 
