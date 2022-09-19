@@ -766,7 +766,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					lastDelay := IME_Get_Interval
 				}
 			}
-			Else If (SubStr(strSub, 1, 6) = "{Enter" && class == "Hidemaru32Class")	; 秀丸エディタ
+			Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
+			 && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				out := strSub
 				If (imeName == "ATOK")
