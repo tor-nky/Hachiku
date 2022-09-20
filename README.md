@@ -1,4 +1,4 @@
-﻿# Hachiku - Windows で薙刀式を使うスクリプト
+# Hachiku - Windows で薙刀式を使うスクリプト
 2022年9月1日付[【薙刀式】15B102（最新）](http://oookaworks.seesaa.net/article/491147874.html#gsc.tab=0)
 の薙刀式v15（仮）B102 を Autohotkey に実装しました。
 
@@ -102,6 +102,8 @@ ATOK プロパティ → キー･ローマ字･色 → キーカスタマイ�
 それでも直らないときは、ファイルに保存してソフトを一度終了してください。
 * (Google 日本語入力) 左右シフト英数に設定していると、左右シフトを離した後の英字がローマ字  
 Google 日本語入力 が一時的に英数入力になっていることを検出できないからです。
+* ブラウザで GitHub 上のファイルを直接編集するときに、IME によっては使えない編集モードがある  
+[Issue #28](https://github.com/tor-nky/Hachiku/issues/28)
 # 動作確認
 * Windows 10 Home version 21H2 64-bit + AutoHotkey (v1.1.34.04) U64 Unicode 64-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力
