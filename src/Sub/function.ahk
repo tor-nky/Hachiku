@@ -790,7 +790,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				out := strSub
 				preDelay := 20
-				postDelay := (imeName == "ATOK" ? 90 : 30)
+				postDelay := (imeName == "ATOK" ? 100 : 30)
 			}
 			Else If (strSub = "{C_Clr}")
 				Clipboard :=				; クリップボードを空にする
