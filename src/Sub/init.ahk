@@ -151,6 +151,8 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 ; [Basic]
 ; IMESelect		0または空: MS-IME専用, 1: ATOK使用, 他: Google 日本語入力
 	IniRead, imeSelect, %iniFilePath%, Basic, IMESelect, 0
+; UsingKeyConfig	0または空: なし, 他: あり	※AdvancedMenu「あり」時のみ設定に表示
+	IniRead, usingKeyConfig, %iniFilePath%, Basic, UsingKeyConfig, 0
 ; USLike		0以下または空: 英数表記通り, 他: USキーボード風配列
 	IniRead, usLike, %iniFilePath%, Basic, USLike, 0
 ; SideShift		左右シフト	1以下または空: 英数２, 他: かな
@@ -171,7 +173,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 ; 固有名詞ショートカットの選択
 	IniRead, koyuNumber, %iniFilePath%, Naginata, KoyuNumber, 1
 
-; [Advanced]
+; [Advanced]	※AdvancedMenu「あり」時のみ設定に表示
 ;	通常時
 ;		同時打鍵の判定期限	0または空: なし, 他: あり
 		IniRead, combLimitN, %iniFilePath%, Advanced, CombLimitN, 0
@@ -341,6 +343,7 @@ ButtonOK:
 	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
 	If (advancedMenu)
 	{
+		IniWrite, %usingKeyConfig%, %iniFilePath%, Basic, UsingKeyConfig
 		IniWrite, %combLimitN%, %iniFilePath%, Advanced, CombLimitN
 		IniWrite, %combStyleN%, %iniFilePath%, Advanced, CombStyleN
 		IniWrite, %combKeyUpN%, %iniFilePath%, Advanced, CombKeyUpN
@@ -398,6 +401,14 @@ PrefMenu:
 		GuiControl, , imeSelect1, 1
 	Else
 		GuiControl, , imeSelect2, 1
+
+	; 詳細メニューあり
+	If (advancedMenu)
+	{
+		Gui, Add, Checkbox, xm+18 y+3 VusingKeyConfig, キー設定利用 (Ctrl+Shift+無変換⇒全消去、Ctrl+Shift+変換⇒全確定)
+		If (usingKeyConfig)
+			GuiControl, , usingKeyConfig, 1
+	}
 
 	; 関数 USLikeLayout が存在したら
 	If (IsFunc("USLikeLayout"))

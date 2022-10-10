@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global goodHwnd, badHwnd, lastSendTime, kanaMode
+	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -634,7 +634,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
-				If (imeName != "OldMSIME" && imeName != "NewMSIME")
+				If (usingKeyConfig && imeName != "OldMSIME" && imeName != "NewMSIME")
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
 				Else
 				{
