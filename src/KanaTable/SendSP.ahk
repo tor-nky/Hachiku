@@ -1,7 +1,7 @@
 ﻿; 特別出力
 SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 {
-	global koyuNumber, version, layoutName, iniFilePath
+	global koyuNumber, version, layoutName, layoutNameE, iniFilePath
 
 	SetKeyDelay, -1, -1
 
@@ -31,7 +31,10 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 		; 設定ファイル書き込み
 		IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
 		; ツールチップを変更する
-		menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
+		If (layoutNameE)
+			Menu, TRAY, Tip, Hachiku %version%`n%layoutNameE%`n+ %layoutName%`n固有名詞セット%koyuNumber%
+		Else
+			Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
 
 		; 固有名詞ショートカットの読み込み・登録
 		KoyuReadAndRegist(koyuNumber)
