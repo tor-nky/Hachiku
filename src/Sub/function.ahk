@@ -1453,6 +1453,11 @@ Convert()	; () -> Void
 			lastBit &= bitMask
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
+
+			; 直近の検索結果のキーを次に使わないなら同グループ優先は白紙に
+			If !(realBit & lastBit)
+				lastGroup := ""
+
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
