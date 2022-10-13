@@ -645,10 +645,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					}
 					If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 					{
-						If (lastDelay >= 70 && IME_GetConverting())
+						If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
 							; 文字出力から一定時間経っていて、IME窓あり
 							out := "{Enter}"
-						Else If (hwnd != goodHwnd || lastDelay < 70)
+						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
 							; IME窓の検出を当てにできない
 							; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						{
