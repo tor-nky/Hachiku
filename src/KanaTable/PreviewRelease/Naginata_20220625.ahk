@@ -433,7 +433,7 @@ kanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_I		,"#/"				)		; 再
 	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
 	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; +↓
-	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
+	SetKana( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
@@ -449,7 +449,7 @@ kanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_I		,"#/"				)		; 再
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
 	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; +↓
-	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
+	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
 	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
