@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global goodHwnd, badHwnd, lastSendTime, kanaMode
+	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -634,7 +634,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
-				If (imeName != "OldMSIME" && imeName != "NewMSIME")
+				If (usingKeyConfig && imeName != "OldMSIME" && imeName != "NewMSIME")
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
 				Else
 				{
@@ -645,10 +645,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					}
 					If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
 					{
-						If (lastDelay >= 70 && IME_GetConverting())
+						If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
 							; 文字出力から一定時間経っていて、IME窓あり
 							out := "{Enter}"
-						Else If (hwnd != goodHwnd || lastDelay < 70)
+						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
 							; IME窓の検出を当てにできない
 							; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						{
@@ -1453,6 +1453,11 @@ Convert()	; () -> Void
 			lastBit &= bitMask
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
+
+			; 直近の検索結果のキーを次に使わないなら同グループ優先は白紙に
+			If !(realBit & lastBit)
+				lastGroup := ""
+
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
