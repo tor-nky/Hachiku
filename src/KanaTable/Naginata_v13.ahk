@@ -6,7 +6,7 @@
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
 ;	編集モードD+F+Hは変換中かどうかを問わない
-;	固有名詞ショートカットのシフト面（スペース押下）を追加
+;	固有名詞ショートカットの第二面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
@@ -467,18 +467,18 @@ kanaGroup := "HA"
 ; HJ: ON / FG: OFF
 
 kanaGroup := ""	; グループなし
-	SetKana( KC_H | KC_J			,"{ひらがな}")			; IME ON
-	SetEisu( KC_H | KC_J			,"{ひらがな 2}")
+	SetKana( KC_H | KC_J			,"{ひらがな}"		)	; IME ON
+	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
 	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (英語入力ON は "{ひらがな 2}{英数}")
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (ATOK)英語入力ON は "{ひらがな 2}{英数}")
 
 ; Enter
 ; VとMの同時押し
 kanaGroup := "HA"
-	SetKana( KC_V | KC_M			,"{Enter}"		)	; 行送り
-	SetKana( KC_V | KC_M | KC_SPC	,"{Enter}"		)
-	SetEisu( KC_V | KC_M			,"{Enter}"		)	; 行送り
-	SetEisu( KC_V | KC_M | KC_SPC	,"{Enter}"		)
+	SetKana( KC_V | KC_M			,"{Enter}"	)	; 行送り
+	SetKana( KC_V | KC_M | KC_SPC	,"{Enter}"	)
+	SetEisu( KC_V | KC_M			,"{Enter}"	)	; 行送り
+	SetEisu( KC_V | KC_M | KC_SPC	,"{Enter}"	)
 
 ;***********************************
 ;***********************************
@@ -531,13 +531,13 @@ kanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消
 	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetKana( KC_D | KC_F | KC_M		,"{↓}"				, R)	; ↓
-	SetKana( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再変換
+	SetKana( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
 	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 選択↑
 	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 選択↓
-	SetKana( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
+	SetKana( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
 	SetKana( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
 	SetKana( KC_D | KC_F | KC_DOT	,"{↓ 5}"			, R)	; 5↓
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
 	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
@@ -547,13 +547,13 @@ kanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 末消
 	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; ↑
 	SetEisu( KC_D | KC_F | KC_M		,"{↓}"				, R)	; ↓
-	SetEisu( KC_D | KC_F | KC_I		,"{vk1C}"			)		; 再変換
+	SetEisu( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 選択↑
 	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 選択↓
-	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			)		; Del
+	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
 	SetEisu( KC_D | KC_F | KC_L		,"{↑ 5}"			, R)	; 5↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"{↓ 5}"			, R)	; 5↓
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 5}",		  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ
 	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな
 
@@ -741,6 +741,8 @@ KoyuRegist()	; () -> Void
 ;**************************************
 ; 固有名詞ショートカット
 ; 上段人差指＋中指
+
+; 第一面
 	kanaGroup := "KL"	; 左手側
 		SetKana(KC_U | KC_I | KC_1		,"{直接}" . E01)
 		SetKana(KC_U | KC_I | KC_2		,"{直接}" . E02)
@@ -801,6 +803,7 @@ KoyuRegist()	; () -> Void
 		SetKana(KC_E | KC_R | KC_SLSH	,"{直接}" . B10)
 		SetKana(KC_E | KC_R | KC_INT1	,"{直接}" . B11)
 
+; 第二面
 	kanaGroup := "KL"	; 左手側
 		SetKana(KC_SPC | KC_U | KC_I | KC_1		,"{直接}" . E01S)
 		SetKana(KC_SPC | KC_U | KC_I | KC_2		,"{直接}" . E02S)
