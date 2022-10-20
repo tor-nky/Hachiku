@@ -7,7 +7,12 @@
 ; (2022年6月21日)より
 ;
 ; DvorakJ版からの変更部分：
+;	記号はすべて全角文字を出力する
+;	編集モードD+F+H、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
+;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットの第二面（スペース押下）を追加
+;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
+;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
 
 #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
@@ -430,7 +435,7 @@ kanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
 	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 
@@ -443,10 +448,10 @@ kanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_I		,"#/"				)		; 再
 	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; +↑
 	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; +↓
-	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)	; Del
+	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)		; Del
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; +7↓
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"			)		; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
 	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
 
