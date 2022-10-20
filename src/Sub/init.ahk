@@ -394,7 +394,7 @@ PrefMenu:
 		Else
 			GuiControl, , imeSelect2, 1
 		; キー設定利用
-		Gui, Add, Checkbox, xm+18 y+5 VusingKeyConfig, キー設定利用 (Ctrl+Shift+変換⇒全確定)
+		Gui, Add, Checkbox, xm+18 y+5 VusingKeyConfig, キー設定利用 (Ctrl+Shift+変換⇒全確定、Ctrl+Shift+無変換⇒全消去)
 		If (usingKeyConfig)
 			GuiControl, , usingKeyConfig, 1
 		; 後置シフトの待ち時間
@@ -455,11 +455,11 @@ PrefMenu:
 		Else
 			GuiControl, , spaceKeyRepeat2, 1
 		; 英数入力時のSandS
-		Gui, Add, Checkbox, xm y+10 VeisuSandS, 英数入力時のSandS
+		Gui, Add, Checkbox, xm y+15 VeisuSandS, 英数入力時のSandS
 		If (eisuSandS)
 			GuiControl, , eisuSandS, 1
 		; キーを離せば常に全部出力する
-		Gui, Add, Checkbox, xm y+20 VkeyUpToOutputAll, キーを離せば常に全部出力する
+		Gui, Add, Checkbox, xm y+15 VkeyUpToOutputAll, キーを離せば常に全部出力する
 		If (keyUpToOutputAll)
 			GuiControl, , keyUpToOutputAll, 1
 	; 「同時打鍵」メニュー
