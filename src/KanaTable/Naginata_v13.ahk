@@ -5,7 +5,7 @@
 ;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
-;	編集モードD+F+Hは変換中かどうかを問わない
+;	編集モードD+F+H、J+K+Qは変換中かどうかを問わない
 ;	固有名詞ショートカットの第二面（スペース押下）を追加
 ;	固有名詞ショートカットを最大５組を切り替えられる。切り替えは E+R+1 で１番、E+R+2 で２番、など。
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
@@ -492,7 +492,7 @@ kanaGroup := "HA"
 
 ; 左手
 kanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"^{End}"			)		; ◀最末尾
+	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"		)		; ◀最末尾
 	SetKana( KC_J | KC_K | KC_A		,"……{確定}"		)		; ……
 	SetKana( KC_J | KC_K | KC_Z		,"││{確定}"		)		; ──
 	SetKana( KC_J | KC_K | KC_W		,"｜{確定}"			)		; ｜
@@ -508,7 +508,7 @@ kanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_G		,"（{確定}"			)		; （
 	SetKana( KC_J | KC_K | KC_B		,"）{確定}"			)		; ）
 
-	SetEisu( KC_J | KC_K | KC_Q		,"^{End}"			)		; ◀最末尾
+	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"		)		; ◀最末尾
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"		)		; ……
 	SetEisu( KC_J | KC_K | KC_Z		,"││{確定}"		)		; ──
 	SetEisu( KC_J | KC_K | KC_W		,"｜{確定}"			)		; ｜
