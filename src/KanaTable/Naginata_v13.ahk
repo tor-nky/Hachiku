@@ -499,14 +499,14 @@ kanaGroup := "1L"
 	SetKana( KC_J | KC_K | KC_S		,"《{確定}"			)		; 《
 	SetKana( KC_J | KC_K | KC_X		,"》{確定}"			)		; 》
 ;	SetKana( KC_J | KC_K | KC_E		,"dhi"				)		; でぃ
-	SetKana( KC_J | KC_K | KC_D		,"？{確定}"			)		; ？
-	SetKana( KC_J | KC_K | KC_C		,"！{確定}"			)		; ！
+	SetKana( KC_J | KC_K | KC_D		,"?{確定}"			)		; ？
+	SetKana( KC_J | KC_K | KC_C		,"{!}{確定}"		)		; ！
 	SetKana( KC_J | KC_K | KC_R		,"^s"				)		; 保存
-	SetKana( KC_J | KC_K | KC_F		,"「{確定}"			)		; 「
-	SetKana( KC_J | KC_K | KC_V		,"」{確定}"			)		; 」
+	SetKana( KC_J | KC_K | KC_F		,"[{確定}"			)		; 「
+	SetKana( KC_J | KC_K | KC_V		,"]{確定}"			)		; 」
 	SetKana( KC_J | KC_K | KC_T		,"/"				)		; ・
-	SetKana( KC_J | KC_K | KC_G		,"（{確定}"			)		; （
-	SetKana( KC_J | KC_K | KC_B		,"）{確定}"			)		; ）
+	SetKana( KC_J | KC_K | KC_G		,"({確定}"			)		; （
+	SetKana( KC_J | KC_K | KC_B		,"){確定}"			)		; ）
 
 	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"		)		; ◀最末尾
 	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"		)		; ……
@@ -515,14 +515,14 @@ kanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_S		,"《{確定}"			)		; 《
 	SetEisu( KC_J | KC_K | KC_X		,"》{確定}"			)		; 》
 ;	SetEisu( KC_J | KC_K | KC_E		,"dhi"				)		; でぃ
-	SetEisu( KC_J | KC_K | KC_D		,"？{確定}"			)		; ？
-	SetEisu( KC_J | KC_K | KC_C		,"！{確定}"			)		; ！
+	SetEisu( KC_J | KC_K | KC_D		,"?{確定}"			)		; ？
+	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"		)		; ！
 	SetEisu( KC_J | KC_K | KC_R		,"^s"				)		; 保存
 	SetEisu( KC_J | KC_K | KC_F		,"「{確定}"			)		; 「
 	SetEisu( KC_J | KC_K | KC_V		,"」{確定}"			)		; 」
 	SetEisu( KC_J | KC_K | KC_T		,"・"				)		; ・
-	SetEisu( KC_J | KC_K | KC_G		,"（{確定}"			)		; （
-	SetEisu( KC_J | KC_K | KC_B		,"）{確定}"			)		; ）
+	SetEisu( KC_J | KC_K | KC_G		,"({確定}"			)		; （
+	SetEisu( KC_J | KC_K | KC_B		,"){確定}"			)		; ）
 ; 右手
 kanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ▲Home
@@ -572,8 +572,8 @@ kanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_D	,"『{確定}"							)		; 『
 	SetKana( KC_M | KC_COMM | KC_C	,"』{確定}"							)		; 』
 	SetKana( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"				)		; 台マクロ
-	SetKana( KC_M | KC_COMM | KC_F	,"」{確定}{改行}「{確定}"			)		; 」「マクロ
-	SetKana( KC_M | KC_COMM | KC_V	,"」{確定}{改行}　"					)		; 」□マクロ
+	SetKana( KC_M | KC_COMM | KC_F	,"]{確定}{改行}[{確定}"				)		; 」「マクロ
+	SetKana( KC_M | KC_COMM | KC_V	,"]{確定}{改行}　"					)		; 」□マクロ
 	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"							)		; ○
 	SetKana( KC_M | KC_COMM | KC_G	,"　　　"							)		; □□□
 	SetKana( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}")	; x   x   x
