@@ -638,24 +638,27 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
 				Else
 				{
+					; IME_GET() の前に一定時間空ける
 					If (lastDelay < IME_Get_Interval)
 					{
-						Sleep, % IME_Get_Interval - lastDelay	; 前回の出力から一定時間経ってから IME_GET()
+						Sleep, % IME_Get_Interval - lastDelay
 						lastDelay := IME_Get_Interval
 					}
-					If (IME_GET() && IME_GetSentenceMode())	; 変換モード(無変換)ではない
+					; IMEオンで、変換モード(無変換)ではない
+					If (IME_GET() && IME_GetSentenceMode())
 					{
-						If (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting())
-							; 文字出力から一定時間経っていて、IME窓あり
+						; この関数が ローマ字の文字→{確定} で呼ばれたとき
+						; あるいは文字出力から一定時間経っていて、IME窓検出できたとき
+						If ((flag && strSubLength != strLength && (IME_GetConvMode() & 1))
+						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
 							out := "{Enter}"
+						; IME窓の検出を当てにできない
+						; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
-							; IME窓の検出を当てにできない
-							; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						{
 							Send, _
 							Send, {Enter}
-							; {確定} のすぐ後に {IMEOFF} か {NoIME} が続くときは Sleep を長めに
-							Sleep, % (SubStr(str, i + 1, 7) = "{NoIME}" || SubStr(str, i + 1, 8) = "{IMEOFF}" ? 90 : 40)
+							Sleep, 90
 							out := "{BS}"
 						}
 					}
@@ -783,7 +786,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				Else If (imeName != "NewMSIME")
 				{
 					preDelay := 60
-					postDelay := 10
+					postDelay := 20
 				}
 			}
 			Else If (strSub = "^v")
@@ -824,24 +827,22 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				Send, % out
-				; IME窓の検出が当てにできるか。変換1回目にはIME窓検出タイマーを起動
-				If (hwnd != goodHwnd && hwnd != badHwnd)
-				{
-					If (flag && (out = "{vk20}" || out = "{Space down}"))
-					{
-						If (i >= strLength)
-							SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
-								: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
-						flag := False
-					}
-					Else If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
-					|| (strSubLength == 3 && Asc(strSub) == 123))
-						flag := True	; 文字が入力されたとき(ほぼローマ字の文字)
-					Else
-						flag := False
-				}
+
+				; ローマ字の文字が入力された
+				If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
+				 || (strSubLength == 3 && Asc(strSub) == 123))
+					flag := True
 				Else
+				{
+					; IME窓の検出が当てにできるか未判定で
+					; 変換1回目にはIME窓検出タイマーを起動
+					If (hwnd != goodHwnd && hwnd != badHwnd
+					 && (out = "{vk20}" || out = "{Space down}") && flag && i >= strLength)
+						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
+							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
 					flag := False
+				}
+
 				; 出力直後のディレイ
 				lastDelay := (postDelay < delay ? delay : postDelay)
 				If (lastDelay > -2)
