@@ -647,7 +647,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					; IMEオンで、変換モード(無変換)ではない
 					If (IME_GET() && IME_GetSentenceMode())
 					{
-						; この関数が ローマ字の文字→{確定} で呼ばれたとき
+						; この関数が アスキー文字→{確定} で呼ばれたとき
 						; あるいは文字出力から一定時間経っていて、IME窓検出できたとき
 						If ((flag && strSubLength != strLength && (IME_GetConvMode() & 1))
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
