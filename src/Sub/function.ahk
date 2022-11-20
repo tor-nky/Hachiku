@@ -229,14 +229,14 @@ Analysis(str)	; (str: String) -> String
 					ret .= "{確定}"
 				If (!noIME)
 				{
-					; ATOK 以外を使用時
-					If (imeSelect != 1)
+					; MS-IME 以外を使用時
+					If (imeSelect)
+						kakutei := False
+					Else
 					{
 						ret .= "{NoIME}"
 						kakutei := noIME := True
 					}
-					Else
-						kakutei := False
 				}
 				ret .= strSub
 				nonAscii := True
