@@ -1,6 +1,7 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2022年10月13日付[【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)
- を Autohotkey に実装しました。
+2022年10月13日付[【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)  
+2022年11月20日付[【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0)  
+を Autohotkey に実装しました。
 
 ---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
@@ -116,6 +117,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)
+* [【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```
