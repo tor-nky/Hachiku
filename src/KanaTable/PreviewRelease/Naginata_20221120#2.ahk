@@ -1,4 +1,8 @@
 ﻿; **********************************************************************
+; 【薙刀式】句点確定にもう慣れた
+; http://oookaworks.seesaa.net/article/493333195.html#gsc.tab=0
+; (2022年11月09日)より
+;
 ; 【薙刀式】編集モードをテキストだけで説明してみる
 ; http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0
 ; (2022年11月20日)より
@@ -153,7 +157,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
-	SetKana( AL_、 | KC_SPC		,","		)		; 、
+	SetKana( AL_、 | KC_SPC		,",{Enter}"	)		; 、
 	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
 	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
