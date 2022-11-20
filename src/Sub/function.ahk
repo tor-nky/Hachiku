@@ -828,7 +828,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub = "^v")
 			{
 				out := strSub
-				preDelay := (imeName == "Google" ? 60 :20)
+				preDelay := (imeName == "Google" ? 60 : 40)
 				postDelay := (imeName == "ATOK" ? 100 : 30)
 			}
 			Else If (strSub = "{C_Clr}")
