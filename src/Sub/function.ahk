@@ -820,6 +820,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					postDelay := 20
 				}
 			}
+			Else If (strSub = "^x" && imeName == "Google")
+			{
+				out := strSub
+				postDelay := 20
+			}
 			Else If (strSub = "^v")
 			{
 				out := strSub
