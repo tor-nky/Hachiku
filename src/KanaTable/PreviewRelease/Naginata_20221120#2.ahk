@@ -749,19 +749,19 @@ KoyuRegist()	; () -> Void
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
 	If (keyDriver == "kbd101.dll")
 	{
-		SetKana(KC_E | KC_R | KC_BSLS			,"{直接}" . E13)
-		SetKana(KC_E | KC_R | KC_GRV			,"{直接}" . C12)
-		SetKana(KC_SPC | KC_E | KC_R | KC_BSLS	,"{直接}" . E13S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_GRV	,"{直接}" . C12S)
+		SetKana(KC_T | KC_BSLS			,"{直接}" . E13)
+		SetKana(KC_T | KC_GRV			,"{直接}" . C12)
+		SetKana(KC_R | KC_T | KC_BSLS	,"{直接}" . E13S)
+		SetKana(KC_R | KC_T | KC_GRV	,"{直接}" . C12S)
 	}
 
 	kanaGroup := "2L"
 		; 固有名詞ショートカットを切り替える
-		SetKana( KC_E | KC_R | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
-		SetKana( KC_E | KC_R | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
-		SetKana( KC_E | KC_R | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
-		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
-		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
+		SetKana( KC_T | KC_1	, 1, "KoyuChange")	; 固有名詞ショートカット１
+		SetKana( KC_T | KC_2	, 2, "KoyuChange")	; 固有名詞ショートカット２
+		SetKana( KC_T | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
+		SetKana( KC_T | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
+		SetKana( KC_T | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
 
 	kanaGroup := ""	; グループなし
 	Return
