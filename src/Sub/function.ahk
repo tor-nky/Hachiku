@@ -823,7 +823,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub = "^x" && imeName == "Google")
 			{
 				out := strSub
-				postDelay := 20
+				postDelay := 30
 			}
 			Else If (strSub = "^v")
 			{
