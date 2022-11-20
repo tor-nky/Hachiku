@@ -20,6 +20,7 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
-#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20221120#1.ahk	; 薙刀式v15（仮安定版）
+;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20221120#1.ahk	; 薙刀式v15（仮安定版）
+#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20221120#2.ahk	; 薙刀式v15新候補版
 
 ;#Include %A_ScriptDir%/KanaTable/Naginata_tor.ahk
