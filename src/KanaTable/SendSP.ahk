@@ -78,7 +78,6 @@ SendESCx3()	; () -> Void
 					; IME窓がなければループ終了
 					Break
 				Send, {Esc}
-				Sleep, %needDelay%
 			}
 		}
 	}
