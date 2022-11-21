@@ -1,7 +1,11 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2022年10月13日付[【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)  
-2022年11月20日付[【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0)  
-を Autohotkey に実装しました。
+2022年11月20日付[【薙刀式】v15の新候補あらわる](http://oookaworks.seesaa.net/article/493628710.html#gsc.tab=0)
+を Autohotkey に実装しました。  
+ソースコードから実行します。  
+句点確定、最近発表された編集モード、固有名詞モードのバインド変更を参考にしています。
+* [【薙刀式】句点確定にもう慣れた](http://oookaworks.seesaa.net/article/493333195.html#gsc.tab=0) 2022年11月09日付
+* [【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0) 2022年11月20日付
+* [【薙刀式】固有名詞モードのバインドを検討中](http://oookaworks.seesaa.net/article/490310455.html#gsc.tab=0) 2022年08月03日付
 
 ---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
@@ -11,10 +15,10 @@
 
 __以前からお使いの方も、一度 IME の設定を見直してみてください。__  
 キーカスタマイズができる IME では「Shift+Ctrl+変換キー」に「全確定」、「Shift+Ctrl+無変換キー」に「全消去」を割り当てると動作を改善できます。
-## 実行ファイル
+## 実行ファイル(薙刀式v14集大成版)
 https://github.com/tor-nky/Hachiku/releases
-## ソースコードを修正した場合
-ディレクトリ source の下にあるファイルをすべて保存します。  
+## ソースコードを直接実行する方法
+ディレクトリ src の下にあるファイルをすべて保存します。  
 Autohotkey をインストールし、ディレクトリ src にある Hachiku.ahk のスクリプトを実行してください。
 # IME の設定
 Hachiku のトレイアイコンを右クリックして設定を選び、IMEを選択します。
