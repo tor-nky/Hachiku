@@ -1,19 +1,26 @@
 ﻿; **********************************************************************
 ; 【薙刀式】v15Bのいま
 ; http://oookaworks.seesaa.net/article/489466649.html#gsc.tab=0
-; (2022年7月3日)より
+; (2022年7月3日)より 配列
 ;
 ; 【薙刀式】v15（仮安定版）
 ; http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0
-; (2022年10月13日)より
+; (2022年10月13日)より 配列名称
+;
+; 【薙刀式】固有名詞モードのバインドを検討中
+; http://oookaworks.seesaa.net/article/490310455.html#gsc.tab=0
+; (2022年08月03日)
+; 【薙刀式】薙刀式アルペジオ漢直というのを思いついた
+; http://oookaworks.seesaa.net/article/492843479.html#gsc.tab=0
+; (2022年10月25日)より 固有名詞ショートカットのキー
 ;
 ; 【薙刀式】句点確定にもう慣れた
 ; http://oookaworks.seesaa.net/article/493333195.html#gsc.tab=0
-; (2022年11月09日)より
+; (2022年11月09日)より 句点確定
 ;
 ; 【薙刀式】編集モードをテキストだけで説明してみる
 ; http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0
-; (2022年11月20日)より
+; (2022年11月20日)より 編集モード
 ;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
