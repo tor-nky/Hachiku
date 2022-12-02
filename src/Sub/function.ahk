@@ -635,7 +635,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub == "{確定}")
 			{
 				If (usingKeyConfig && imeName != "OldMSIME" && imeName != "NewMSIME")
+				{
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
+					If (class == "Hidemaru32Class" && imeName == "CustomMSIME")
+						postDelay := 50
+				}
 				Else
 				{
 					; IME_GET() の前に一定時間空ける
