@@ -896,7 +896,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 
-			; ※半角/全角 を使う方法
+/*			; ※半角/全角 を使う方法
 				preDelay := 40
 				postDelay := 30
 				; 前回の出力からの時間が短ければ、ディレイを入れる
@@ -904,16 +904,14 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					Sleep, % preDelay - lastDelay
 				Send, {vkF3}	; 半角/全角
 				Sleep, % (lastDelay := postDelay)
-/*			; ※IME_SET(1) を使う方法
-				preDelay := (imeName == "ATOK" ? 80 : 10)
+*/
+			; ※IME_SET(1) を使う方法
+				preDelay := (imeName == "ATOK" ? 80 : 20)
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
-				If (imeName == "ATOK")
-					IME_SetConvMode(imeConvMode)
-				lastDelay := 0
-*/
+				lastDelay := IME_Get_Interval
 			}
 
 			preDelay := postDelay := -2
