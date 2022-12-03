@@ -1,4 +1,11 @@
 ﻿; **********************************************************************
+; 【薙刀式】「から」＝「ぶ」化けを解消する解
+; http://oookaworks.seesaa.net/article/488841086.html#gsc.tab=0
+; (2022年6月12日)より
+; 【薙刀式】新候補版とB1版の決勝戦？
+; http://oookaworks.seesaa.net/article/494282239.html#gsc.tab=0
+; (2022年12月1日)より 配列
+;
 ; 【薙刀式】固有名詞モードのバインドを検討中
 ; http://oookaworks.seesaa.net/article/490310455.html#gsc.tab=0
 ; (2022年08月03日)
@@ -13,10 +20,6 @@
 ; 【薙刀式】編集モードをテキストだけで説明してみる
 ; http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0
 ; (2022年11月20日)より 編集モード
-;
-; 【薙刀式】v15の新候補あらわる
-; http://oookaworks.seesaa.net/article/493628710.html#gsc.tab=0
-; (2022年11月20日)より 配列
 ;
 ; DvorakJ版からの変更部分：
 ;	記号はすべて全角文字を出力する
@@ -59,7 +62,8 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式v15新候補版"
+	layoutName := "薙刀式v15(仮)B1"
+		; "薙刀式2022年6月12日/2022年7月6日v15B1/2022年07月14日他"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
@@ -77,7 +81,7 @@ ReadLayout()	; () -> Void
 	AL_す	:= AL_え				:= KC_O
 	AL_へ	:= AL_ゆ				:= KC_P
 
-	AL_ろ	:= AL_ふ				:= KC_A
+	AL_ろ	:= AL_せ				:= KC_A
 	AL_け	:= AL_め				:= KC_S
 	AL_と	:= AL_に				:= KC_D
 	AL_か	:= AL_ま	:= AL_左濁	:= KC_F
@@ -86,7 +90,7 @@ ReadLayout()	; () -> Void
 	AL_あ	:= AL_の	:= AL_右濁	:= KC_J
 	AL_い	:= AL_も				:= KC_K
 	AL_う	:= AL_つ				:= KC_L
-	AL_ー	:= AL_せ				:= KC_SCLN
+	AL_ー	:= AL_ふ				:= KC_SCLN
 
 	AL_ほ							:= KC_Z
 	AL_ひ							:= KC_X
@@ -151,7 +155,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
-	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
+	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
 	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
@@ -160,7 +164,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_の | KC_SPC		,"no"		)		; の
 	SetKana( AL_も | KC_SPC		,"mo"		)		; も
 	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
-	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
+	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
@@ -189,14 +193,14 @@ kanaGroup := "DA"
 	SetKana( AL_左濁 | AL_へ			,"be"	)	; べ
 	SetKana( AL_左濁 | AL_く			,"gu"	)	; ぐ
 	SetKana( AL_左濁 | AL_つ			,"du"	)	; づ
-	SetKana( AL_左濁 | AL_せ			,"ze"	)	; ぜ
+	SetKana( AL_左濁 | AL_ふ			,"bu"	)	; ぶ
 	SetKana( AL_左濁 | AL_た			,"da"	)	; だ
 
 ; 左手の濁音
 	SetKana( AL_右濁 | AL_き			,"gi"	)	; ぎ
 	SetKana( AL_右濁 | AL_て			,"de"	)	; で
 	SetKana( AL_右濁 | AL_し			,"zi"	)	; じ
-	SetKana( AL_右濁 | AL_ふ			,"bu"	)	; ぶ
+	SetKana( AL_右濁 | AL_せ			,"ze"	)	; ぜ
 	SetKana( AL_右濁 | AL_け			,"ge"	)	; げ
 	SetKana( AL_右濁 | AL_と			,"do"	)	; ど
 	SetKana( AL_右濁 | AL_か			,"ga"	)	; が
@@ -214,9 +218,9 @@ kanaGroup := "DA"
 ; 右の半濁音
 kanaGroup := "HA"
 	SetKana( AL_左半 | AL_へ			,"pe"	)	; ぺ
+	SetKana( AL_左半 | AL_ふ			,"pu"	)	; ぷ
 
 ; 左の半濁音
-	SetKana( AL_右半 | AL_ふ			,"pu"	)	; ぷ
 	SetKana( AL_右半 | AL_ほ			,"po"	)	; ぽ
 	SetKana( AL_右半 | AL_ひ			,"pi"	)	; ぴ
 	SetKana( AL_右半 | AL_は			,"pa"	)	; ぱ
@@ -322,11 +326,11 @@ kanaGroup := "DA"
 ;****************************
 ; フ; ファフィフェフォフュ
 kanaGroup := "HA"
-	SetKana( AL_右半 | AL_ふ | AL_え			,"fe"		)	; ふぇ
-	SetKana( AL_右半 | AL_ふ | AL_ゆ			,"fyu"		)	; ふゅ
-	SetKana( AL_右半 | AL_ふ | AL_あ			,"fa"		)	; ふぁ
-	SetKana( AL_右半 | AL_ふ | AL_い			,"fi"		)	; ふぃ
-	SetKana( AL_右半 | AL_ふ | AL_お			,"fo"		)	; ふぉ
+	SetKana( AL_左半 | AL_ふ | AL_え			,"fe"		)	; ふぇ
+	SetKana( AL_左半 | AL_ふ | AL_ゆ			,"fyu"		)	; ふゅ
+	SetKana( AL_左半 | AL_ふ | AL_あ			,"fa"		)	; ふぁ
+	SetKana( AL_左半 | AL_ふ | AL_い			,"fi"		)	; ふぃ
+	SetKana( AL_左半 | AL_ふ | AL_お			,"fo"		)	; ふぉ
 
 ; ヴ; ヴァヴィヴェヴォヴュ
 ;kanaGroup := "DA"
