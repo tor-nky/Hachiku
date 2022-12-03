@@ -575,9 +575,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, clipSaved				; Any?型
 ;		, imeName				; String型
 
-	; 定数
-	IME_Get_Interval := 30	; Int型定数	Send から IME_GET まで Sleep で必要な時間(ミリ秒)
-
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
 	WinGet, hwnd, ID, A
@@ -585,6 +582,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
+
+	; Send から IME_GET まで Sleep で必要な時間(ミリ秒)
+	IME_Get_Interval := (class == "Hidemaru32Class" && imeName == "NewMSIME" ? 40 : 30)	; Int型
 
 	; ディレイの初期値
 	If (delay < -1)
