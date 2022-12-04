@@ -631,6 +631,9 @@ KoyuRegist()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
 
+	If (D05 != "")
+		MsgBox, 固有名詞ショートカット`n──第一面──`n“Ｔ” の定義は無効です
+
 ;**************************************
 ; 固有名詞ショートカット
 ; 上段人差指＋中指
