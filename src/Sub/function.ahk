@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
+	global imeSelect, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -808,15 +808,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			 && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				out := strSub
-				If (imeName == "ATOK")
+				; IME が ATOK か Google の時
+				If (imeSelect)
 				{
 					preDelay := 60
 					postDelay := 30
-				}
-				Else If (imeName == "Google")
-				{
-					preDelay := 30
-					postDelay := 10
 				}
 				Else If (imeName != "NewMSIME")
 				{
