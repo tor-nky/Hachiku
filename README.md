@@ -96,14 +96,6 @@ ATOK プロパティ → キー･ローマ字･色 → キーカスタマイ�
 * 「名前を付けて保存」で IMEオフの状態だと、2文字目以降に大文字を入力してから何も入力ができない
 秀丸エディタのみの現象です
 * 入力したキーがまれに無視される
-* 新MS-IME(Win10 2004以降の標準)で薙刀式に変換が正しく行われないことがある  
-新MS-IME(Win10 2004以降の標準)ではよく「かな」が英字に化けます。
-2022年9月3日までのある日調べ
-
-|バージョン|新MS-IME誤変換頻度|CPU|電源
----|---|---|---
-|Windows 10|日本語変換後約2500字で1度もなし|Core 2 Duo E6750|AC電源
-|Windows 10|日本語変換後300～1000字に1回程|Core i5-4300U|AC電源
 * (新MS-IME) かな変換中に英数入力に切り替え、確定しないでキーを押すと最初の文字が入力されない。  
 新MS-IME の仕様です。
 * (新MS-IME) かな入力できなくなったり、入力中のかなが消せなくなることがある  
@@ -114,10 +106,8 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 * ブラウザで GitHub 上のファイルを直接編集すると、誤動作する編集モードがある  
 [Issue #28](https://github.com/tor-nky/Hachiku/issues/28)
 # 動作確認
-* Windows 10 Home version 22H2 64-bit + AutoHotkey (v1.1.35.00) U64 Unicode 64-bit.bin  
+* Windows 10 Home version 22H2 64-bit + AutoHotkey (v1.1.36.01) U64 Unicode 64-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力
-* Windows 11 Pro version 21H2 + AutoHotkey (v1.1.35.00) U64 Unicode 64-bit.bin  
-新旧MS-IME
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)
