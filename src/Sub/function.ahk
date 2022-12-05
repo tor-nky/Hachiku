@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global imeSelect, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
+	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -620,7 +620,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; "{Raw}"からの残りは全部出力する
 			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 			{
-				lastDelay := (imeName == "ATOK" && class == "Hidemaru32Class" && delay < 30 ? 30
+				lastDelay := (class == "Hidemaru32Class" && imeName == "ATOK" && delay < 30 ? 30
 					: (delay < 10 ? 10 : delay))
 				While (++i <= strLength)
 				{
@@ -634,12 +634,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
-				If (usingKeyConfig && imeName != "OldMSIME" && imeName != "NewMSIME")
-				{
+				If (usingKeyConfig
+				 && ((imeName == "CustomMSIME" && class != "Hidemaru32Class") || imeName == "ATOK" || imeName == "Google"))
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
-					If (class == "Hidemaru32Class" && imeName == "CustomMSIME")
-						postDelay := 50
-				}
 				Else
 				{
 					; IME_GET() の前に一定時間空ける
@@ -745,50 +742,45 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがな
 			{
 				noIME := False
+				IME_SET(1)			; IMEオン
+				IME_SetConvMode(25)	; IME 入力モード	ひらがな
+				; ↑ Google日本語入力は、ひらがなキーを押しただけでは IME_GetConvMode() の戻り値が変わらないので必要
 				If (imeName == "Google")
 				{
 					out := strSub
 					postDelay := 30
 				}
 				Else
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(25)	; IME 入力モード	ひらがな
 					lastDelay := IME_Get_Interval
-				}
 				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナ
 			{
 				noIME := False
+				IME_SET(1)			; IMEオン
+				IME_SetConvMode(27)	; IME 入力モード	カタカナ
+				; ↑ Google日本語入力は、カタカナキーを押しただけでは IME_GetConvMode() の戻り値が変わらないので必要
 				If (imeName == "Google")
 				{
 					out := strSub
 					postDelay := 30
 				}
 				Else
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(27)	; IME 入力モード	カタカナ
 					lastDelay := IME_Get_Interval
-				}
 				kanaMode := 1
 			}
 			Else If (strSub == "{全英}")
 			{
 				noIME := False
+				IME_SET(1)			; IMEオン
+				IME_SetConvMode(24)	; IME 入力モード	全英数
 				If (imeName == "Google")
 				{
-					Send, {vkF2}		; ひらがなキー
-					Sleep, 30
 					out := "+{vk1D}"	; シフト+無変換
+					postDelay := 30
 				}
 				Else
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(24)	; IME 入力モード	全英数
 					lastDelay := IME_Get_Interval
-				}
 				kanaMode := 0
 			}
 			Else If (strSub == "{半ｶﾅ}")
@@ -800,16 +792,15 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				{
 					IME_SET(1)			; IMEオン
 					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-					kanaMode := 1
 					lastDelay := IME_Get_Interval
+					kanaMode := 1
 				}
 			}
 			Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
 			 && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				out := strSub
-				; IME が ATOK か Google の時
-				If (imeSelect)
+				If (imeName == "Google" || imeName == "ATOK")
 				{
 					preDelay := 60
 					postDelay := 30
