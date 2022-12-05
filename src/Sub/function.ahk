@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global imeSelect, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
+	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
@@ -620,7 +620,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; "{Raw}"からの残りは全部出力する
 			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 			{
-				lastDelay := (imeName == "ATOK" && class == "Hidemaru32Class" && delay < 30 ? 30
+				lastDelay := (class == "Hidemaru32Class" && imeName == "ATOK" && delay < 30 ? 30
 					: (delay < 10 ? 10 : delay))
 				While (++i <= strLength)
 				{
@@ -634,12 +634,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
-				If (usingKeyConfig && imeName != "OldMSIME" && imeName != "NewMSIME")
-				{
+				If (usingKeyConfig
+				 && ((imeName == "CustomMSIME" && class != "Hidemaru32Class") || imeName == "ATOK" || imeName == "Google"))
 					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
-					If (class == "Hidemaru32Class" && imeName == "CustomMSIME")
-						postDelay := 50
-				}
 				Else
 				{
 					; IME_GET() の前に一定時間空ける
@@ -808,8 +805,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			 && class == "Hidemaru32Class")	; 秀丸エディタ
 			{
 				out := strSub
-				; IME が ATOK か Google の時
-				If (imeSelect)
+				If (imeName == "Google" || imeName == "ATOK")
 				{
 					preDelay := 60
 					postDelay := 30
