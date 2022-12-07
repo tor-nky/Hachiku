@@ -653,9 +653,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						; あるいは文字出力から一定時間経っていて、IME窓検出できたとき
 						If ((flag && i > 4 && (imeConvMode & 1))
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
+							; 確定のためのエンター
 							out := "{Enter}"
-						; かな入力中で、Google 日本語入力でない
-						Else If ((imeConvMode & 1) && imeName != "Google")
+						; かな入力中
+						Else If (imeConvMode & 1)
 						{
 							Send, {vkF3}	; 半角/全角
 							Sleep, % IME_Get_Interval
@@ -663,9 +664,15 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							; 「半角/全角」でIMEオンのままだったら、IME窓あり
 							If (IME_GET())
 							{
+								; IME入力モードを元に戻す
+								If (imeName != "Google")
+									IME_SetConvMode(imeConvMode)
+								Else If ((imeConvMode & 0xF) == 9)
+									Send, {vkF2}	; ひらがな
+								Else
+									Send, {vkF1}	; カタカナ
+								; 確定のためのエンター
 								Send, {Enter}
-								IME_SetConvMode(imeConvMode)	; IME入力モードを元に戻す
-								lastDelay := IME_Get_Interval
 							}
 							; 「半角/全角」でIMEオフになり、直後が「半角/全角」や「漢字」なら
 							; IMEオフのままで良いのでカウンタを進めその先へ
@@ -684,8 +691,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								postDelay := 30
 							}
 						}
-						; ここまででIME窓があるか不明
-						; あるいは文字出力から時間が経っていない(Google は Sleep, 30 が、ATOKは Sleep, 90 が、他は Sleep, 70 がいる)
 						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
 						{
 							Send, _
