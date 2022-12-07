@@ -651,7 +651,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 						; この関数が アスキー文字→{確定} で呼ばれたとき
 						; あるいは文字出力から一定時間経っていて、IME窓検出できたとき
-						If ((flag && i > 4 && (imeConvMode & 1))
+						If ((flag && i > 4)
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
 							; 確定のためのエンター
 							out := "{Enter}"
