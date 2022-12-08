@@ -748,8 +748,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 				IME_SET(1)			; IMEオン
+				; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
+				; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
 				IME_SetConvMode(25)	; IME 入力モード	ひらがな
-				; ↑ Google日本語入力は、ひらがなキーを押しただけでは IME_GetConvMode() の戻り値が変わらないので必要
+				; さらに Google日本語入力へは、ひらがなキーを送る
 				If (imeName == "Google")
 				{
 					out := strSub
@@ -763,29 +765,32 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 				IME_SET(1)			; IMEオン
-				IME_SetConvMode(27)	; IME 入力モード	カタカナ
-				; ↑ Google日本語入力は、カタカナキーを押しただけでは IME_GetConvMode() の戻り値が変わらないので必要
 				If (imeName == "Google")
 				{
 					out := strSub
 					postDelay := 30
 				}
 				Else
+				{
+					IME_SetConvMode(27)	; IME 入力モード	カタカナ
 					lastDelay := IME_Get_Interval
+				}
 				kanaMode := 1
 			}
 			Else If (strSub == "{全英}")
 			{
 				noIME := False
 				IME_SET(1)			; IMEオン
-				IME_SetConvMode(24)	; IME 入力モード	全英数
 				If (imeName == "Google")
 				{
 					out := "+{vk1D}"	; シフト+無変換
 					postDelay := 30
 				}
 				Else
+				{
+					IME_SetConvMode(24)	; IME 入力モード	全英数
 					lastDelay := IME_Get_Interval
+				}
 				kanaMode := 0
 			}
 			Else If (strSub == "{半ｶﾅ}")
