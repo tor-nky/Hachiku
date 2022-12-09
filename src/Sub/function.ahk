@@ -196,7 +196,7 @@ Analysis(str)	; (str: String) -> String
 	strLength := StrLen(str)
 	While (i <= strLength)
 	{
-		c := SubStr(str, i, 1)
+		c := SubStr(str, i++, 1)
 		If (c == "}" && bracket != 1)
 			bracket := 0
 		Else If (c == "{" || bracket)
@@ -204,11 +204,11 @@ Analysis(str)	; (str: String) -> String
 		strSub .= c
 		strSubLength++
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i >= strLength)
+			|| i > strLength)
 		{
 			If (RegExMatch(strSub, "\{Raw\}$"))
 				; 残り全部を出力
-				Return ret . SubStr(str, i - strSubLength + 1)
+				Return ret . SubStr(str, i - strSubLength)
 			Else If (RegExMatch(strSub, "\{直接\}$"))
 			{
 				If (!kakutei)
@@ -216,7 +216,7 @@ Analysis(str)	; (str: String) -> String
 				If (!noIME)
 					ret .= "{NoIME}"
 				; 残り全部を出力
-				Return ret . "{Raw}" . SubStr(str, i + 1)
+				Return ret . "{Raw}" . SubStr(str, i)
 			}
 
 			strSub := ControlReplace(strSub)
@@ -324,7 +324,6 @@ Analysis(str)	; (str: String) -> String
 			strSub := ""
 			strSubLength := 0
 		}
-		i++
 	}
 
 	; 最後の文字がASCIIコード以外だったら、"{確定}"を入れる
@@ -607,7 +606,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	strLength := StrLen(str)
 	While (i <= strLength)
 	{
-		c := SubStr(str, i, 1)
+		c := SubStr(str, i++, 1)
 		If (c == "}" && bracket != 1)
 			bracket := 0
 		Else If (c == "{" || bracket)
@@ -615,20 +614,21 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		strSub .= c
 		strSubLength++
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
-			|| i >= strLength)
+			|| i > strLength)
 		{
 			; "{Raw}"からの残りは全部出力する
 			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 			{
 				lastDelay := (class == "Hidemaru32Class" && imeName == "ATOK" && delay < 30 ? 30
 					: (delay < 10 ? 10 : delay))
-				While (++i <= strLength)
+				While (i <= strLength)
 				{
-					SendRaw, % SubStr(str, i, 1)
+					SendRaw, % SubStr(str, i++, 1)
 					; 出力直後のディレイ
 					Sleep, % lastDelay
 				}
-				strSub := ""	; 後で誤作動しないように消去
+				; 後で誤作動しないように消去
+				strSub := ""
 			}
 
 			; 出力するキーを変換
@@ -653,7 +653,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 						; この関数が アスキー文字→{確定} で呼ばれたとき
 						; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
-						If ((flag && i > 4)
+						If ((flag && i > 5)
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
 							; 確定のためのエンター
 							out := "{Enter}"
@@ -678,23 +678,23 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							}
 							; 未変換文字がない
 							; 直後の定義によってはIMEオフのままで良いのでカウンタを進めその先へ
-							Else If (SubStr(str, i + 1, 7) = "{NoIME}")
+							Else If (SubStr(str, i, 7) = "{NoIME}")
 							{
-								i += 8
+								i += 7
 								noIME := True
 								Continue
 							}
-							Else If (SubStr(str, i + 1, 6) = "{vkF3}" || SubStr(str, i + 1, 6) = "{vkF4}"
-								|| SubStr(str, i + 1, 6) = "{vk19}")
+							Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
+								|| SubStr(str, i, 6) = "{vk19}")
 							{
-								i += 7
+								i += 6
 								noIME := False
 								kanaMode := 0
 								Continue
 							}
-							Else If (SubStr(str, i + 1, 8) = "{IMEOFF}")
+							Else If (SubStr(str, i, 8) = "{IMEOFF}")
 							{
-								i += 9
+								i += 8
 								noIME := False
 								kanaMode := 0
 								Continue
@@ -887,7 +887,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					; IME窓の検出が当てにできるか未判定で
 					; 変換1回目にはIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
-					 && (out = "{vk20}" || out = "{Space down}") && flag && i >= strLength)
+					 && (out = "{vk20}" || out = "{Space down}") && flag && i > strLength)
 						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
 							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
 					flag := False
@@ -902,7 +902,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			}
 
 			; 必要なら IME の状態を元に戻す
-			If (noIME && (i >= strLength || strSub = "{UndoIME}"))
+			If (noIME && (i > strLength || strSub = "{UndoIME}"))
 			{
 				noIME := False
 
@@ -928,7 +928,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			strSub := out := ""
 			strSubLength := 0
 		}
-		i++
 	}
 }
 
