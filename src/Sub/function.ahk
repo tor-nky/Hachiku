@@ -634,9 +634,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; 出力するキーを変換
 			Else If (strSub == "{確定}")
 			{
+				; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
 				If (usingKeyConfig
 				 && ((imeName == "CustomMSIME" && class != "Hidemaru32Class") || imeName == "ATOK" || imeName == "Google"))
-					out := "+^{vk1C}"	; ※ Shift+Ctrl+変換 に Enter と同じ機能を割り当てること
+					out := "+^{vk1C}"
+				; 未変換文字があったらエンターを押す
 				Else
 				{
 					; IME_GET() の前に一定時間空ける
@@ -645,12 +647,12 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						Sleep, % IME_Get_Interval - lastDelay
 						lastDelay := IME_Get_Interval
 					}
-					; IMEオンで、変換モード(無変換)ではない
+					; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
 					If (IME_GET() && IME_GetSentenceMode())
 					{
 						imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 						; この関数が アスキー文字→{確定} で呼ばれたとき
-						; あるいは文字出力から一定時間経っていて、IME窓検出できたとき
+						; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
 						If ((flag && i > 4)
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
 							; 確定のためのエンター
@@ -661,7 +663,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							Send, {vkF3}	; 半角/全角
 							Sleep, % IME_Get_Interval
 							lastDelay := IME_Get_Interval
-							; 「半角/全角」でIMEオンのままだったら、IME窓あり
+							; 「半角/全角」でIMEオンのままだったら未変換文字あり
 							If (IME_GET())
 							{
 								; IME入力モードを元に戻す
@@ -674,8 +676,14 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								; 確定のためのエンター
 								out := "{Enter}"
 							}
-							; 「半角/全角」でIMEオフになり、直後が「半角/全角」や「漢字」なら
-							; IMEオフのままで良いのでカウンタを進めその先へ
+							; 未変換文字がない
+							; 直後の定義によってはIMEオフのままで良いのでカウンタを進めその先へ
+							Else If (SubStr(str, i + 1, 7) = "{NoIME}")
+							{
+								i += 8
+								noIME := True
+								Continue
+							}
 							Else If (SubStr(str, i + 1, 6) = "{vkF3}" || SubStr(str, i + 1, 6) = "{vkF4}"
 								|| SubStr(str, i + 1, 6) = "{vk19}")
 							{
@@ -684,13 +692,21 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								kanaMode := 0
 								Continue
 							}
-							; 「半角/全角」でIMEオフになったら、IME窓なし
-							Else If (SubStr(str, i + 1, 8) != "{IMEOFF}")
+							Else If (SubStr(str, i + 1, 8) = "{IMEOFF}")
 							{
-								out := "{vkF3}"		; 「半角/全角」で元に戻す
+								i += 9
+								noIME := False
+								kanaMode := 0
+								Continue
+							}
+							; 「半角/全角」で元に戻す
+							Else
+							{
+								out := "{vkF3}"
 								postDelay := 30
 							}
 						}
+						; 未変換文字があるか不明
 						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
 						{
 							Send, _
@@ -712,9 +728,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (IME_GET())
 				{
 					noIME := True
-					imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
-					If (imeConvMode != "")
-						kanaMode := imeConvMode & 1		; 英数入力かかな入力か保存する
 					out := "{vkF3}"		; 半角/全角
 					postDelay := 30
 				}
