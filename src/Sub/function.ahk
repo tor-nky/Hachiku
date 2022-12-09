@@ -584,7 +584,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	imeName := DetectIME()
 
 	; Send から IME_GET まで Sleep で必要な時間(ミリ秒)
-	IME_Get_Interval := (class == "Hidemaru32Class" && imeName == "NewMSIME" ? 40 : 30)	; Int型
+	IME_Get_Interval := (imeName == "NewMSIME" ? 40 : 30)	; Int型
 
 	; ディレイの初期値
 	If (delay < -1)
