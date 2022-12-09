@@ -672,7 +672,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								Else
 									Send, {vkF1}	; カタカナ
 								; 確定のためのエンター
-								Send, {Enter}
+								out := "{Enter}"
 							}
 							; 「半角/全角」でIMEオフになり、直後が「半角/全角」や「漢字」なら
 							; IMEオフのままで良いのでカウンタを進めその先へ
