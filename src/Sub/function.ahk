@@ -834,16 +834,16 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					postDelay := 20
 				}
 			}
-			Else If (strSub = "^x" && imeName == "Google")
+			Else If (strSub = "^x")
 			{
 				out := strSub
-				postDelay := 30
+				postDelay := 40
 			}
 			Else If (strSub = "^v")
 			{
 				out := strSub
 				preDelay := (imeName == "Google" ? 60 : 40)
-				postDelay := (imeName == "ATOK" ? 100 : 30)
+				postDelay := (imeName == "ATOK" && class == "Hidemaru32Class" ? 100 : 30)
 			}
 			Else If (strSub = "{C_Clr}")
 				Clipboard :=				; クリップボードを空にする
