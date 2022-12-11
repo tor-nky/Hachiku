@@ -681,7 +681,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							{
 								i += 7
 								noIME := True
-								Continue
 							}
 							Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
 								|| SubStr(str, i, 6) = "{vk19}")
@@ -689,14 +688,12 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 								i += 6
 								noIME := False
 								kanaMode := 0
-								Continue
 							}
 							Else If (SubStr(str, i, 8) = "{IMEOFF}")
 							{
 								i += 8
 								noIME := False
 								kanaMode := 0
-								Continue
 							}
 							; 「半角/全角」で元に戻す
 							Else
