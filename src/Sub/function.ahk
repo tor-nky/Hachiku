@@ -558,7 +558,7 @@ DetectIME()	; () -> String
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
 	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
-	static flag := False	; 変換1回目のIME窓検出用	False: 検出済みか文字以外, True: その他
+	static romanChar := False	; Bool型	ローマ字になり得る文字の入力中か(変換1回目のIME窓検出用)
 ;	local hwnd					; Int型
 ;		, title, class, process	; String型
 ;		, strLength				; Int型		str の長さ
@@ -652,7 +652,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 						; この関数が アスキー文字→{確定} で呼ばれたとき
 						; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
-						If ((flag && i > 5)
+						If ((romanChar && i > 5)
 						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
 							; 確定のためのエンター
 							out := "{Enter}"
@@ -877,16 +877,16 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				; ローマ字の文字が入力された
 				If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
 				 || (strSubLength == 3 && Asc(strSub) == 123))
-					flag := True
+					romanChar := True
 				Else
 				{
 					; IME窓の検出が当てにできるか未判定で
 					; 変換1回目にはIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
-					 && (out = "{vk20}" || out = "{Space down}") && flag && i > strLength)
+					 && (out = "{vk20}" || out = "{Space down}") && romanChar && i > strLength)
 						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
 							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
-					flag := False
+					romanChar := False
 				}
 
 				; 出力直後のディレイ
@@ -896,6 +896,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (lastDelay <= 0)
 					lastDelay := 0
 			}
+			Else
+				romanChar := False
 
 			; 必要なら IME の状態を元に戻す
 			If (noIME && (i > strLength || strSub = "{UndoIME}"))
