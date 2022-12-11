@@ -573,6 +573,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, lastDelay				; Int型		前回出力時のディレイの値
 ;		, clipSaved				; Any?型
 ;		, imeName				; String型
+;		, IME_Get_Interval		; Int型
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
@@ -582,8 +583,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
 
-	; Send から IME_GET まで Sleep で必要な時間(ミリ秒)
-	IME_Get_Interval := (imeName == "NewMSIME" ? 40 : 30)	; Int型
+	; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
+	IME_Get_Interval := (imeName == "NewMSIME" ? 40 : 30)
 
 	; ディレイの初期値
 	If (delay < -1)
@@ -883,9 +884,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					; IME窓の検出が当てにできるか未判定で
 					; 変換1回目にはIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
-					 && (out = "{vk20}" || out = "{Space down}") && romanChar && i > strLength)
+						&& (out = "{vk20}" || out = "{Space down}") && romanChar && i > strLength)
+					{
 						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
 							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
+					}
 					romanChar := False
 				}
 

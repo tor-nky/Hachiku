@@ -48,13 +48,24 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 
 SendESCx3()	; () -> Void
 {
-	global	usingKeyConfig, goodHwnd, IME_Get_Interval, lastSendTime
-;	local	hwnd, process, imeName, delay
+	global	usingKeyConfig, goodHwnd, lastSendTime
+;	local hwnd		; Int型
+;		, process	; String型
+;		, imeName	; String型
+;		, delay		; Int型
+;		, IME_Get_Interval				; Int型
+;		, IME_GetConverting_Interval	; Int型
 
 	WinGet, hwnd, ID, A
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
+
+	; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
+	IME_Get_Interval := (imeName == "NewMSIME" ? 40 : 30)
+	; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
+	IME_GetConverting_Interval := (imeName == "Google" ? 30
+		: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
 
 	If (usingKeyConfig
 	 && imeName != "OldMSIME" && imeName != "NewMSIME" && class != "Hidemaru32Class")
@@ -65,19 +76,20 @@ SendESCx3()	; () -> Void
 		delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
 		If (delay > 0)
-			Sleep, %delay%
+			Sleep, % delay
 		If (IME_GET() && IME_GetSentenceMode())
 		{
 			;　IME ONだが、無変換ではない
-			delay := 70 - Floor(QPC() - lastSendTime)
+			delay := IME_GetConverting_Interval - Floor(QPC() - lastSendTime)
 			; 時間を空けてIME窓検出へ
 			If (delay > 0)
-				Sleep, %delay%
+				Sleep, % delay
 			Loop, 5 {
 				If (!IME_GetConverting())
 					; IME窓がなければループ終了
 					Break
 				Send, {Esc}
+				Sleep, % IME_GetConverting_Interval
 			}
 		}
 	}
