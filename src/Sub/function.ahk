@@ -619,8 +619,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			; "{Raw}"からの残りは全部出力する
 			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 			{
-				lastDelay := (class == "Hidemaru32Class" && imeName == "ATOK" && delay < 30 ? 30
-					: (delay < 10 ? 10 : delay))
+				lastDelay := (delay < 10 ? 10 : delay)
 				While (i <= strLength)
 				{
 					SendRaw, % SubStr(str, i++, 1)
@@ -843,7 +842,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				out := strSub
 				preDelay := (imeName == "Google" ? 60 : 40)
-				postDelay := (imeName == "ATOK" && class == "Hidemaru32Class" ? 100 : 30)
+				postDelay := (class == "Hidemaru32Class" ? 100 : 60)
 			}
 			Else If (strSub = "{C_Clr}")
 				Clipboard :=				; クリップボードを空にする
@@ -916,7 +915,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				Sleep, % (lastDelay := postDelay)
 */
 			; ※IME_SET(1) を使う方法
-				preDelay := (imeName == "ATOK" ? 80 : 20)
+				preDelay := 20
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
