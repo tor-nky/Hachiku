@@ -636,8 +636,13 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
 				If (usingKeyConfig
-				 && ((imeName == "CustomMSIME" && class != "Hidemaru32Class") || imeName == "ATOK" || imeName == "Google"))
+				 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
+				{
 					out := "+^{vk1C}"
+					; 誤動作防止
+					If (imeName == "CustomMSIME")
+						postDelay := 30
+				}
 				; 未変換文字があったらエンターを押す
 				Else
 				{
@@ -700,7 +705,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							Else
 							{
 								out := "{vkF3}"
-								postDelay := 30
+								postDelay := IME_Get_Interval
 							}
 						}
 						; 未変換文字があるか不明
@@ -708,11 +713,18 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						{
 							Send, _
 							Send, {Enter}
-							Sleep, 90
+							If (imeName != "Google")
+								; ブラウザのフィールド対策
+								; 次行「」 "{確定}{End}{改行}[]{確定}{←}" が失敗しやすい
+								Sleep, 90
 							out := "{BS}"
 						}
 					}
 				}
+				; 秀丸エディタと旧MS-IMEに "{Enter}" を送るときはディレイが必要
+				If (class == "Hidemaru32Class" && out == "{Enter}"
+				 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
+					postDelay := 110
 			}
 			Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
 			{
@@ -726,7 +738,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				{
 					noIME := True
 					out := "{vkF3}"		; 半角/全角
-					postDelay := 30
+					postDelay := IME_Get_Interval
 				}
 			}
 			Else If (strSub = "{IMEOFF}")
@@ -752,7 +764,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 				out := strSub
-				postDelay := 30
+				postDelay := IME_Get_Interval
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがな
 			{
@@ -765,7 +777,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := 30
+					postDelay := IME_Get_Interval
 				}
 				Else
 					lastDelay := IME_Get_Interval
@@ -778,7 +790,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (imeName == "Google")
 				{
 					out := strSub
-					postDelay := 30
+					postDelay := IME_Get_Interval
 				}
 				Else
 				{
@@ -794,7 +806,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				If (imeName == "Google")
 				{
 					out := "+{vk1D}"	; シフト+無変換
-					postDelay := 30
+					postDelay := IME_Get_Interval
 				}
 				Else
 				{
@@ -816,31 +828,31 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					kanaMode := 1
 				}
 			}
+			; 秀丸エディタでエンターを押した
+			; ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
 			Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
-			 && class == "Hidemaru32Class")	; 秀丸エディタ
+			 && class == "Hidemaru32Class")
 			{
 				out := strSub
 				If (imeName == "Google" || imeName == "ATOK")
 				{
-					preDelay := 60
-					postDelay := 30
+					preDelay := 10
+					postDelay := 60
 				}
 				Else If (imeName != "NewMSIME")
-				{
-					preDelay := 60
-					postDelay := 20
-				}
+					postDelay := 60
 			}
 			Else If (strSub = "^x")
 			{
 				out := strSub
+				preDelay := (imeName == "NewMSIME" ? 100 : 70)
 				postDelay := 40
 			}
 			Else If (strSub = "^v")
 			{
 				out := strSub
-				preDelay := (imeName == "Google" ? 60 : 40)
-				postDelay := (class == "Hidemaru32Class" ? 100 : 60)
+				preDelay := 40
+				postDelay := 60
 			}
 			Else If (strSub = "{C_Clr}")
 				Clipboard :=				; クリップボードを空にする
