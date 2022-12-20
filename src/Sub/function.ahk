@@ -78,7 +78,7 @@ ToolTip2(str, time:=0)	; (str: String, time: Int) -> Void
 ; 配列定義をすべて消去する
 DeleteDefs()	; () -> Void
 {
-	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
+	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName, defsCombinableBit
 		, defBegin, defEnd
 
 	; かな配列の入れ物
