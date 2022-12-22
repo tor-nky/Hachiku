@@ -116,10 +116,8 @@ CountBit(keyComb)	; (keyComb: Int64) -> Int
 }
 
 ; 縦書き用定義から横書き用に変換
-ConvTateYoko(tate)	; (tate: String) -> String
+ConvTateYoko(str)	; (str: String) -> String
 {
-;	local str	; String型
-	str := tate
 	StringReplace, str, str, {Up,		{Temp,	A
 	StringReplace, str, str, {Right,	{Up,	A
 	StringReplace, str, str, {Down,		{Right,	A
@@ -130,10 +128,8 @@ ConvTateYoko(tate)	; (tate: String) -> String
 }
 
 ; 機能置き換え処理 - DvorakJ との互換用
-ControlReplace(in)	; (in: String) -> String
+ControlReplace(str)	; (str: String) -> String
 {
-;	local str	; String型
-	str := in
 	StringReplace, str, str, {→,			{Right,		A
 	StringReplace, str, str, {->,			{Right,		A
 	StringReplace, str, str, {右,			{Right,		A
@@ -1186,7 +1182,6 @@ Convert()	; () -> Void
 		, reuseBit	:= 0	; Int64型	復活したキービット
 		, lastKeyTime := 0	; Double型	有効なキーを押した時間
 		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
-		, toBuf		:= ""	; String型	出力バッファに送る文字列
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
 		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
@@ -1204,6 +1199,7 @@ Convert()	; () -> Void
 ;		, nowKey			; String型
 ;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
+;		, toBuf				; String型	出力バッファに送る文字列
 ;		, keyCount			; Int型		今回は何キー同時押しか
 ;		, nowBit			; Int64型	今回のキービット
 ;		, bitMask			; Int64型

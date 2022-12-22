@@ -107,7 +107,9 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 [Issue #28](https://github.com/tor-nky/Hachiku/issues/28)
 # 動作確認
 * Windows 10 Home version 22H2 64-bit + AutoHotkey (v1.1.36.02) U64 Unicode 64-bit.bin  
-新旧MS-IME、ATOK 2017、Google 日本語入力
+新旧MS-IME、ATOK 2017、Google 日本語入力  
+__AutoHotkey v2以降では使えません__
+
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)
@@ -144,7 +146,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 ASCIIコード以外の文字や {直接} から後の文字列は、一度 IME をオフにして出力したあと IME を元に戻します。
 ## 動作速度
 * 最初の読み込み
-２～３秒程度
+1～2秒程度
 * 英数、かなの普通の文字(スペースを除く)
 通常 10 ms 以内、エクスプローラー 78 ms 以内。
 (ローマ字の文字数によって変わる)

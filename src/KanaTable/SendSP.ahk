@@ -50,6 +50,7 @@ SendESCx3()	; () -> Void
 {
 	global	usingKeyConfig, goodHwnd, lastSendTime
 ;	local hwnd		; Int型
+;		, class		; String型
 ;		, process	; String型
 ;		, imeName	; String型
 ;		, delay		; Int型
