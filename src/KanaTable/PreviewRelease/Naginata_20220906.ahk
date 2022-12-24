@@ -12,7 +12,6 @@
 ; (2022年09月06日)より
 ;
 ; DvorakJ版からの変更部分：
-;	記号はすべて全角文字を出力する
 ;	編集モードD+F+H、J+K+Q、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
 ;	編集モードM+Comma+W、M+Comma+S、M+Comma+F、M+Cooma+B の動作後にはクリップボードは空になる。ダミーの空白も入らない。
 ;	固有名詞ショートカットの第二面（スペース押下）を追加
@@ -367,9 +366,9 @@ kanaGroup := "HA"
 
 kanaGroup := ""	; グループなし
 	SetKana( KC_H | KC_J			,"{ひらがな}"		)	; IME ON
-	SetEisu( KC_H | KC_J			,"{ひらがな 2}"		)
-	SetKana( KC_F | KC_G			,"{ひらがな}{全角}"	)	; IME OFF
-	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (ATOK)英語入力ON は "{ひらがな 2}{英数}")
+	SetEisu( KC_H | KC_J			,"{ひらがな}"		)
+	SetKana( KC_F | KC_G			,"{全角}"			)	; IME OFF
+	SetEisu( KC_F | KC_G			,"{ひらがな}{全角}"	)	; (ATOK)英語入力ON は "{ひらがな}{英数}")
 
 ; Enter
 ; VとMの同時押し

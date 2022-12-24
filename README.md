@@ -1,11 +1,7 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2022年12月1日付[【薙刀式】新候補版とB1版の決勝戦？](http://oookaworks.seesaa.net/article/494282239.html#gsc.tab=0)
-から、暫定v15（元v15B1）を Autohotkey に実装しました。  
+2022年12月23日付[【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
+から、__薙刀式v15fix版仮最終候補__ を Autohotkey に実装しました。  
 ソースコードから実行します。  
-句点確定、最近発表された編集モード、固有名詞モードのバインド変更を参考にしています。
-* [【薙刀式】句点確定にもう慣れた](http://oookaworks.seesaa.net/article/493333195.html#gsc.tab=0) 2022年11月09日付
-* [【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0) 2022年11月20日付
-* [【薙刀式】固有名詞モードのバインドを検討中](http://oookaworks.seesaa.net/article/490310455.html#gsc.tab=0) 2022年08月03日付
 
 ---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
@@ -112,8 +108,7 @@ __AutoHotkey v2以降では使えません__
 
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
-* [【薙刀式】v15（仮安定版）](http://oookaworks.seesaa.net/article/492480494.html#gsc.tab=0)
-* [【薙刀式】編集モードをテキストだけで説明してみる](http://oookaworks.seesaa.net/article/493626506.html#gsc.tab=0)
+* [【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```
