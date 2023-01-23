@@ -1573,7 +1573,11 @@ Convert()	; () -> Void
 					i := defBegin[3]
 					imax := defEnd[3]
 					; シフトの適用範囲に応じた検索キーを設定
-					searchBit := (!shiftStyle ? realBit : realBitAndKC_SPC | nowBit | lastBit | last2Bit | reuseBit)
+					If (shiftStyle)
+						searchBit := realBitAndKC_SPC | nowBit | ((lastBit | last2Bit) ? (lastBit | last2Bit) : reuseBit)
+					Else
+						searchBit := realBit
+
 					While (i < imax)
 					{
 						defKeyCopy := defsKey[i]
@@ -1600,7 +1604,11 @@ Convert()	; () -> Void
 					i := defBegin[2]
 					imax := defEnd[2]
 					; シフトの適用範囲に応じた検索キーを設定
-					searchBit := (!shiftStyle ? realBit : realBitAndKC_SPC | nowBit | lastBit | reuseBit)
+					If (shiftStyle)
+						searchBit := realBitAndKC_SPC | nowBit | (lastBit ? lastBit : reuseBit)
+					Else
+						searchBit := realBit
+
 					While (i < imax)
 					{
 						defKeyCopy := defsKey[i]
@@ -1629,6 +1637,7 @@ Convert()	; () -> Void
 					imax := defEnd[1]
 					; 検索キーを設定
 					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBit : nowBit)
+
 					While (i < imax)
 					{
 						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i])
