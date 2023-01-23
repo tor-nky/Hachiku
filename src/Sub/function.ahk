@@ -1648,11 +1648,9 @@ Convert()	; () -> Void
 				; 検索終了判定
 				If (!lastGroup || keyCount)
 					Break
-				; グループなしで再度検索
+				; 同グループが見つからなければグループなしで再度検索
 				lastGroup := ""
-				If (shiftStyle == 2)
-					; (同グループのみ継続)同グループが見つからなかった
-					reuseBit := last2Bit := lastBit := 0
+				reuseBit := last2Bit := lastBit := 0
 			}
 
 			; スペースを押したが、定義がなかった時
