@@ -1555,10 +1555,11 @@ Convert()	; () -> Void
 			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
 			 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)) )))
 				OutBuf()
-			; 前に押したキーが出力確定にならなかったら同グループ優先で検索しない
+			; 前に押したキーが出力確定していなければ同グループ優先で検索しない
 			If (outStrsLength)
 				lastGroup := ""
-			Else If ((shiftStyle == 2 && !lastGroup) || shiftStyle == 3)
+			; 出力確定しているので、シフト設定によっては1キー入力だけを検索する
+			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCount == 1))
 				last2Bit := lastBit := 0
 
 			; 検索ループ
