@@ -1495,8 +1495,11 @@ Convert()	; () -> Void
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 				lastToBuf := ""
 				lastKeyCount := 0
-				If (shiftStyle == 2)	; 全部出力なら解除
+				; 全部出力済みならシフト解除
+				If (shiftStyle == 2)
 					last2Bit := lastBit := 0
+				; 同グループ優先は白紙に
+				lastGroup := ""
 			}
 			; 一つ前に押したキーを離した
 			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == last2Bit)
@@ -1510,10 +1513,6 @@ Convert()	; () -> Void
 			lastBit &= bitMask
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
-
-			; 直近の検索結果のキーを次に使わないなら同グループ優先は白紙に
-			If !(realBit & lastBit)
-				lastGroup := ""
 
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
