@@ -21,7 +21,7 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
 #Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20221223.ahk	; 薙刀式配列v15（fix版）
-
+;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230129.ahk	; ミ、メ、ネの交換
 
 ; **********************************************************************
 ;   ※旧MS-IME の設定
