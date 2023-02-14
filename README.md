@@ -1,6 +1,6 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2022年12月23日付[【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
-から、__薙刀式v15fix版仮最終候補__ を Autohotkey に実装しました。  
+2023年2月13日付[【薙刀式】最新版で困らなくなってきた](http://oookaworks.seesaa.net/article/498162337.html#gsc.tab=0)
+から、__薙刀式v15fix版（仮2/13版）__ を Autohotkey に実装しました。  
 ソースコードから実行します。  
 
 ---
@@ -110,6 +110,7 @@ __AutoHotkey v2以降では使えません__
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
+* [【薙刀式】最新版で困らなくなってきた](http://oookaworks.seesaa.net/article/498162337.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```

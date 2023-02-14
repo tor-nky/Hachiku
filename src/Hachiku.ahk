@@ -20,8 +20,7 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
-#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20221223.ahk	; 薙刀式配列v15（fix版）
-;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230204.ahk	; 【薙刀式】「ね」の位置、もどる
+#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230204.ahk	; 薙刀式v15fix版（仮2/13版）
 
 ; **********************************************************************
 ;   ※旧MS-IME の設定
