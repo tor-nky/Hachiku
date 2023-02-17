@@ -948,18 +948,19 @@ SendBlind(str)	; (str: String) -> Void
 	lastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
-; 押し下げ出力中のキーを上げ、別のに入れ替え
+; 押したままのキーを上げ、保存していた変数を更新
 SendKeyUp(str:="")	; (str: String) -> Void
 {
 	global restStr
 
 	If (restStr != "")
 	{
-		; Shift も押し下げ中
+		; Shift は押し下げ中
 		If (SubStr(restStr, StrLen(restStr) - 9, 9) = "{ShiftUp}")
 		{
-			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))	; "{ShiftUp}" より左を出力
-			; 入れ替えるキーに {ShiftUp} なし
+			; "{ShiftUp}" より左を出力
+			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))
+			; 更新後は {ShiftUp} がないとき
 			If (SubStr(str, StrLen(str) - 9, 9) != "{ShiftUp}")
 				SendBlind("{ShiftUp}")
 		}
@@ -985,39 +986,30 @@ SplitKeyUpDown(str)	; (str: String) -> String
 								; keyUps: [String : String]型定数
 ;	local ret, keyDown, keyUp	; String型
 
-	; "+" から始まる
-	If (Asc(str) == 43)
+	; "+" から始まるか
+	inShifted := (Asc(str) == 43 ? True : False)
+
+	; 先頭の "+" は消去
+	ret := (inShifted ? SubStr(str, 2) : str)
+	; 上げ下げを分離したいキーを取り出し
+	keyDown := keyDowns[ret]
+	; 分離がいらない時
+	If (keyDown == "")
 	{
-		; 先頭の "+" を消去
-		ret := SubStr(str, 2)
-		; 下げを分離できるキーを取り出し
-		keyDown := keyDowns[ret]
-		; 分離がいらない時
-		If (keyDown == "")
-		{
-			SendKeyUp()			; 押し下げ出力中のキーを上げる
-			Return str
-		}
-		keyUp := keyUps[ret] . "{ShiftUp}"
-		If (restStr != keyUp)
-		{
-			SendKeyUp(keyUp)	; 押し下げ出力中のキーを入れ替え
-			SendBlind("{ShiftDown}")
-		}
+		SendKeyUp()			; 押したままだったキーを上げる
+		Return str
 	}
-	Else
+
+	; キーを上げるときのために準備
+	keyUp := keyUps[ret]
+	If (inShifted)
+		keyUp .= "{ShiftUp}"
+
+	If (restStr != keyUp)
 	{
-		; 下げを分離できるキーを取り出し
-		keyDown := keyDowns[str]
-		; 分離がいらない時
-		If (keyDown == "")
-		{
-			SendKeyUp()			; 押し下げ出力中のキーを上げる
-			Return str
-		}
-		keyUp := keyUps[str]
-		If (restStr != keyUp)
-			SendKeyUp(keyUp)	; 押し下げ出力中のキーを入れ替え
+		SendKeyUp(keyUp)	; 押したままにするキーを入れ替え
+		If (inShifted)
+			SendBlind("{ShiftDown}")
 	}
 	SendBlind(keyDown)
 	Return ""
