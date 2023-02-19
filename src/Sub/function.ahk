@@ -1032,7 +1032,8 @@ SplitKeyUpDown(str)	; (str: String) -> String
 
 ; 仮出力バッファの先頭から i 個出力する
 ; i の指定がないときは、全部出力する
-OutBuf(i:=2)	; (i: Int) -> Void
+; ※デフォルト引数を LIMIT_KEY_COUNT としたいが定数ではないので 64 とした
+OutBuf(i:=64)	; (i: Int) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
 ;	local out		; String型
@@ -1078,19 +1079,22 @@ StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlNa
 {
 	global outStrsLength, outStrs, outCtrlNames, maxKeyCount
 
+	; backCount 回分を削除
+	If (backCount > outStrsLength)
+		backCount := outStrsLength
 	If (backCount > 0)
 	{
+		outStrs.RemoveAt(outStrsLength - backCount + 1, backCount)
+		outCtrlNames.RemoveAt(outStrsLength - backCount + 1, backCount)
 		outStrsLength -= backCount
-		If (outStrsLength < 0)
-			outStrsLength := 0
 	}
 	; バッファがいっぱいなら1文字出力
 	Else If (outStrsLength >= maxKeyCount - 1)
 		OutBuf(1)
 
 	outStrsLength++
-	outStrs[outStrsLength] := str
-	outCtrlNames[outStrsLength] := ctrlName
+	outStrs.Push(str)
+	outCtrlNames.Push(ctrlName)
 	DispStr()	; 表示待ち文字列表示
 }
 
@@ -1138,7 +1142,7 @@ SelectStr(index)	; (index: Int) -> String
 	Return (vertical ? defsTateStr[index] : defsYokoStr[index])
 }
 
-; timeA からの時間を表示[ミリ秒単位]
+; timeA からの時間を表示[ミリ秒単位] (デバッグ用)
 DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 {
 	global testMode
@@ -1152,11 +1156,12 @@ DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 	}
 }
 
-; 表示待ち文字列表示
+; 表示待ち文字列表示 (デバッグ用)
 DispStr()	; () -> Void
 {
 	global testMode, outStrsLength, outStrs
-;	local str	; String型
+;	local i		; Int型
+;		, str	; String型
 
 	If (testMode == 2)
 	{
@@ -1164,10 +1169,10 @@ DispStr()	; () -> Void
 			ToolTip
 		Else
 		{
-			If (outStrsLength == 1)
-				str := outStrs[1]
-			Else
-				str := outStrs[1] . "`n" . outStrs[2]
+			str := outStrs[1]
+			i := 2
+			While (i <= outStrsLength)
+				str .= "`n" . outStrs[i++]
 			ToolTip, %str%
 		}
 	}
