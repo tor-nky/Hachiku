@@ -1179,7 +1179,7 @@ Convert()	; () -> Void
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName
-		, defBound
+		, maxKeyCount, defBound
 		, outStrsLength, lastSendTime, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
@@ -1187,8 +1187,7 @@ Convert()	; () -> Void
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
-		, lastBit	:= 0	; Int64型	前回のキービット
-		, last2Bit	:= 0	; Int64型	前々回のキービット
+		, lastBits := []	; [Int64]型	前回までのキービット	1つ前, 2つ前, ……
 		, reuseBit	:= 0	; Int64型	復活したキービット
 		, lastKeyTime := 0	; Double型	有効なキーを押した時間
 		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
@@ -1499,7 +1498,7 @@ Convert()	; () -> Void
 				shiftStyle := ((realBit & KC_SPC) ? combKeyUpS : combKeyUpN)
 
 			; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
-			If (keyUpToOutputAll || (lastBit & nowBit))
+			If (keyUpToOutputAll || (lastBits[1] & nowBit))
 			{
 				OutBuf()
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
@@ -1507,20 +1506,23 @@ Convert()	; () -> Void
 				lastKeyCount := 0
 				; 全部出力済みならシフト解除
 				If (shiftStyle == 2)
-					last2Bit := lastBit := 0
+					lastBits := []	; すべて 0 にする
 				; 同グループ優先は白紙に
 				lastGroup := ""
 			}
 			; 一つ前に押したキーを離した
-			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == last2Bit)
+			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == lastBits[2])
 				OutBuf(1)	; 1個出力
 			; カーソルキー等
 			Else If (!nowBit)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
+			; 離したキーを変数から消す
+			i := 1
+			While (i < maxKeyCount)
+				lastBits[i++] &= bitMask
 			repeatBit &= bitMask
-			last2Bit &= bitMask
-			lastBit &= bitMask
+
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
 			combinableBit |= nowBit ; 次の入力で即確定しないキーに追加
 
@@ -1569,21 +1571,21 @@ Convert()	; () -> Void
 				lastGroup := ""
 			; 出力確定しているので、シフト設定によっては1キー入力だけを検索する
 			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCount == 1))
-				last2Bit := lastBit := 0
+				lastBits := []	; すべて 0 にする
 
 			; 検索ループ
 			backCount := 0
 			While (!keyCount)
 			{
 				; 3キー入力を検索
-				If (last2Bit | reuseBit)
+				If (lastBits[2] | reuseBit)
 				{
 					; 検索場所の設定
 					i := defBound[3]
 					imax := defBound[4]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | ((lastBit | last2Bit) ? (lastBit | last2Bit) : reuseBit)
+						searchBit := realBitAndKC_SPC | nowBit | ((lastBits[1] | lastBits[2]) ? (lastBits[1] | lastBits[2]) : reuseBit)
 					Else
 						searchBit := realBit
 
@@ -1607,14 +1609,14 @@ Convert()	; () -> Void
 					}
 				}
 				; 2キー入力を検索
-				If (!keyCount && (lastBit | reuseBit))
+				If (!keyCount && (lastBits[1] | reuseBit))
 				{
 					; 検索場所の設定
 					i := defBound[2]
 					imax := defBound[3]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | (lastBit ? lastBit : reuseBit)
+						searchBit := realBitAndKC_SPC | nowBit | (lastBits[1] ? lastBits[1] : reuseBit)
 					Else
 						searchBit := realBit
 
@@ -1645,7 +1647,7 @@ Convert()	; () -> Void
 					i := defBound[1]
 					imax := defBound[2]
 					; 検索キーを設定
-					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBit : nowBit)
+					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBits[1] : nowBit)
 
 					While (i < imax)
 					{
@@ -1668,7 +1670,8 @@ Convert()	; () -> Void
 					Break
 				; 同グループが見つからなければグループなしで再度検索
 				lastGroup := ""
-				reuseBit := last2Bit := lastBit := 0
+				reuseBit := 0
+				lastBits := []	; すべて 0 にする
 			}
 
 			; スペースを押したが、定義がなかった時
@@ -1712,29 +1715,29 @@ Convert()	; () -> Void
 				repeatBit := 0
 
 			; 次回の検索用に変数を更新(グループの保存は後で)
-			lastToBuf := toBuf			; 今回の文字列を保存
-			lastKeyTime := keyTime		; 有効なキーを押した時間を保存
+			lastKeyTime := keyTime	; 有効なキーを押した時間を保存
+			lastToBuf := toBuf		; 今回の文字列を保存
+			reuseBit := 0			; 復活したキービットを消去
 			lastKeyCount := keyCount	; 何キー同時押しだったかを保存
-			reuseBit := 0				; 復活したキービットを消去
 			; キービットを保存
 			If (keyCount >= 2)
 				; 2、3キー入力のときは今回のを保存
-				last2Bit := lastBit := defsKey[i]
+				lastBits[2] := lastBits[1] := defsKey[i]
 			Else If (backCount)
 				; 1キー入力で今はスペースキーを押した
-				lastBit := searchBit
+				lastBits[1] := searchBit
 			Else
 			{
 				; 繰り上げ
-				last2Bit := lastBit
-				lastBit := searchBit
+				lastBits.Insert(1, searchBit)
+				lastBits.RemoveAt(maxKeyCount)
 			}
 
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)
 				combinableBit := defsCombinableBit[i]
 			Else If (keyCount >= 0)
-				combinableBit := FindCombinable(lastBit, kanaMode, keyCount, lastGroup)
+				combinableBit := FindCombinable(lastBits[1], kanaMode, keyCount, lastGroup)
 			Else	; If (keyCount < 0)
 				combinableBit := 0
 			; 何グループだったか保存
@@ -1743,7 +1746,7 @@ Convert()	; () -> Void
 			; 出力確定文字か？
 			; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
 			; オフなら、いま検索したキーを除外
-			combinableBit &= (keyUpToOutputAll ? realBit : lastBit) ^ (-1)
+			combinableBit &= (keyUpToOutputAll ? realBit : lastBits[1]) ^ (-1)
 
 			; 出力処理
 			If (combinableBit == 0 || (shiftDelay <= 0 && combinableBit == KC_SPC))
