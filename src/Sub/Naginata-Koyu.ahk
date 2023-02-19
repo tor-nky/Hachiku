@@ -23,8 +23,10 @@
 ; 「固有名詞」画面のOKボタン
 KoyuOK:
 	Gui, Submit
-	KoyuWriteAndRegist(koyuNumber)	; 固有名詞ショートカットの書き込み・登録
-	SettingLayout()					; 出力確定する定義に印をつける
+	; 固有名詞ショートカットの書き込み・登録
+	KoyuWriteAndRegist(koyuNumber)
+	; 出力確定する定義に印をつける
+	RecordCombinable()				
 KoyuCancel:
 	Gui, Destroy
 	Return

@@ -39,7 +39,7 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 		; 固有名詞ショートカットの読み込み・登録
 		KoyuReadAndRegist(koyuNumber)
 		; 出力確定する定義に印をつける
-		SettingLayout()
+		RecordCombinable()
 	}
 	; その他、未定義のもの。念のため。
 	Else

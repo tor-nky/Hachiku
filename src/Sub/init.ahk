@@ -33,8 +33,10 @@ SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自�
 #MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
 
 
+LIMIT_KEY_COUNT := 3	; 最大同時押しキー数
+
 ; ----------------------------------------------------------------------
-; 配列定義で使う定数	Int64型定数
+; 配列定義で使う定数
 ;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk で利用可能
 ; ----------------------------------------------------------------------
 ; キーを64bitの各ビットに割り当てる
@@ -112,14 +114,14 @@ layoutName := ""	; String型		かな配列の名前
 kanaGroup := ""		; String型		配列定義のグループ名 ※0または空はグループなし
 ; かな配列の入れ物
 defsKey := []		; [Int64]型		キービットの集合
-defsGroup := []		; [String]型	定義のグループ名
+defsGroup := []		; [String]型	定義のグループ名 ※0または空はグループなし
 defsKanaMode := []	; [Int]型		0: 英数入力用, 1: かな入力用
 defsTateStr := []	; [String]型	縦書き用定義
 defsYokoStr := []	; [String]型	横書き用定義
 defsCtrlName := []	; [String]型	0または空: なし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
 defsCombinableBit := []	; [Int64]型
-defBegin := [1, 1, 1]	; [Int]型	定義の始め 1キー, 2キー同時, 3キー同時
-defEnd	:= [1, 1, 1]	; [Int]型	定義の終わり+1 1キー, 2キー同時, 3キー同時
+defBound := []		; [Int]型		同時押し定義の区切り 1キー, 2キー同時, 3キー同時, …… , 末端+1 (LIMIT_KEY_COUNT+1)
+maxKeyCount := LIMIT_KEY_COUNT	; Int型
 ; 入力バッファ
 inBufsKey := []		; [String]型
 inBufsTime := []	; [Double]型	入力の時間
@@ -211,9 +213,9 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	RegRead, keyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
 	USKB := (keyDriver = "kbd101.dll" ? True : False)	; Bool型
 
+	DeleteDefs()	; 配列定義を初期化
 	ReadLayout()	; かな配列読み込み
-	SettingLayout()	; 出力確定する定義に印をつける
-	DetectIME()
+	RecordCombinable()	; 出力確定する定義に印をつける
 
 ; ----------------------------------------------------------------------
 ; メニューで使う変数	Bool型
@@ -358,7 +360,7 @@ ButtonOK:
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
 	DeleteDefs()		; 配列定義をすべて消去する
 	ReadLayout()		; かな配列読み込み
-	SettingLayout()		; 出力確定する定義に印をつける
+	RecordCombinable()	; 出力確定する定義に印をつける
 	; 関数 KoyuRegist が存在したらトレイアイコン変更
 	If (IsFunc("KoyuRegist"))
 		ChangeVertical(vertical)

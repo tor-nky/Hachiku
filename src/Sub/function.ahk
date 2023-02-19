@@ -75,11 +75,12 @@ ToolTip2(str, time:=0)	; (str: String, time: Int) -> Void
 		SetTimer, RemoveToolTip, %time%
 }
 
-; 配列定義をすべて消去する
+; 配列定義を初期化
 DeleteDefs()	; () -> Void
 {
-	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName, defsCombinableBit
-		, defBegin, defEnd
+	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr
+		, defsCtrlName, defsCombinableBit
+		, LIMIT_KEY_COUNT, maxKeyCount, defBound
 
 	; かな配列の入れ物
 	defsKey := []		; キービットの集合
@@ -88,10 +89,14 @@ DeleteDefs()	; () -> Void
 	defsTateStr := []	; 縦書き用定義
 	defsYokoStr := []	; 横書き用定義
 	defsCtrlName := []	; 0または空: なし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
-	defsCombinableBit := []	; 0: 出力確定しない,
-							; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
-	defBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
-	defEnd	:= [1, 1, 1]	; 定義の終わり+1 1キー, 2キー同時, 3キー同時
+	defsCombinableBit := []
+	defBound := []		; 同時押し定義の区切り 1キー, 2キー同時, 3キー同時, …… , LIMIT_KEY_COUNT+1
+	maxKeyCount := LIMIT_KEY_COUNT
+
+	; defBound[] 初期化
+	i := 1
+	While (i <= LIMIT_KEY_COUNT + 1)
+		defBound[i++] := 1
 }
 
 ; 何キー同時か数える
@@ -105,8 +110,7 @@ CountBit(keyComb)	; (keyComb: Int64) -> Int
 
 	count := 0
 	i := 0
-	; 3になったら、それ以上数えない
-	While (i < 64 && count < 3)
+	While (i < 64)
 	{
 		count += keyComb & 1
 		keyComb >>= 1
@@ -338,19 +342,25 @@ Analysis(str)	; (str: String) -> String
 SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
 	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
-		, defBegin, defEnd
+		, LIMIT_KEY_COUNT, defBound
 		, kanaGroup, R
-;	local keyCount	; Int型	何キー同時押しか
-;		, i, imax	; Int型	カウンタ用
+;	local keyCount		; Int型	何キー同時押しか
+;		, i, imax, j	; Int型	カウンタ用
 
-	; 登録
 	keyCount := CountBit(keyComb)	; 何キー同時押しか
-	i := defBegin[keyCount]			; 始まり
-	imax := defEnd[keyCount]		; 終わり
+	If (keyCount > LIMIT_KEY_COUNT)
+	{
+		MsgBox, , , 最大同時押し %LIMIT_KEY_COUNT% を超えた定義があるので`n終了します
+		ExitApp
+	}
+
+	; 定義の重複があったら、古いのを消す
+	; 配列からの削除、挿入の参考資料
+	; https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
+	i := defBound[keyCount]			; 始まり
+	imax := defBound[keyCount+1]	; 終わり
 	While (i < imax)
 	{
-		; 定義の重複があったら、古いのを消す
-		; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/expressions/
 		If (defsKey[i] == keyComb && defsKanaMode[i] == kanaMode)
 		{
 			defsKey.RemoveAt(i)
@@ -359,32 +369,30 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 			defsTateStr.RemoveAt(i)
 			defsYokoStr.RemoveAt(i)
 			defsCtrlName.RemoveAt(i)
+			; 同時押し定義の区切りを更新
+			j := keyCount
+			While (j++ <= LIMIT_KEY_COUNT)
+				defBound[j]--
 
-			defEnd[1]--
-			If (keyCount > 1)
-				defBegin[1]--, defEnd[2]--
-			If (keyCount > 2)
-				defBegin[2]--, defEnd[3]--
 			Break
 		}
 		i++
 	}
+	; 登録
 	If ((ctrlName && ctrlName != R) || tate != "" || yoko != "")
 	{
 		; 定義あり
-		i := defEnd[keyCount]
+		i := defBound[keyCount+1]
 		defsKey.InsertAt(i, keyComb)
 		defsGroup.InsertAt(i, kanaGroup)
 		defsKanaMode.InsertAt(i, kanaMode)
 		defsTateStr.InsertAt(i, tate)
 		defsYokoStr.InsertAt(i, yoko)
 		defsCtrlName.InsertAt(i, ctrlName)
-
-		defEnd[1]++
-		If (keyCount > 1)
-			defBegin[1]++, defEnd[2]++
-		If (keyCount > 2)
-			defBegin[2]++, defEnd[3]++
+		; 同時押し定義の区切りを更新
+		j := keyCount
+		While (j++ <= LIMIT_KEY_COUNT)
+			defBound[j]++
 	}
 }
 
@@ -438,16 +446,17 @@ SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yok
 }
 
 ; 一緒に押すと同時押しになるキーを探す
-FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64, kanaMode: Bool, keyCount: Int, group: String) -> Int64
+FindCombinable(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64, kanaMode: Bool, keyCount: Int, group: String) -> Int64
 {
-	global defsKey, defsKanaMode, defsGroup, defBegin, defEnd
+	global defsKey, defsKanaMode, defsGroup
+		, LIMIT_KEY_COUNT, defBound
 		, KC_SPC
 ;	local i, imax		; Int型		カウンタ用
 ;		, bit			; Int64型
 
 	bit := (keyCount > 1 ? 0 : KC_SPC)
-	i := defBegin[3]
-	imax := (!group && keyCount >= 1 && keyCount <= 3 ? defEnd[keyCount] : defEnd[1])
+	i := defBound[keyCount]
+	imax := defBound[LIMIT_KEY_COUNT+1]
 	While (i < imax)
 	{
 		; グループが「なし」か同じ、「かな」モードも同じで、判定中のキーを含むのを登録
@@ -464,19 +473,25 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 }
 
 ; 一緒に押すと同時押しになるキーを defsCombinableBit[] に記録
-SettingLayout()	; () -> Void
+RecordCombinable()	; () -> Void
 {
-	global defsKey, defsKanaMode, defsCombinableBit, defBegin, defEnd
+	global defsKey, defsKanaMode, defsCombinableBit
+		, LIMIT_KEY_COUNT, maxKeyCount, defBound
 ;	local i, imax	; Int型	カウンタ用
+;		, keyCount	; Int型
 ;		, searchBit	; Int64型
 
+	maxKeyCount := 0
 	; 出力確定するか検索
-	i := defBegin[3]
-	imax := defEnd[1]
+	i := defBound[1]
+	imax := defBound[LIMIT_KEY_COUNT+1]
 	While (i < imax)
 	{
 		searchBit := defsKey[i]
-		defsCombinableBit[i] := FindCombinableBit(searchBit, defsKanaMode[i], CountBit(searchBit))
+		keyCount := CountBit(searchBit)
+		defsCombinableBit[i] := FindCombinable(searchBit, defsKanaMode[i], keyCount)
+		If (keyCount > maxKeyCount)
+			maxKeyCount := keyCount
 		i++
 	}
 }
@@ -1048,8 +1063,10 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 
 		lastSendTime := QPC()	; 最後に出力した時間を記録
-		outStrs[1] := outStrs[2]
-		outCtrlNames[1] := outCtrlNames[2]
+		; 配列を詰める
+		outStrs.RemoveAt(1)
+		outCtrlNames.RemoveAt(1)
+
 		outStrsLength--
 		i--
 	}
@@ -1059,7 +1076,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 ; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
 StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames
+	global outStrsLength, outStrs, outCtrlNames, maxKeyCount
 
 	If (backCount > 0)
 	{
@@ -1067,8 +1084,8 @@ StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlNa
 		If (outStrsLength < 0)
 			outStrsLength := 0
 	}
-	; バッファがいっぱいなので、1文字出力
-	Else If (outStrsLength == 2)
+	; バッファがいっぱいなら1文字出力
+	Else If (outStrsLength >= maxKeyCount - 1)
 		OutBuf(1)
 
 	outStrsLength++
@@ -1161,7 +1178,8 @@ Convert()	; () -> Void
 {
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
 		, KC_SPC, JP_YEN, KC_INT1, R
-		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName, defBegin, defEnd
+		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName
+		, defBound
 		, outStrsLength, lastSendTime, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
@@ -1561,8 +1579,8 @@ Convert()	; () -> Void
 				If (last2Bit | reuseBit)
 				{
 					; 検索場所の設定
-					i := defBegin[3]
-					imax := defEnd[3]
+					i := defBound[3]
+					imax := defBound[4]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
 						searchBit := realBitAndKC_SPC | nowBit | ((lastBit | last2Bit) ? (lastBit | last2Bit) : reuseBit)
@@ -1592,8 +1610,8 @@ Convert()	; () -> Void
 				If (!keyCount && (lastBit | reuseBit))
 				{
 					; 検索場所の設定
-					i := defBegin[2]
-					imax := defEnd[2]
+					i := defBound[2]
+					imax := defBound[3]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
 						searchBit := realBitAndKC_SPC | nowBit | (lastBit ? lastBit : reuseBit)
@@ -1624,8 +1642,8 @@ Convert()	; () -> Void
 				If (!keyCount)
 				{
 					; 検索場所の設定
-					i := defBegin[1]
-					imax := defEnd[1]
+					i := defBound[1]
+					imax := defBound[2]
 					; 検索キーを設定
 					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBit : nowBit)
 
@@ -1716,7 +1734,7 @@ Convert()	; () -> Void
 			If (keyCount > 0 && !lastGroup)
 				combinableBit := defsCombinableBit[i]
 			Else If (keyCount >= 0)
-				combinableBit := FindCombinableBit(lastBit, kanaMode, keyCount, lastGroup)
+				combinableBit := FindCombinable(lastBit, kanaMode, keyCount, lastGroup)
 			Else	; If (keyCount < 0)
 				combinableBit := 0
 			; 何グループだったか保存
