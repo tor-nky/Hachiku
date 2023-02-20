@@ -1032,8 +1032,8 @@ SplitKeyUpDown(str)	; (str: String) -> String
 
 ; 仮出力バッファの先頭から i 個出力する
 ; i の指定がないときは、全部出力する
-; ※デフォルト引数を LIMIT_KEY_COUNT としたいが定数ではないので 64 とした
-OutBuf(i:=64)	; (i: Int) -> Void
+; ※デフォルト引数を LIMIT_KEY_COUNT-1 としたいが定数しか認められないので 63 とした
+OutBuf(i:=63)	; (i: Int) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
 ;	local out		; String型
@@ -1197,7 +1197,7 @@ Convert()	; () -> Void
 		, lastKeyTime := 0	; Double型	有効なキーを押した時間
 		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
-		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
+		, lastKeyCounts := [] ; Int型	前回まで何キー同時押しだったか？	1つ前, 2つ前, ……
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
@@ -1508,19 +1508,35 @@ Convert()	; () -> Void
 				OutBuf()
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 				lastToBuf := ""
-				lastKeyCount := 0
+				lastKeyCounts := []
 				; 全部出力済みならシフト解除
 				If (shiftStyle == 2)
 					lastBits := []	; すべて 0 にする
 				; 同グループ優先は白紙に
 				lastGroup := ""
 			}
-			; 一つ前に押したキーを離した
-			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == lastBits[2])
-				OutBuf(1)	; 1個出力
 			; カーソルキー等
 			Else If (!nowBit)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
+			; 判定中のキーを離した
+			Else
+			{
+				deleteCount := outStrsLength
+				i := 2
+				While (i < maxKeyCount)
+				{
+					If (lastBits[i] & nowBit)
+					{
+						OutBuf(deleteCount)
+						lastKeyCounts.RemoveAt(i, maxKeyCount - i)
+						lastBits.RemoveAt(i, maxKeyCount - i)
+						Break
+					}
+					If (lastKeyCounts[i] > 0)
+						deleteCount--
+					i++
+				}
+			}
 
 			; 離したキーを変数から消す
 			i := 1
@@ -1575,22 +1591,41 @@ Convert()	; () -> Void
 			If (outStrsLength)
 				lastGroup := ""
 			; 出力確定しているので、シフト設定によっては1キー入力だけを検索する
-			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCount == 1))
-				lastBits := []	; すべて 0 にする
+			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCounts[1] == 1))
+			{
+				lastKeyCounts := []	; すべて 0 にする
+				lastBits := []
+			}
 
 			; 検索ループ
 			backCount := 0
 			While (!keyCount)
 			{
-				; 3キー入力を検索
-				If (lastBits[2] | reuseBit)
+				; searchCount に何キー同時押しを最初に検索するかを入れる
+				If (reuseBit)
+					searchCount := maxKeyCount
+				Else
 				{
-					; 検索場所の設定
-					i := defBound[3]
-					imax := defBound[4]
+					searchCount := 1
+					j := 1
+					While (j <= maxKeyCount - 1)
+						searchCount += lastKeyCounts[j++]
+				}
+
+				While (!keyCount && searchCount)
+				{
+					; 検索範囲の設定
+					i := defBound[searchCount]
+					imax := defBound[searchCount+1]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | ((lastBits[1] | lastBits[2]) ? (lastBits[1] | lastBits[2]) : reuseBit)
+					{
+						arrayOrs := 0
+						j := 1
+						While (j <= searchCount - 1)
+							arrayOrs |= lastBits[j++]
+						searchBit := realBitAndKC_SPC | nowBit | (arrayOrs ? arrayOrs : reuseBit)
+					}
 					Else
 						searchBit := realBit
 
@@ -1604,71 +1639,23 @@ Convert()	; () -> Void
 							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
 							; 見つかった!
-							; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
-							; 前回が1キー入力だったら仮出力バッファの2文字消す
-							backCount := (lastKeyCount >= 2 ? 1 : 2)
-							keyCount := 3
-							Break
-						}
-						i++
-					}
-				}
-				; 2キー入力を検索
-				If (!keyCount && (lastBits[1] | reuseBit))
-				{
-					; 検索場所の設定
-					i := defBound[2]
-					imax := defBound[3]
-					; シフトの適用範囲に応じた検索キーを設定
-					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | (lastBits[1] ? lastBits[1] : reuseBit)
-					Else
-						searchBit := realBit
-
-					While (i < imax)
-					{
-						defKeyCopy := defsKey[i]
-						If ((defKeyCopy & nowBit) ; 今回のキーを含み
-							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
-							&& (defKeyCopy & KC_SPC) == realBitAndKC_SPC ; シフトの相違はなく
-							&& defsKanaMode[i] == kanaMode	; 英数用、かな用の種別が一致していること
-							&& (!lastGroup || lastGroup == defsGroup[i]))
-						{
-							; 見つかった!
-							If (outStrsLength >= 2)
-								; 2つ前に押したキーを出力
-								OutBuf(1)
-							backCount := (lastKeyCount >= 2 && nowBit != KC_SPC ? 0 : 1)
-							keyCount := 2
-							Break
-						}
-						i++
-					}
-				}
-				; 1キー入力を検索
-				If (!keyCount)
-				{
-					; 検索場所の設定
-					i := defBound[1]
-					imax := defBound[2]
-					; 検索キーを設定
-					searchBit := realBitAndKC_SPC | (nowBit == KC_SPC ? lastBits[1] : nowBit)
-
-					While (i < imax)
-					{
-						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i])
-						{
-							If (!lastGroup || lastGroup == defsGroup[i])
+							; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
+							If (lastKeyCounts[1] >= 2)
+								backCount := 1
+							; 前回が1キー入力だったのて仮出力バッファから消す文字数を計算する
+							Else
 							{
-								; 見つかった!
-								If (nowBit == KC_SPC)
-									backCount := 1
-								keyCount := 1
-								Break
+								backCount := 0
+								j := 1
+								While (j < searchCount)
+									backCount += lastKeyCounts[j++]
 							}
+							keyCount := searchCount
+							Break
 						}
 						i++
 					}
+					searchCount--
 				}
 				; 検索終了判定
 				If (!lastGroup || keyCount)
@@ -1676,7 +1663,8 @@ Convert()	; () -> Void
 				; 同グループが見つからなければグループなしで再度検索
 				lastGroup := ""
 				reuseBit := 0
-				lastBits := []	; すべて 0 にする
+				lastKeyCounts := []	; すべて 0 にする
+				lastBits := []
 			}
 
 			; スペースを押したが、定義がなかった時
@@ -1723,20 +1711,19 @@ Convert()	; () -> Void
 			lastKeyTime := keyTime	; 有効なキーを押した時間を保存
 			lastToBuf := toBuf		; 今回の文字列を保存
 			reuseBit := 0			; 復活したキービットを消去
-			lastKeyCount := keyCount	; 何キー同時押しだったかを保存
-			; キービットを保存
-			If (keyCount >= 2)
-				; 2、3キー入力のときは今回のを保存
-				lastBits[2] := lastBits[1] := defsKey[i]
-			Else If (backCount)
-				; 1キー入力で今はスペースキーを押した
-				lastBits[1] := searchBit
-			Else
+			; キービットと何キー同時押しだったかを保存
+			j := 1
+			While (j <= backCount)
 			{
-				; 繰り上げ
-				lastBits.Insert(1, searchBit)
-				lastBits.RemoveAt(maxKeyCount)
+				lastKeyCounts[j] := 0
+				lastBits[j] := 0
+				j++
 			}
+			lastKeyCounts.InsertAt(1, keyCount <= 1 ? 1 : keyCount)
+			lastBits.Insert(1, keyCount > 0 ? defsKey[i] : searchBit)
+			; はみ出たのを削除
+			lastKeyCounts.RemoveAt(maxKeyCount)
+			lastBits.RemoveAt(maxKeyCount)
 
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)

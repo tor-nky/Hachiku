@@ -33,7 +33,7 @@ SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自�
 #MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
 
 
-LIMIT_KEY_COUNT := 3	; 最大同時押しキー数
+LIMIT_KEY_COUNT := 6	; 最大同時押しキー数
 
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数

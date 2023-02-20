@@ -26,7 +26,7 @@ KoyuOK:
 	; 固有名詞ショートカットの書き込み・登録
 	KoyuWriteAndRegist(koyuNumber)
 	; 出力確定する定義に印をつける
-	RecordCombinable()				
+	RecordCombinable()
 KoyuCancel:
 	Gui, Destroy
 	Return
