@@ -1504,41 +1504,41 @@ Convert()	; () -> Void
 			Else
 				shiftStyle := ((realBit & KC_SPC) ? combKeyUpS : combKeyUpN)
 
-			; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
-			If (keyUpToOutputAll || (lastBits[1] & nowBit))
-			{
+			; 「キーを離せば常に全部出力する」がオン
+			If (keyUpToOutputAll)
 				OutBuf()
+			; 仮出力バッファ中のキーを離したのなら、そこ以前のものを出力する
+			Else
+			{
+				i := 1
+				While (i <= outStrsLength)
+				{
+					If (lastBits[i] & nowBit)
+					{
+						outLength := outStrsLength - i + 1
+						OutBuf(outLength)
+						lastKeyCounts.RemoveAt(i, outLength)
+						lastBits.RemoveAt(i, outLength)
+						Break
+					}
+					i++
+				}
+			}
+
+			; 直近の検索結果のキーを離していた
+			If (!outStrsLength)
+			{
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 				lastToBuf := ""
-				lastKeyCounts := []
 				; 全部出力済みならシフト解除
 				If (shiftStyle == 2)
 					lastBits := []	; すべて 0 にする
 				; 同グループ優先は白紙に
 				lastGroup := ""
 			}
-			; カーソルキー等
+			; 離したのはカーソルキー等
 			Else If (!nowBit)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
-			; 判定中のキーを離した
-			Else
-			{
-				deleteCount := outStrsLength - 1
-				i := 2
-				While (i < maxKeyCount)
-				{
-					If (lastBits[i] & nowBit)
-					{
-						OutBuf(deleteCount)
-						lastKeyCounts.RemoveAt(i, maxKeyCount - i)
-						lastBits.RemoveAt(i, maxKeyCount - i)
-						Break
-					}
-					If (lastKeyCounts[i] > 0)
-						deleteCount--
-					i++
-				}
-			}
 
 			; 離したキーを変数から消す
 			i := 1
@@ -1624,7 +1624,7 @@ Convert()	; () -> Void
 					{
 						lastBitSet := 0
 						i := 1
-						While (i <= keyCountInSearch - 1)
+						While (i < keyCountInSearch)
 							lastBitSet |= lastBits[i++]
 						searchBit := realBitAndKC_SPC | nowBit | (lastBitSet ? lastBitSet : reuseBit)
 					}
@@ -1644,12 +1644,12 @@ Convert()	; () -> Void
 							; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
 							If (lastKeyCounts[1] >= 2)
 								backCount := 1
-							; 前回が1キー入力だったのて仮出力バッファから消す文字数を計算する
+							; 前回が1キー入力だったので仮出力バッファから消す文字数を計算する
 							Else
 							{
 								backCount := 0
 								i := 1
-								While (i < keyCountInSearch)
+								While (i < keyCountInSearch && backCount < keyCountInSearch)
 									backCount += lastKeyCounts[i++]
 							}
 							keyCount := keyCountInSearch
@@ -1714,18 +1714,13 @@ Convert()	; () -> Void
 			lastToBuf := toBuf		; 今回の文字列を保存
 			reuseBit := 0			; 復活したキービットを消去
 			; キービットと何キー同時押しだったかを保存
-			i := 1
-			While (i <= backCount)
-			{
-				lastKeyCounts[i] := 0
-				lastBits[i] := 0
-				i++
-			}
+;			If (backCount)
+;			{
+;				lastKeyCounts.RemoveAt(1, backCount)
+;				lastBits.RemoveAt(1, backCount)
+;			}
 			lastKeyCounts.InsertAt(1, keyCount <= 1 ? 1 : keyCount)
 			lastBits.Insert(1, keyCount > 0 ? defsKey[searchNumber] : searchBit)
-			; はみ出たのを削除
-			lastKeyCounts.RemoveAt(maxKeyCount)
-			lastBits.RemoveAt(maxKeyCount)
 
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)
@@ -1748,7 +1743,22 @@ Convert()	; () -> Void
 				OutBuf()
 			Else
 			{
+				; 仮出力バッファ中のキーと同時押しにならないなら、そこ以前のものを出力する
+				i := 2
+				While (i <= outStrsLength)
+				{
+					If !(lastBits[i] & combinableBit)
+					{
+						outLength := outStrsLength - i + 1
+						OutBuf(outLength)
+						lastKeyCounts.RemoveAt(i, outLength)
+						lastBits.RemoveAt(i, outLength)
+						Break
+					}
+					i++
+				}
 				SendKeyUp()	; 押し下げ出力中のキーを上げる
+
 				If (inBufRest == 31 && nextKey == "")
 				{
 					; 入力バッファが空なので、同時押し、後置シフトの判定タイマー起動処理
