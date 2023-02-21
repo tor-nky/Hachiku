@@ -373,7 +373,6 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 			j := keyCount
 			While (j++ <= LIMIT_KEY_COUNT)
 				defBound[j]--
-
 			Break
 		}
 		i++
@@ -1214,6 +1213,7 @@ Convert()	; () -> Void
 ;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
 ;		, toBuf				; String型	出力バッファに送る文字列
+; 		, keyCountInSearch	; Int型		何キー同時押しを検索しているか
 ;		, keyCount			; Int型		今回は何キー同時押しか
 ;		, nowBit			; Int64型	今回のキービット
 ;		, bitMask			; Int64型
@@ -1221,7 +1221,9 @@ Convert()	; () -> Void
 ;		, backCount			; Int型
 ;		, searchBit			; Int64型	いま検索しようとしているキーの集合
 ;		, shiftStyle		; Int型
-;		, i, imax			; Int型		カウンタ用
+;		, searchNumber		; Int型
+;		, maxNumber, i 		; Int型		カウンタ用
+;		, lastBitSet		; Int64型
 ;		, defKeyCopy		; Int64型
 ;		, interval			; Double型
 
@@ -1601,42 +1603,42 @@ Convert()	; () -> Void
 			backCount := 0
 			While (!keyCount)
 			{
-				; searchCount に何キー同時押しを最初に検索するかを入れる
+				; keyCountInSearch に何キー同時押しを最初に検索するかを入れる
 				If (reuseBit)
-					searchCount := maxKeyCount
+					keyCountInSearch := maxKeyCount
 				Else
 				{
-					searchCount := 1
-					j := 1
-					While (j <= maxKeyCount - 1)
-						searchCount += lastKeyCounts[j++]
+					keyCountInSearch := 1
+					i := 1
+					While (i <= maxKeyCount - 1)
+						keyCountInSearch += lastKeyCounts[i++]
 				}
 
-				While (!keyCount && searchCount)
+				While (!keyCount && keyCountInSearch)
 				{
 					; 検索範囲の設定
-					i := defBound[searchCount]
-					imax := defBound[searchCount+1]
+					searchNumber := defBound[keyCountInSearch]
+					maxNumber := defBound[keyCountInSearch+1]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
 					{
-						arrayOrs := 0
-						j := 1
-						While (j <= searchCount - 1)
-							arrayOrs |= lastBits[j++]
-						searchBit := realBitAndKC_SPC | nowBit | (arrayOrs ? arrayOrs : reuseBit)
+						lastBitSet := 0
+						i := 1
+						While (i <= keyCountInSearch - 1)
+							lastBitSet |= lastBits[i++]
+						searchBit := realBitAndKC_SPC | nowBit | (lastBitSet ? lastBitSet : reuseBit)
 					}
 					Else
 						searchBit := realBit
 
-					While (i < imax)
+					While (searchNumber < maxNumber)
 					{
-						defKeyCopy := defsKey[i]
+						defKeyCopy := defsKey[searchNumber]
 						If ((defKeyCopy & nowBit) ; 今回のキーを含み
 							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == realBitAndKC_SPC ; シフトの相違はなく
-							&& defsKanaMode[i] == kanaMode	; 英数用、かな用の種別が一致していること
-							&& (!lastGroup || lastGroup == defsGroup[i]))
+							&& defsKanaMode[searchNumber] == kanaMode	; 英数用、かな用の種別が一致していること
+							&& (!lastGroup || lastGroup == defsGroup[searchNumber]))
 						{
 							; 見つかった!
 							; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
@@ -1646,16 +1648,16 @@ Convert()	; () -> Void
 							Else
 							{
 								backCount := 0
-								j := 1
-								While (j < searchCount)
-									backCount += lastKeyCounts[j++]
+								i := 1
+								While (i < keyCountInSearch)
+									backCount += lastKeyCounts[i++]
 							}
-							keyCount := searchCount
+							keyCount := keyCountInSearch
 							Break
 						}
-						i++
+						searchNumber++
 					}
-					searchCount--
+					keyCountInSearch--
 				}
 				; 検索終了判定
 				If (!lastGroup || keyCount)
@@ -1694,8 +1696,8 @@ Convert()	; () -> Void
 			If (keyCount > 0)
 			{
 				; 定義が見つかった時
-				toBuf := SelectStr(i)
-				ctrlName := defsCtrlName[i]
+				toBuf := SelectStr(searchNumber)
+				ctrlName := defsCtrlName[searchNumber]
 			}
 			Else
 				ctrlName := R
@@ -1712,28 +1714,28 @@ Convert()	; () -> Void
 			lastToBuf := toBuf		; 今回の文字列を保存
 			reuseBit := 0			; 復活したキービットを消去
 			; キービットと何キー同時押しだったかを保存
-			j := 1
-			While (j <= backCount)
+			i := 1
+			While (i <= backCount)
 			{
-				lastKeyCounts[j] := 0
-				lastBits[j] := 0
-				j++
+				lastKeyCounts[i] := 0
+				lastBits[i] := 0
+				i++
 			}
 			lastKeyCounts.InsertAt(1, keyCount <= 1 ? 1 : keyCount)
-			lastBits.Insert(1, keyCount > 0 ? defsKey[i] : searchBit)
+			lastBits.Insert(1, keyCount > 0 ? defsKey[searchNumber] : searchBit)
 			; はみ出たのを削除
 			lastKeyCounts.RemoveAt(maxKeyCount)
 			lastBits.RemoveAt(maxKeyCount)
 
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)
-				combinableBit := defsCombinableBit[i]
+				combinableBit := defsCombinableBit[searchNumber]
 			Else If (keyCount >= 0)
 				combinableBit := FindCombinable(lastBits[1], kanaMode, keyCount, lastGroup)
 			Else	; If (keyCount < 0)
 				combinableBit := 0
 			; 何グループだったか保存
-			lastGroup := (keyCount > 0 ? defsGroup[i] : "")
+			lastGroup := (keyCount > 0 ? defsGroup[searchNumber] : "")
 
 			; 出力確定文字か？
 			; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
