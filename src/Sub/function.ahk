@@ -1523,7 +1523,7 @@ Convert()	; () -> Void
 			; 判定中のキーを離した
 			Else
 			{
-				deleteCount := outStrsLength
+				deleteCount := outStrsLength - 1
 				i := 2
 				While (i < maxKeyCount)
 				{
@@ -1610,7 +1610,7 @@ Convert()	; () -> Void
 				{
 					keyCountInSearch := 1
 					i := 1
-					While (i <= maxKeyCount - 1)
+					While (i < maxKeyCount)
 						keyCountInSearch += lastKeyCounts[i++]
 				}
 
