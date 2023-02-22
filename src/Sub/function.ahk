@@ -1511,14 +1511,14 @@ Convert()	; () -> Void
 			Else
 			{
 				i := 1
-				While (i <= outStrsLength)
+				While (i <= lastKeyCounts.Length())
 				{
 					If (lastBits[i] & nowBit)
 					{
-						outLength := outStrsLength - i + 1
-						OutBuf(outLength)
-						lastKeyCounts.RemoveAt(i, outLength)
-						lastBits.RemoveAt(i, outLength)
+						OutBuf(outStrsLength - i + 1)
+						deleteLength := lastKeyCounts.Length() - i + 1
+						lastKeyCounts.RemoveAt(i, deleteLength)
+						lastBits.RemoveAt(i, deleteLength)
 						Break
 					}
 					i++
@@ -1615,6 +1615,8 @@ Convert()	; () -> Void
 				}
 
 				While (!keyCount && keyCountInSearch)
+				; ※ 【バグ】keyCountInSearch が上の行をを境に 1 減ることがある
+				;	 例：薙刀式J+I+RまたはI+J+R→じょ(正常), R+J+I他→しょ(異常)
 				{
 					; 検索範囲の設定
 					searchNumber := defBound[keyCountInSearch]
@@ -1714,13 +1716,17 @@ Convert()	; () -> Void
 			lastToBuf := toBuf		; 今回の文字列を保存
 			reuseBit := 0			; 復活したキービットを消去
 			; キービットと何キー同時押しだったかを保存
-;			If (backCount)
-;			{
-;				lastKeyCounts.RemoveAt(1, backCount)
-;				lastBits.RemoveAt(1, backCount)
-;			}
+			If (backCount)
+			{
+				lastKeyCounts.RemoveAt(1, backCount)
+				lastBits.RemoveAt(1, backCount)
+			}
+
 			lastKeyCounts.InsertAt(1, keyCount <= 1 ? 1 : keyCount)
 			lastBits.Insert(1, keyCount > 0 ? defsKey[searchNumber] : searchBit)
+			; はみ出ないように削除
+			lastKeyCounts.RemoveAt(maxKeyCount)
+			lastBits.RemoveAt(maxKeyCount)
 
 			; 一緒に押すと同時押しになるキーを探す
 			If (keyCount > 0 && !lastGroup)
@@ -1743,18 +1749,22 @@ Convert()	; () -> Void
 				OutBuf()
 			Else
 			{
-				; 仮出力バッファ中のキーと同時押しにならないなら、そこ以前のものを出力する
+				; 仮出力バッファ中の以前変換したキーがもう同時押しにならないなら出力する
+				keyCount := lastKeyCounts[1], searchBit := lastBits[1]	; 【注意】これらの変数は使い回し
 				i := 2
 				While (i <= outStrsLength)
 				{
-					If !(lastBits[i] & combinableBit)
+					If (i == 2 && !(lastBits[i] & combinableBit)
+					 || i > 2 && !(lastBits[i] & FindCombinable(searchBit, kanaMode, keyCount)))
 					{
-						outLength := outStrsLength - i + 1
-						OutBuf(outLength)
-						lastKeyCounts.RemoveAt(i, outLength)
-						lastBits.RemoveAt(i, outLength)
+						deleteLength := outStrsLength - i + 1
+						OutBuf(deleteLength)
+						lastKeyCounts.RemoveAt(i, deleteLength)
+						lastBits.RemoveAt(i, deleteLength)
 						Break
 					}
+					keyCount += lastKeyCounts[i]
+					searchBit |= lastBits[i]
 					i++
 				}
 				SendKeyUp()	; 押し下げ出力中のキーを上げる
@@ -1782,6 +1792,20 @@ Convert()	; () -> Void
 			}
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
+/*		; lastKeyCounts, lastBits の動作確認(デバッグ用)
+		CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
+		printStr := ""
+		i := 1
+		While (i <= lastKeyCounts.Length())
+		{
+			printStr .= lastKeyCounts[i] . ":"
+			SetFormat, Integer, H	; 数値演算の結果を、16進数の整数による文字列で表現する
+			printStr .= SubStr(lastBits[i], 3) . (i < lastKeyCounts.Length() ? "`n" : "")
+			SetFormat, Integer, D	; 数値演算の結果を、10進数の整数による文字列で表現する
+			i++
+		}
+		ToolTip, %printStr%, 16, 16
+*/
 	}
 }
 
