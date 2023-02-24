@@ -1609,9 +1609,10 @@ Convert()	; () -> Void
 				Else
 				{
 					keyCountInSearch := 1
-					i := 1
-					While (i < maxKeyCount)
-						keyCountInSearch += lastKeyCounts[i++]
+					For i in lastKeyCounts
+						keyCountInSearch += i
+					If (keyCountInSearch > maxKeyCount)
+						keyCountInSearch := maxKeyCount
 				}
 
 				While (!keyCount && keyCountInSearch)
@@ -1651,7 +1652,7 @@ Convert()	; () -> Void
 							{
 								backCount := 0
 								i := 1
-								While (i < keyCountInSearch && backCount < keyCountInSearch)
+								While (i < keyCountInSearch && i <= lastKeyCounts.Length())
 									backCount += lastKeyCounts[i++]
 							}
 							keyCount := keyCountInSearch
