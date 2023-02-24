@@ -1747,15 +1747,16 @@ Convert()	; () -> Void
 			If (combinableBit == 0 || (shiftDelay <= 0 && combinableBit == KC_SPC))
 				; 出力確定
 				OutBuf()
-			Else
+			Else If (inBufRest == 31 && nextKey == "")
 			{
 				; 仮出力バッファ中の以前変換したキーがもう同時押しにならないなら出力する
+				; （計算量が多いので、次のキーが押されていたら省略する）
 				keyCount := lastKeyCounts[1], searchBit := lastBits[1]	; 【注意】これらの変数は使い回し
 				i := 2
 				While (i <= outStrsLength)
 				{
 					If (i == 2 && !(lastBits[i] & combinableBit)
-					 || i > 2 && !(lastBits[i] & FindCombinable(searchBit, kanaMode, keyCount)))
+					|| i > 2 && !(lastBits[i] & FindCombinable(searchBit, kanaMode, keyCount)))
 					{
 						deleteLength := outStrsLength - i + 1
 						OutBuf(deleteLength)
@@ -1767,28 +1768,25 @@ Convert()	; () -> Void
 					searchBit |= lastBits[i]
 					i++
 				}
-				SendKeyUp()	; 押し下げ出力中のキーを上げる
 
-				If (inBufRest == 31 && nextKey == "")
+				SendKeyUp()	; 押し下げ出力中のキーを上げる
+				; 入力バッファが空なので、同時押し、後置シフトの判定タイマー起動処理
+				timeLimit := 0.0
+				; 同時押しの判定
+				If (combDelay > 0
+					&& ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)))
 				{
-					; 入力バッファが空なので、同時押し、後置シフトの判定タイマー起動処理
-					timeLimit := 0.0
-					; 同時押しの判定
-					If (combDelay > 0
-					 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)))
-					{
-						timeLimit := keyTime + combDelay	; 期限の時間
-						; 後置シフトも判定し、期限の長いほうを採用
-						If ((combinableBit & KC_SPC) && shiftDelay > combDelay)
-							timeLimit := keyTime + shiftDelay
-					}
-					; 後置シフトの判定
-					Else If (combinableBit == KC_SPC)
+					timeLimit := keyTime + combDelay	; 期限の時間
+					; 後置シフトも判定し、期限の長いほうを採用
+					If ((combinableBit & KC_SPC) && shiftDelay > combDelay)
 						timeLimit := keyTime + shiftDelay
-					; タイマー起動
-					If (timeLimit != 0.0 && (interval := QPC() - timeLimit) < 0.0)
-						SetTimer, KeyTimer, %interval%	; 1回のみのタイマー
 				}
+				; 後置シフトの判定
+				Else If (combinableBit == KC_SPC)
+					timeLimit := keyTime + shiftDelay
+				; タイマー起動
+				If (timeLimit != 0.0 && (interval := QPC() - timeLimit) < 0.0)
+					SetTimer, KeyTimer, %interval%	; 1回のみのタイマー
 			}
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
