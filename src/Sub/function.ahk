@@ -1606,9 +1606,12 @@ Convert()	; () -> Void
 						keyCountInSearch := maxKeyCount
 				}
 
-				While (keyCount == 0 && keyCountInSearch > 0)
-				; ※ 【バグ】keyCountInSearch が上の行をを境に 1 減ることがある
+				; ※ 【バグ】keyCountInSearch が下の While行をを境に 1 減ることがある
 				;	 例：薙刀式J+I+RまたはI+J+R→じょ(正常), R+J+I他→しょ(異常)
+				; そこで無駄が増えるが 1 大きくしておく
+				keyCountInSearch++
+
+				While (keyCount == 0 && keyCountInSearch > 0)
 				{
 					; 検索範囲の設定
 					searchNumber := defBound[keyCountInSearch]
@@ -1618,7 +1621,7 @@ Convert()	; () -> Void
 					{
 						lastBitSet := 0
 						i := 1
-						While (i < keyCountInSearch)
+						While (i < keyCountInSearch && i <= lastKeyCounts.Length())
 							lastBitSet |= lastBits[i++]
 						searchBit := realBitAndKC_SPC | nowBit | (lastBitSet ? lastBitSet : reuseBit)
 					}
@@ -1641,7 +1644,6 @@ Convert()	; () -> Void
 							; 前回が1キー入力だったので仮出力バッファから消す文字数を計算する
 							Else
 							{
-								deleteLength := 0
 								i := 1
 								While (i < keyCountInSearch && i <= lastKeyCounts.Length())
 									deleteLength += lastKeyCounts[i++]
