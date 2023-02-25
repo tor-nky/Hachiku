@@ -199,11 +199,11 @@ Analysis(str)	; (str: String) -> String
 		c := SubStr(str, i++, 1)
 		If (c == "}" && bracket != 1)
 			bracket := 0
-		Else If (c == "{" || bracket)
+		Else If (c == "{" || bracket > 0)
 			bracket++
 		strSub .= c
 		strSubLength++
-		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
+		If (!(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i > strLength)
 		{
 			If (RegExMatch(strSub, "\{Raw\}$"))
@@ -620,11 +620,11 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		c := SubStr(str, i++, 1)
 		If (c == "}" && bracket != 1)
 			bracket := 0
-		Else If (c == "{" || bracket)
+		Else If (c == "{" || bracket > 0)
 			bracket++
 		strSub .= c
 		strSubLength++
-		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
+		If (!(bracket > 0 || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i > strLength)
 		{
 			; "{Raw}"からの残りは全部出力する
@@ -890,7 +890,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				out := strSub
 
 			; キー出力
-			If (out)
+			If (out != "")
 			{
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
@@ -1034,14 +1034,14 @@ SplitKeyUpDown(str)	; (str: String) -> String
 ; ※デフォルト引数を LIMIT_KEY_COUNT-1 としたいが定数しか認められないので 63 とした
 OutBuf(i:=63)	; (i: Int) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
+	global outStrs, outCtrlNames, R, lastSendTime
 ;	local out		; String型
 ;		, ctrlName	; String型
 
-	While (i > 0 && outStrsLength > 0)
+	While (i > 0 && outStrs.Length() > 0)
 	{
-		out := outStrs[1]
-		ctrlName := outCtrlNames[1]
+		out := outStrs.RemoveAt(1)
+		ctrlName := outCtrlNames.RemoveAt(1)
 
 		; リピートなし
 		If (!ctrlName)
@@ -1063,35 +1063,28 @@ OutBuf(i:=63)	; (i: Int) -> Void
 		}
 
 		lastSendTime := QPC()	; 最後に出力した時間を記録
-		; 配列を詰める
-		outStrs.RemoveAt(1)
-		outCtrlNames.RemoveAt(1)
-
-		outStrsLength--
 		i--
 	}
 	DispStr()	; 表示待ち文字列表示
 }
 
-; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
-StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
+; 仮出力バッファを最後から deleteLength 回分を削除して、Str1 と ctrlName を保存
+StoreBuf(str, deleteLength:=0, ctrlName:="")	; (str: String, deleteLength: Int, ctrlName: String) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames, maxKeyCount
+	global outStrs, outCtrlNames, maxKeyCount
 
-	; backCount 回分を削除
-	If (backCount > outStrsLength)
-		backCount := outStrsLength
-	If (backCount > 0)
+	; deleteLength 回分を削除
+	If (deleteLength > outStrs.Length())
+		deleteLength := outStrs.Length()
+	If (deleteLength > 0)
 	{
-		outStrs.RemoveAt(outStrsLength - backCount + 1, backCount)
-		outCtrlNames.RemoveAt(outStrsLength - backCount + 1, backCount)
-		outStrsLength -= backCount
+		outStrs.RemoveAt(outStrs.Length() - deleteLength + 1, deleteLength)
+		outCtrlNames.RemoveAt(outStrs.Length() - deleteLength + 1, deleteLength)
 	}
 	; バッファがいっぱいなら1文字出力
-	Else If (outStrsLength >= maxKeyCount - 1)
+	Else If (outStrs.Length() >= maxKeyCount - 1)
 		OutBuf(1)
 
-	outStrsLength++
 	outStrs.Push(str)
 	outCtrlNames.Push(ctrlName)
 	DispStr()	; 表示待ち文字列表示
@@ -1158,19 +1151,19 @@ DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 ; 表示待ち文字列表示 (デバッグ用)
 DispStr()	; () -> Void
 {
-	global testMode, outStrsLength, outStrs
+	global testMode, outStrs
 ;	local i		; Int型
 ;		, str	; String型
 
 	If (testMode == 2)
 	{
-		If (!outStrsLength)
+		If (outStrs.Length() == 0)
 			ToolTip
 		Else
 		{
 			str := outStrs[1]
 			i := 2
-			While (i <= outStrsLength)
+			While (i <= outStrs.Length())
 				str .= "`n" . outStrs[i++]
 			ToolTip, %str%
 		}
@@ -1184,7 +1177,7 @@ Convert()	; () -> Void
 		, KC_SPC, JP_YEN, KC_INT1, R
 		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName
 		, maxKeyCount, defBound
-		, outStrsLength, lastSendTime, kanaMode
+		, outStrs, lastSendTime, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
@@ -1210,7 +1203,6 @@ Convert()	; () -> Void
 ;		, imeState			; Bool?型
 ;		, imeConvMode		; Int?型
 ;		, nowKey			; String型
-;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
 ;		, toBuf				; String型	出力バッファに送る文字列
 ; 		, keyCountInSearch	; Int型		何キー同時押しを検索しているか
@@ -1218,7 +1210,6 @@ Convert()	; () -> Void
 ;		, nowBit			; Int64型	今回のキービット
 ;		, bitMask			; Int64型
 ;		, realBitAndKC_SPC	; Int64型	スペースを押していれば 0以外
-;		, backCount			; Int型
 ;		, searchBit			; Int64型	いま検索しようとしているキーの集合
 ;		, shiftStyle		; Int型
 ;		, searchNumber		; Int型
@@ -1234,11 +1225,11 @@ Convert()	; () -> Void
 	; 判定期限タイマー停止
 	SetTimer, KeyTimer, Off
 	; 多重起動防止
-	If (convRest || nextKey != "")
+	If (convRest > 0 || nextKey != "")
 		Return
 
 	; 入力バッファが空になるまで
-	While (convRest := 31 - inBufRest || nextKey != "")
+	While ((convRest := 31 - inBufRest) > 0 || nextKey != "")
 	{
 		If (nextKey == "")
 		{
@@ -1324,7 +1315,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 他のシフトを押している
-			Else If (spc || ent)
+			Else If (spc != 0 || ent != 0)
 			{
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
@@ -1339,7 +1330,7 @@ Convert()	; () -> Void
 			If (!sft)
 				SendBlind("{ShiftUp}")
 			; 他のシフトを押している時
-			If (sft || spc || ent)
+			If (sft || spc != 0 || ent != 0)
 			{
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
@@ -1353,7 +1344,7 @@ Convert()	; () -> Void
 			If (ent == 1)
 				ent := 2	; 単独エンターではない
 			; 他のシフトを押している時
-			If (sft || rsft || ent)
+			If (sft || rsft || ent != 0)
 			{
 				StoreBuf("+{Space}", 0, R)
 				OutBuf()
@@ -1370,7 +1361,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; スペースキーの長押し
-			Else If (spaceKeyRepeat && (spc & 1))
+			Else If (spaceKeyRepeat && (spc & 1) != 0)
 			{
 				; 空白キャンセル
 				If (spaceKeyRepeat == 1)
@@ -1384,14 +1375,14 @@ Convert()	; () -> Void
 				DispTime(keyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
 				Continue
 			}
-			Else If (!spc)
+			Else If (spc == 0)
 				spc := 1	; 単独押し
 		}
 		Else If (nowKey == "sc39 up")
 		{
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			; 他のシフトを押している時
-			If (sft || rsft || ent)
+			If (sft || rsft || ent != 0)
 			{
 				If (spc == 1)
 					nowKey := "vk20"	; スペース単独押しのみ
@@ -1411,10 +1402,10 @@ Convert()	; () -> Void
 ;		Else If (nowKey == "Enter" && (eisuSandS || kanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
 			; 他のシフトを押していない時
-			If !(sft || rsft || spc)
+			If !(sft || rsft || spc != 0)
 			{
 				nowKey := "sc39"	; センターシフト押す
-				If (!ent)
+				If (ent == 0)
 					ent := 1
 			}
 		}
@@ -1423,7 +1414,7 @@ Convert()	; () -> Void
 			nowKey := "sc39 up"	; センターシフト上げ
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			; 他のシフトを押している時
-			If (sft || rsft || spc)
+			If (sft || rsft || spc != 0)
 			{
 				If (ent == 1)
 					nowKey := "vk0D"	; Shiftが付け加えられるので Shift+Enter
@@ -1450,15 +1441,14 @@ Convert()	; () -> Void
 		}
 
 		keyCount := 0	; 何キー同時押しか、を入れる変数
-		nowKeyLength := StrLen(nowKey)
-		term := SubStr(nowKey, nowKeyLength - 1)	; term に入力末尾の2文字を入れる
+		term := SubStr(nowKey, StrLen(nowKey) - 1)	; term に入力末尾の2文字を入れる
 		; キーが離れた時
 		If (term == "up")
 		{
 			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
 			; 行が変われば十六進数の数値として扱える
 			If (SubStr(nowKey, 1, 2) == "sc")
-				nowBit := "0x" . SubStr(nowKey, nowKeyLength - 4, 2)
+				nowBit := "0x" . SubStr(nowKey, StrLen(nowKey) - 4, 2)
 			Else
 				nowBit := 0
 		}
@@ -1490,7 +1480,7 @@ Convert()	; () -> Void
 			nowBit := JP_YEN
 		Else If (nowBit == 0x73)	; (JIS)_
 			nowBit := KC_INT1
-		Else If (nowBit)
+		Else If (nowBit != 0)
 			nowBit := 1 << nowBit
 
 		; キーリリース時
@@ -1514,9 +1504,9 @@ Convert()	; () -> Void
 				i := 1
 				While (i <= lastKeyCounts.Length())
 				{
-					If (lastBits[i] & nowBit)
+					If ((lastBits[i] & nowBit) != 0)
 					{
-						OutBuf(outStrsLength - i + 1)
+						OutBuf(outStrs.Length() - i + 1)
 						deleteLength := lastKeyCounts.Length() - i + 1
 						lastKeyCounts.RemoveAt(i, deleteLength)
 						lastBits.RemoveAt(i, deleteLength)
@@ -1527,7 +1517,7 @@ Convert()	; () -> Void
 			}
 
 			; 直近の検索結果のキーを離していた
-			If (!outStrsLength)
+			If (outStrs.Length() == 0)
 			{
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 				lastToBuf := ""
@@ -1538,7 +1528,7 @@ Convert()	; () -> Void
 				lastGroup := ""
 			}
 			; 離したのはカーソルキー等
-			Else If (!nowBit)
+			Else If (nowBit == 0)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
 			; 離したキーを変数から消す
@@ -1553,8 +1543,8 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
-		Else If (nowBit == KC_SPC && !(realBit & nowBit)
-			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
+		Else If (nowBit == KC_SPC && (realBit & nowBit) == 0
+			&& (outStrs.Length() == 0 || lastKeyTime + shiftDelay < keyTime))
 		{
 			OutBuf()
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
@@ -1563,16 +1553,16 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; リピート中のキー
-		Else If (repeatBit && nowBit == repeatBit && lastToBuf != "")
+		Else If (repeatBit != 0 && nowBit == repeatBit && lastToBuf != "")
 		{
 			; 前回の文字列を出力
-			If (!outStrsLength)
+			If (outStrs.Length() == 0)
 				StoreBuf(lastToBuf, 0, ctrlName)
 			OutBuf()
 			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
-		Else If !(realBit & nowBit)
+		Else If ((realBit & nowBit) == 0)
 		{
 			realBit |= nowBit
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
@@ -1586,12 +1576,12 @@ Convert()	; () -> Void
 
 			; 前に押したキーと同時押しにならない
 			; または同時押しの判定期限到来
-			If (outStrsLength
+			If (outStrs.Length() > 0
 			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
 			 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)) )))
 				OutBuf()
 			; 前に押したキーが出力確定していなければ同グループ優先で検索しない
-			If (outStrsLength)
+			If (outStrs.Length() > 0)
 				lastGroup := ""
 			; 出力確定しているので、シフト設定によっては1キー入力だけを検索する
 			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCounts[1] == 1))
@@ -1601,11 +1591,11 @@ Convert()	; () -> Void
 			}
 
 			; 検索ループ
-			backCount := 0
-			While (!keyCount)
+			deleteLength := 0
+			While (keyCount == 0)
 			{
 				; keyCountInSearch に何キー同時押しを最初に検索するかを入れる
-				If (reuseBit)
+				If (reuseBit != 0)
 					keyCountInSearch := maxKeyCount
 				Else
 				{
@@ -1616,7 +1606,7 @@ Convert()	; () -> Void
 						keyCountInSearch := maxKeyCount
 				}
 
-				While (!keyCount && keyCountInSearch)
+				While (keyCount == 0 && keyCountInSearch > 0)
 				; ※ 【バグ】keyCountInSearch が上の行をを境に 1 減ることがある
 				;	 例：薙刀式J+I+RまたはI+J+R→じょ(正常), R+J+I他→しょ(異常)
 				{
@@ -1638,7 +1628,7 @@ Convert()	; () -> Void
 					While (searchNumber < maxNumber)
 					{
 						defKeyCopy := defsKey[searchNumber]
-						If ((defKeyCopy & nowBit) ; 今回のキーを含み
+						If ((defKeyCopy & nowBit) != 0 ; 今回のキーを含み
 							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
 							&& (defKeyCopy & KC_SPC) == realBitAndKC_SPC ; シフトの相違はなく
 							&& defsKanaMode[searchNumber] == kanaMode	; 英数用、かな用の種別が一致していること
@@ -1647,14 +1637,14 @@ Convert()	; () -> Void
 							; 見つかった!
 							; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
 							If (lastKeyCounts[1] >= 2)
-								backCount := 1
+								deleteLength := 1
 							; 前回が1キー入力だったので仮出力バッファから消す文字数を計算する
 							Else
 							{
-								backCount := 0
+								deleteLength := 0
 								i := 1
 								While (i < keyCountInSearch && i <= lastKeyCounts.Length())
-									backCount += lastKeyCounts[i++]
+									deleteLength += lastKeyCounts[i++]
 							}
 							keyCount := keyCountInSearch
 							Break
@@ -1664,7 +1654,7 @@ Convert()	; () -> Void
 					keyCountInSearch--
 				}
 				; 検索終了判定
-				If (!lastGroup || keyCount)
+				If (!lastGroup || keyCount != 0)
 					Break
 				; 同グループが見つからなければグループなしで再度検索
 				lastGroup := ""
@@ -1674,10 +1664,10 @@ Convert()	; () -> Void
 			}
 
 			; スペースを押したが、定義がなかった時
-			If (nowBit == KC_SPC && !keyCount)
+			If (nowBit == KC_SPC && keyCount == 0)
 			{
 				; 仮出力バッファが空の時
-				If (!outStrsLength)
+				If (outStrs.Length() == 0)
 				{
 					SendKeyUp()			; 押し下げ出力中のキーを上げる
 					repeatBit := 0		; リピート解除
@@ -1688,7 +1678,7 @@ Convert()	; () -> Void
 				Else
 				{
 					toBuf := "+" . lastToBuf
-					backCount := 1
+					deleteLength := 1
 				}
 			}
 			If (spc == 1)
@@ -1706,7 +1696,7 @@ Convert()	; () -> Void
 			Else
 				ctrlName := R
 			; 仮出力バッファに入れる
-			StoreBuf(toBuf, backCount, ctrlName)
+			StoreBuf(toBuf, deleteLength, ctrlName)
 			; キーリピート用
 			If (ctrlName == R)
 				repeatBit := nowBit	; キーリピートする
@@ -1718,10 +1708,10 @@ Convert()	; () -> Void
 			lastToBuf := toBuf		; 今回の文字列を保存
 			reuseBit := 0			; 復活したキービットを消去
 			; キービットと何キー同時押しだったかを保存
-			If (backCount)
+			If (deleteLength > 0)
 			{
-				lastKeyCounts.RemoveAt(1, backCount)
-				lastBits.RemoveAt(1, backCount)
+				lastKeyCounts.RemoveAt(1, deleteLength)
+				lastBits.RemoveAt(1, deleteLength)
 			}
 
 			lastKeyCounts.InsertAt(1, keyCount <= 1 ? 1 : keyCount)
@@ -1755,12 +1745,12 @@ Convert()	; () -> Void
 				; （計算量が多いので、次のキーが押されていたら省略する）
 				keyCount := lastKeyCounts[1], searchBit := lastBits[1]	; 【注意】これらの変数は使い回し
 				i := 2
-				While (i <= outStrsLength)
+				While (i <= outStrs.Length())
 				{
-					If (i == 2 && !(lastBits[i] & combinableBit)
-					|| i > 2 && !(lastBits[i] & FindCombinable(searchBit, kanaMode, keyCount)))
+					If (i == 2 && (lastBits[i] & combinableBit) == 0
+					|| i > 2 && (lastBits[i] & FindCombinable(searchBit, kanaMode, keyCount)) == 0)
 					{
-						deleteLength := outStrsLength - i + 1
+						deleteLength := outStrs.Length() - i + 1
 						OutBuf(deleteLength)
 						lastKeyCounts.RemoveAt(i, deleteLength)
 						lastBits.RemoveAt(i, deleteLength)
@@ -1780,7 +1770,7 @@ Convert()	; () -> Void
 				{
 					timeLimit := keyTime + combDelay	; 期限の時間
 					; 後置シフトも判定し、期限の長いほうを採用
-					If ((combinableBit & KC_SPC) && shiftDelay > combDelay)
+					If ((combinableBit & KC_SPC) != 0 && shiftDelay > combDelay)
 						timeLimit := keyTime + shiftDelay
 				}
 				; 後置シフトの判定
