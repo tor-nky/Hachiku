@@ -1196,7 +1196,7 @@ Convert()	; () -> Void
 		, lastKeyTime := 0	; Double型	有効なキーを押した時間
 		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
-		, lastKeyCounts := [] ; Int型	前回まで何キー同時押しだったか？	1つ前, 2つ前, ……
+		, lastKeyCounts := [] ; [Int]型	前回まで何キー同時押しだったか？	1つ前, 2つ前, ……
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
@@ -1226,6 +1226,7 @@ Convert()	; () -> Void
 ;		, lastBitSet		; Int64型
 ;		, defKeyCopy		; Int64型
 ;		, interval			; Double型
+;		, deleteLength		; Int型
 
 	; 定数
 	IME_Get_Interval := 23.0	; Double型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
