@@ -175,7 +175,7 @@ ControlReplace(str)	; (str: String) -> String
 
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
-Analysis(str)	; (str: String) -> String
+Analysis(ByRef str)	; (str: inout String) -> String
 {
 	global imeSelect
 ;	local strLength, strSubLength	; Int型
@@ -339,7 +339,7 @@ Analysis(str)	; (str: String) -> String
 ; tate		縦書き定義
 ; yoko		横書き定義
 ; ctrlName	0または空: なし, R: リピートあり, 他: かな配列ごとの特殊コード
-SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
+SetDefinition(kanaMode, keyComb, ByRef tate, ByRef yoko, ByRef ctrlName)	; (kanaMode: Bool, keyComb: Int64, tate: inout String, yoko: inout String, ctrlName: inout String) -> Void
 {
 	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, LIMIT_KEY_COUNT, defBound
@@ -565,7 +565,7 @@ DetectIME()	; () -> String
 ; 文字列 str を適宜スリープを入れながら出力する
 ;	delay:	-1未満	Sleep をなるべく入れない
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
-SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
+SendEachChar(ByRef str, delay:=-2)	; (str: inout String, delay: Int) -> Void
 {
 	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の入力中か(変換1回目のIME窓検出用)
