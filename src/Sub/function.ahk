@@ -1590,79 +1590,82 @@ Convert()	; () -> Void
 				lastBits := []
 			}
 
+			; 最初に検索する同時押し数を決定
+			If (reuseBit != 0)
+				keyCountInSearch := maxKeyCount
+			Else
+			{
+				keyCountInSearch := 1
+				For i in lastKeyCounts
+					keyCountInSearch += i
+				If (keyCountInSearch > maxKeyCount)
+					keyCountInSearch := maxKeyCount
+			}
+
+			; ※ 【バグ】keyCountInSearch が下の While行をを境に 1 減ることがある
+			;	 例：薙刀式J+I+RまたはI+J+R→じょ(正常), R+J+I他→しょ(異常)
+			; そこで無駄が増えるが 1 大きくしておく
+			keyCountInSearch++
+
 			; 検索ループ
 			deleteLength := 0
 			While (keyCount == 0)
 			{
-				; keyCountInSearch に何キー同時押しを最初に検索するかを入れる
-				If (reuseBit != 0)
-					keyCountInSearch := maxKeyCount
+				; 検索範囲の設定
+				searchNumber := defBound[keyCountInSearch]
+				maxNumber := defBound[keyCountInSearch+1]
+				; シフトの適用範囲に応じた検索キーを設定
+				If (shiftStyle)
+				{
+					lastBitSet := 0
+					i := 1
+					While (i < keyCountInSearch && i <= lastKeyCounts.Length())
+						lastBitSet |= lastBits[i++]
+					searchBit := realBitAndKC_SPC | nowBit | (lastBitSet ? lastBitSet : reuseBit)
+				}
 				Else
+					searchBit := realBit
+
+				While (searchNumber < maxNumber)
 				{
-					keyCountInSearch := 1
-					For i in lastKeyCounts
-						keyCountInSearch += i
-					If (keyCountInSearch > maxKeyCount)
-						keyCountInSearch := maxKeyCount
-				}
-
-				; ※ 【バグ】keyCountInSearch が下の While行をを境に 1 減ることがある
-				;	 例：薙刀式J+I+RまたはI+J+R→じょ(正常), R+J+I他→しょ(異常)
-				; そこで無駄が増えるが 1 大きくしておく
-				keyCountInSearch++
-
-				While (keyCount == 0 && keyCountInSearch > 0)
-				{
-					; 検索範囲の設定
-					searchNumber := defBound[keyCountInSearch]
-					maxNumber := defBound[keyCountInSearch+1]
-					; シフトの適用範囲に応じた検索キーを設定
-					If (shiftStyle)
+					defKeyCopy := defsKey[searchNumber]
+					If ((defKeyCopy & nowBit) != 0 ; 今回のキーを含み
+						&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
+						&& (defKeyCopy & KC_SPC) == realBitAndKC_SPC ; シフトの相違はなく
+						&& defsKanaMode[searchNumber] == kanaMode	; 英数用、かな用の種別が一致していること
+						&& (!lastGroup || lastGroup == defsGroup[searchNumber]))
 					{
-						lastBitSet := 0
-						i := 1
-						While (i < keyCountInSearch && i <= lastKeyCounts.Length())
-							lastBitSet |= lastBits[i++]
-						searchBit := realBitAndKC_SPC | nowBit | (lastBitSet ? lastBitSet : reuseBit)
-					}
-					Else
-						searchBit := realBit
-
-					While (searchNumber < maxNumber)
-					{
-						defKeyCopy := defsKey[searchNumber]
-						If ((defKeyCopy & nowBit) != 0 ; 今回のキーを含み
-							&& (defKeyCopy & searchBit) == defKeyCopy ; 検索キーがいま調べている定義を含み
-							&& (defKeyCopy & KC_SPC) == realBitAndKC_SPC ; シフトの相違はなく
-							&& defsKanaMode[searchNumber] == kanaMode	; 英数用、かな用の種別が一致していること
-							&& (!lastGroup || lastGroup == defsGroup[searchNumber]))
+						; 見つかった!
+						; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
+						If (lastKeyCounts[1] >= 2)
+							deleteLength := 1
+						; 前回が1キー入力だったので仮出力バッファから消す文字数を計算する
+						Else
 						{
-							; 見つかった!
-							; 前回が2キー同時押し以上だったら仮出力バッファの直近1文字を消す
-							If (lastKeyCounts[1] >= 2)
-								deleteLength := 1
-							; 前回が1キー入力だったので仮出力バッファから消す文字数を計算する
-							Else
-							{
-								i := 1
-								While (i < keyCountInSearch && i <= lastKeyCounts.Length())
-									deleteLength += lastKeyCounts[i++]
-							}
-							keyCount := keyCountInSearch
-							Break
+							i := 1
+							While (i < keyCountInSearch && i <= lastKeyCounts.Length())
+								deleteLength += lastKeyCounts[i++]
 						}
-						searchNumber++
+						keyCount := keyCountInSearch
+						Break, 2	; Break だけでもよい
 					}
-					keyCountInSearch--
+					searchNumber++
 				}
-				; 検索終了判定
-				If (!lastGroup || keyCount != 0)
-					Break
-				; 同グループが見つからなければグループなしで再度検索
-				lastGroup := ""
-				reuseBit := 0
-				lastKeyCounts := []	; すべて 0 にする
-				lastBits := []
+
+				; 同時押し数を減らして再度検索へ
+				keyCountInSearch--
+				If (keyCountInSearch == 0)
+				{
+					; 検索終了判定
+					If (!lastGroup || keyCount != 0)
+						Break
+					; 同グループが見つからなければグループなしで再度検索
+					lastGroup := ""
+					reuseBit := 0
+					lastKeyCounts := []	; すべて 0 にする
+					lastBits := []
+					keyCountInSearch := 1
+				}
 			}
 
 			; スペースを押したが、定義がなかった時
