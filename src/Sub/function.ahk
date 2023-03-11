@@ -1613,7 +1613,7 @@ Convert()	; () -> Void
 							If (outStrsLength >= 2)
 								; 2つ前に押したキーを出力
 								OutBuf(1)
-							backCount := (lastKeyCount >= 2 && nowBit != KC_SPC ? 0 : 1)
+							backCount := (lastKeyCount >= 2 && nowBit != KC_SPC || !(defKeyCopy & lastBit) ? 0 : 1)
 							keyCount := 2
 							Break
 						}
