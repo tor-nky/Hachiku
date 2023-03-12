@@ -1581,7 +1581,7 @@ Convert()	; () -> Void
 							; 見つかった!
 							; 前回が2キー、3キー同時押しだったら仮出力バッファの1文字消す
 							; 前回が1キー入力だったら仮出力バッファの2文字消す
-							backCount := (lastKeyCount >= 2 ? 1 : 2)
+							backCount := (!(defKeyCopy & (lastBit | last2Bit)) ? 0 : lastKeyCount >= 2 ? 1 : 2)
 							keyCount := 3
 							Break
 						}
