@@ -7,9 +7,9 @@
 ; http://oookaworks.seesaa.net/article/498756961.html#gsc.tab=0
 ; (2023年3月27日)より
 ;
-; 【薙刀式】ということで最新版v15候補
-; http://oookaworks.seesaa.net/article/498870686.html#gsc.tab=0
-; (2023年4月3日)より
+; 【薙刀式】これまでの候補にF版を加える
+; http://oookaworks.seesaa.net/article/498998670.html#gsc.tab=0
+; (2023年4月14)より
 ;
 ; DvorakJ版からの変更部分：
 ;	編集モードD+F+H、J+K+Q、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -51,8 +51,7 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式配列`n4/13 B版"
-;	layoutName := "薙刀式配列`n最新版v15候補(4/3版）"
+	layoutName := "薙刀式配列`n4/14 F版"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
@@ -62,7 +61,7 @@ ReadLayout()	; () -> Void
 	AL_ヴ				:= AL_小	:= KC_Q
 	AL_き	:= AL_ぬ				:= KC_W
 	AL_て	:= AL_り				:= KC_E
-	AL_し	:= AL_ね				:= KC_R
+	AL_し	:= AL_め				:= KC_R
 	AL_左							:= KC_T
 	AL_右							:= KC_Y
 	AL_BS	:= AL_さ				:= KC_U
@@ -71,7 +70,7 @@ ReadLayout()	; () -> Void
 	AL_へ	:= AL_ゆ				:= KC_P
 
 	AL_ろ	:= AL_せ				:= KC_A
-	AL_け	:= AL_む				:= KC_S
+	AL_け	:= AL_ね				:= KC_S
 	AL_と	:= AL_に				:= KC_D
 	AL_か	:= AL_ま	:= AL_左濁	:= KC_F
 	AL_っ	:= AL_ち				:= KC_G
@@ -88,7 +87,7 @@ ReadLayout()	; () -> Void
 	AL_そ	:= AL_み				:= KC_B
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
-	AL_ん	:= AL_め				:= KC_COMM
+	AL_ん	:= AL_む				:= KC_COMM
 	AL_ら	:= AL_わ				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
@@ -137,7 +136,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_ヴ | KC_SPC		,"vu"		)		; ヴ
 	SetKana( AL_ぬ | KC_SPC		,"nu"		)		; ぬ
 	SetKana( AL_り | KC_SPC		,"ri"		)		; り
-	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
+	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
 	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
 	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
@@ -145,7 +144,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
 	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
-	SetKana( AL_む | KC_SPC		,"mu"		)		; む
+	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
 	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
@@ -161,7 +160,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
 	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
-	SetKana( AL_め | KC_SPC		,"me"		)		; め
+	SetKana( AL_む | KC_SPC		,"mu"		)		; む
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
 

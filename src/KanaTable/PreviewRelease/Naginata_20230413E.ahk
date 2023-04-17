@@ -7,9 +7,9 @@
 ; http://oookaworks.seesaa.net/article/498756961.html#gsc.tab=0
 ; (2023年3月27日)より
 ;
-; 【薙刀式】ということで最新版v15候補
-; http://oookaworks.seesaa.net/article/498870686.html#gsc.tab=0
-; (2023年4月3日)より
+; 【薙刀式】最近の版をまとめてみる
+; http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0
+; (2023年4月13日)より
 ;
 ; DvorakJ版からの変更部分：
 ;	編集モードD+F+H、J+K+Q、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -51,8 +51,7 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式配列`n4/13 B版"
-;	layoutName := "薙刀式配列`n最新版v15候補(4/3版）"
+	layoutName := "薙刀式配列`n4/13 E版"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
@@ -88,8 +87,8 @@ ReadLayout()	; () -> Void
 	AL_そ	:= AL_み				:= KC_B
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
-	AL_ん	:= AL_め				:= KC_COMM
-	AL_ら	:= AL_わ				:= KC_DOT
+	AL_ん	:= AL_わ				:= KC_COMM
+	AL_ら	:= AL_め				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
 
@@ -161,8 +160,8 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
 	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
-	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
+	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
 
 ;**********************************************

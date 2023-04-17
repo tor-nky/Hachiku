@@ -7,9 +7,9 @@
 ; http://oookaworks.seesaa.net/article/498756961.html#gsc.tab=0
 ; (2023年3月27日)より
 ;
-; 【薙刀式】ということで最新版v15候補
-; http://oookaworks.seesaa.net/article/498870686.html#gsc.tab=0
-; (2023年4月3日)より
+; 【薙刀式】最近の版をまとめてみる
+; http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0
+; (2023年4月13日)より
 ;
 ; DvorakJ版からの変更部分：
 ;	編集モードD+F+H、J+K+Q、J+K+G、J+K+V、J+K+Bは変換中かどうかを問わない
@@ -51,8 +51,7 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式配列`n4/13 B版"
-;	layoutName := "薙刀式配列`n最新版v15候補(4/3版）"
+	layoutName := "薙刀式配列`n4/13 D版"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
@@ -71,7 +70,7 @@ ReadLayout()	; () -> Void
 	AL_へ	:= AL_ゆ				:= KC_P
 
 	AL_ろ	:= AL_せ				:= KC_A
-	AL_け	:= AL_む				:= KC_S
+	AL_け	:= AL_み				:= KC_S
 	AL_と	:= AL_に				:= KC_D
 	AL_か	:= AL_ま	:= AL_左濁	:= KC_F
 	AL_っ	:= AL_ち				:= KC_G
@@ -85,10 +84,10 @@ ReadLayout()	; () -> Void
 	AL_ひ							:= KC_X
 	AL_は	:= AL_を				:= KC_C
 	AL_こ	:= AL_、	:= AL_左半	:= KC_V
-	AL_そ	:= AL_み				:= KC_B
+	AL_そ	:= AL_め				:= KC_B
 	AL_た	:= AL_お				:= KC_N
 	AL_な	:= AL_。	:= AL_右半	:= KC_M
-	AL_ん	:= AL_め				:= KC_COMM
+	AL_ん	:= AL_む				:= KC_COMM
 	AL_ら	:= AL_わ				:= KC_DOT
 	AL_れ							:= KC_SLSH
 	; -----------------------------------------
@@ -145,7 +144,7 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_え | KC_SPC		,"e"		)		; え
 	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
 	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
-	SetKana( AL_む | KC_SPC		,"mu"		)		; む
+	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_に | KC_SPC		,"ni"		)		; に
 	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
 	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
@@ -158,10 +157,10 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
 	SetKana( AL_、 | KC_SPC		,",{Enter}"	)		; 、
-	SetKana( AL_み | KC_SPC		,"mi"		)		; み
+	SetKana( AL_め | KC_SPC		,"me"		)		; め
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
 	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
-	SetKana( AL_め | KC_SPC		,"me"		)		; め
+	SetKana( AL_む | KC_SPC		,"mu"		)		; む
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
 
@@ -264,14 +263,14 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_り | AL_や | KC_SPC		,"rya"	)
 	SetKana( AL_し | AL_や				,"sya"	)	; しゃ
 	SetKana( AL_し | AL_や | KC_SPC		,"sya"	)
+	SetKana( AL_み | AL_や				,"mya"	)	; みゃ
+	SetKana( AL_み | AL_や | KC_SPC		,"mya"	)
 	SetKana( AL_に | AL_や				,"nya"	)	; にゃ
 	SetKana( AL_に | AL_や | KC_SPC		,"nya"	)
 	SetKana( AL_ち | AL_や				,"tya"	)	; ちゃ
 	SetKana( AL_ち | AL_や | KC_SPC		,"tya"	)
 	SetKana( AL_ひ | AL_や				,"hya"	)	; ひゃ
 	SetKana( AL_ひ | AL_や | KC_SPC		,"hya"	)
-	SetKana( AL_み | AL_や				,"mya"	)	; みゃ
-	SetKana( AL_み | AL_や | KC_SPC		,"mya"	)
 
 	SetKana( AL_き | AL_ゆ				,"kyu"	)	; きゅ
 	SetKana( AL_き | AL_ゆ | KC_SPC		,"kyu"	)
@@ -279,14 +278,14 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_り | AL_ゆ | KC_SPC		,"ryu"	)
 	SetKana( AL_し | AL_ゆ				,"syu"	)	; しゅ
 	SetKana( AL_し | AL_ゆ | KC_SPC		,"syu"	)
+	SetKana( AL_み | AL_ゆ				,"myu"	)	; みゅ
+	SetKana( AL_み | AL_ゆ | KC_SPC		,"myu"	)
 	SetKana( AL_に | AL_ゆ				,"nyu"	)	; にゅ
 	SetKana( AL_に | AL_ゆ | KC_SPC		,"nyu"	)
 	SetKana( AL_ち | AL_ゆ				,"tyu"	)	; ちゅ
 	SetKana( AL_ち | AL_ゆ | KC_SPC		,"tyu"	)
 	SetKana( AL_ひ | AL_ゆ				,"hyu"	)	; ひゅ
 	SetKana( AL_ひ | AL_ゆ | KC_SPC		,"hyu"	)
-	SetKana( AL_み | AL_ゆ				,"myu"	)	; みゅ
-	SetKana( AL_み | AL_ゆ | KC_SPC		,"myu"	)
 
 	SetKana( AL_き | AL_よ				,"kyo"	)	; きょ
 	SetKana( AL_き | AL_よ | KC_SPC		,"kyo"	)
@@ -294,14 +293,14 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_り | AL_よ | KC_SPC		,"ryo"	)
 	SetKana( AL_し | AL_よ				,"syo"	)	; しょ
 	SetKana( AL_し | AL_よ | KC_SPC		,"syo"	)
+	SetKana( AL_み | AL_よ				,"myo"	)	; みょ
+	SetKana( AL_み | AL_よ | KC_SPC		,"myo"	)
 	SetKana( AL_に | AL_よ				,"nyo"	)	; にょ
 	SetKana( AL_に | AL_よ | KC_SPC		,"nyo"	)
 	SetKana( AL_ち | AL_よ				,"tyo"	)	; ちょ
 	SetKana( AL_ち | AL_よ | KC_SPC		,"tyo"	)
 	SetKana( AL_ひ | AL_よ				,"hyo"	)	; ひょ
 	SetKana( AL_ひ | AL_よ | KC_SPC		,"hyo"	)
-	SetKana( AL_み | AL_よ				,"myo"	)	; みょ
-	SetKana( AL_み | AL_よ | KC_SPC		,"myo"	)
 
 ;****************************
 ; 濁音拗音

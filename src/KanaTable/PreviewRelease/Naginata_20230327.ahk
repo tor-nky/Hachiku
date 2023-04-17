@@ -47,7 +47,8 @@ ReadLayout()	; () -> Void
 	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
 	global layoutName, koyuNumber
 
-	layoutName := "薙刀式v15fix版仮最終候補`n冗長定義を復活"
+	layoutName := "薙刀式配列`n4/13 A版"
+;	layoutName := "薙刀式v15fix版仮最終候補`n冗長定義を復活"
 
 	ReadStandardLayout()	; キーボード初期配列を読み込み
 
