@@ -325,6 +325,9 @@ Analysis(str)	; (str: String) -> String
 	; 最後の文字がASCIIコード以外だったら、"{確定}"を入れる
 	If (!kakutei && nonAscii)
 		ret .= "{確定}"
+	; ATOKで"{確定}"から始まるときは、"{確定}"を2度出力する
+	If (imeSelect == 1 && RegExMatch(ret, "^\{確定\}"))
+		ret := "{確定}" . ret
 
 	Return ret
 }
