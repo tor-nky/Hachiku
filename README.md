@@ -1,6 +1,6 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2023年4月18日付[【薙刀式】,.裏にわめ版](http://oookaworks.seesaa.net/article/499041891.html#gsc.tab=0)
-から、__薙刀式（4/18 B2版）__ を Autohotkey に実装しました。  
+2023年5月1日付[【薙刀式】性懲りもなくまだ別版](http://oookaworks.seesaa.net/article/499198019.html#gsc.tab=0)
+から、__薙刀式（5/1 D2版）__ を Autohotkey に実装しました。  
 ソースコードから実行します。  
 
 ---
