@@ -1207,7 +1207,7 @@ Convert()	; () -> Void
 ;		, interval			; Double型
 
 	; 定数
-	IME_Get_Interval := 23.0	; Double型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
+	IME_Get_Interval := 30.0	; Double型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
 
 	; 判定期限タイマー停止
 	SetTimer, KeyTimer, Off
