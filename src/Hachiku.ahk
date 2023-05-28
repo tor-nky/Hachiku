@@ -2,7 +2,7 @@
 ; 薙刀式配列
 ;		ローマ字入力モード
 ; **********************************************************************
-version := "1.9.9"	; String型
+version := "1.9.9f"	; String型
 
 ; --------〈起動処理〉--------------------------------------------------
 SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変更
@@ -20,9 +20,9 @@ SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変�
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
 ;#Include %A_ScriptDir%/KanaTable/Naginata_v14.ahk	; 薙刀式配列v14（集大成版）
-;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230418B2.ahk	; 薙刀式（4/18 B2版）
-;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230413D.ahk ; 薙刀式（4/13 D版）
-#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230501D2.ahk ; 薙刀式（5/1 D2版）
+#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230413D.ahk ; 薙刀式（4/13 D版）
+;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230501D2.ahk ; 薙刀式（5/1 D2版）
+;#Include %A_ScriptDir%/KanaTable/PreviewRelease/Naginata_20230327.ahk	; 薙刀式（4/13 A版）
 
 
 ; **********************************************************************
