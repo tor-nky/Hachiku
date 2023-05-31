@@ -1023,6 +1023,7 @@ SplitKeyUpDown(str)	; (str: String) -> String
 OutBuf(i:=2)	; (i: Int) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
+		, testMode
 ;	local out		; String型
 ;		, ctrlName	; String型
 
@@ -1030,6 +1031,13 @@ OutBuf(i:=2)	; (i: Int) -> Void
 	{
 		out := outStrs[1]
 		ctrlName := outCtrlNames[1]
+
+		; テスト表示 出力文字列
+		If (testMode == 3)
+		{
+			ToolTip, %out%
+			SetTimer, RemoveToolTip, 2500
+		}
 
 		; リピートなし
 		If (!ctrlName)
@@ -1056,7 +1064,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		outStrsLength--
 		i--
 	}
-	DispStr()	; 表示待ち文字列表示
+	DispStoredStr()	; 表示待ち文字列表示
 }
 
 ; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
@@ -1077,7 +1085,7 @@ StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlNa
 	outStrsLength++
 	outStrs[outStrsLength] := str
 	outCtrlNames[outStrsLength] := ctrlName
-	DispStr()	; 表示待ち文字列表示
+	DispStoredStr()	; 表示待ち文字列表示
 }
 
 ; 縦書き・横書き切り替え
@@ -1124,7 +1132,7 @@ SelectStr(index)	; (index: Int) -> String
 	Return (vertical ? defsTateStr[index] : defsYokoStr[index])
 }
 
-; timeA からの時間を表示[ミリ秒単位]
+; テスト表示 timeA からの時間[ミリ秒単位]
 DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 {
 	global testMode
@@ -1138,8 +1146,8 @@ DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 	}
 }
 
-; 表示待ち文字列表示
-DispStr()	; () -> Void
+; テスト表示 表示待ち文字列
+DispStoredStr()	; () -> Void
 {
 	global testMode, outStrsLength, outStrs
 ;	local str	; String型

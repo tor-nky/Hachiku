@@ -194,7 +194,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll, 0
 ; 英数入力時のSandS		0または空: なし, 他: あり
 	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS, 1
-; テストモード	1: 処理時間表示, 2: 表示待ち文字列表示, 他: なし ※iniになければ設定画面に表示しない
+; テスト表示	1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列, 他: なし ※iniになければ設定画面に表示しない
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
 
 ; 範囲外は初期値へ
@@ -251,6 +251,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		testMode0 := (testMode == 0 ? 1 : 0)
 		testMode1 := (testMode == 1 ? 1 : 0)
 		testMode2 := (testMode == 2 ? 1 : 0)
+		testMode3 := (testMode == 3 ? 1 : 0)
 	}
 
 ; ----------------------------------------------------------------------
@@ -325,7 +326,7 @@ ButtonOK:
 	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
 	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
 	If (testMode != "ERROR")
-		testMode := (testMode0 ? 0 : (testMode1 ? 1 : 2))
+		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
 	; 設定ファイル書き込み
 	; [general]
 	IniWrite, %iniVersion%, %iniFilePath%, general, Version
@@ -405,16 +406,19 @@ PrefMenu:
 		; テストモード
 		If (testMode != "ERROR")
 		{
-			Gui, Add, Text, xm ys+172, テストモード
+			Gui, Add, Text, xm ys+172, テスト表示
 			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
-			Gui, Add, Radio, x+0 VtestMode1, 処理時間表示
-			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列表示
+			Gui, Add, Radio, x+0 VtestMode1, 処理時間
+			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
+			Gui, Add, Radio, x+0 VtestMode3, 出力文字列
 			If (testMode0)
 				GuiControl, , testMode0, 1
 			Else If (testMode1)
 				GuiControl, , testMode1, 1
-			Else
+			Else If (testMode2)
 				GuiControl, , testMode2, 1
+			Else
+				GuiControl, , testMode3, 1
 		}
 	; 「キー」メニュー
 	Gui, Tab, キー
