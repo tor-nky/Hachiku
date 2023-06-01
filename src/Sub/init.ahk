@@ -403,7 +403,7 @@ PrefMenu:
 		Gui, Add, Edit, xm+132 yp-3 W45
 		Gui, Add, UpDown, VshiftDelay Range0-200, %shiftDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒
-		; テストモード
+		; テスト表示
 		If (testMode != "ERROR")
 		{
 			Gui, Add, Text, xm ys+172, テスト表示

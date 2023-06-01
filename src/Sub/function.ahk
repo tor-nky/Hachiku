@@ -1914,7 +1914,7 @@ sc29::	; (JIS)半角/全角	(US)`
 	Convert()	; 変換ルーチン
 	If (testMode != "ERROR" && inBufRest <= 16 && A_TickCount >= trayTipTimeLimit)
 	{
-		TrayTip, , 入力バッファあふれ, , 16
+		TrayTip, , 入力バッファが一杯, , 16
 		trayTipTimeLimit := A_TickCount + 10000
 	}
 	Return
