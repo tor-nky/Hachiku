@@ -1912,11 +1912,13 @@ sc29::	; (JIS)半角/全角	(US)`
 		, inBufWritePos := (inBufRest > 16 ? ++inBufWritePos & 31 : inBufWritePos)	; キーを押す方はいっぱいまで使わない
 		, (inBufRest > 16 ? inBufRest-- : )
 	Convert()	; 変換ルーチン
+/*
 	If (testMode != "ERROR" && inBufRest <= 16 && A_TickCount >= trayTipTimeLimit)
 	{
 		TrayTip, , 入力バッファが一杯, , 16
 		trayTipTimeLimit := A_TickCount + 10000
 	}
+*/
 	Return
 
 ; キー押上げ
