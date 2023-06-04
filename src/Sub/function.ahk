@@ -267,14 +267,14 @@ Analysis(str)	; (str: String) -> String
 					ret .= strSub
 					kakutei := True
 				}
-			Else If (str != "^v" && strSub == "^v")
-			{
-				; "^v" 単独は除外
-				If (!kakutei)
-					ret .= "{確定}"
-				ret .= strSub
-				kakutei := True
-			}
+				Else If (str != "^v" && strSub == "^v")
+				{
+					; "^v" 単独は除外
+					If (!kakutei)
+						ret .= "{確定}"
+					ret .= strSub
+					kakutei := True
+				}
 				Else If (strSub = "{UndoIME}")
 				{
 					; IME入力モードの回復
@@ -914,21 +914,23 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				romanChar := False
 
 			; 必要なら IME の状態を元に戻す
+			; ※IME_SET(1) を使う方法
 			If (noIME && (i > strLength || strSub = "{UndoIME}"))
 			{
 				noIME := False
 
-/*			; ※半角/全角 を使う方法
-				preDelay := 40
-				postDelay := 30
-				; 前回の出力からの時間が短ければ、ディレイを入れる
-				If (lastDelay < preDelay)
-					Sleep, % preDelay - lastDelay
-				Send, {vkF3}	; 半角/全角
-				Sleep, % (lastDelay := postDelay)
-*/
-			; ※IME_SET(1) を使う方法
-				preDelay := 20
+				If (strSub == "" || Asc(out) > 127 || SubStr(out, 1, 3) = "{U+"
+				 || (SubStr(out, 1, 5) = "{ASC " && SubStr(out, 6, strSubLength - 6) > 127))
+				 	preDelay := 20
+				Else If (imeName == "ATOK")
+					preDelay := 40
+				Else If (imeName == "NewMSIME")
+					preDelay := 60
+				Else If (imeName == "Google")
+					preDelay := 90
+				Else
+					preDelay := 70
+
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
