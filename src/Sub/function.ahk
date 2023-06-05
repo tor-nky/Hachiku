@@ -558,7 +558,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
 	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の入力中か(変換1回目のIME窓検出用)
-;	local hwnd					; Int型
+;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を入力したか
+;		, hwnd					; Int型
 ;		, title, class, process	; String型
 ;		, strLength				; Int型		str の長さ
 ;		, strSub				; String型	細切れにした文字列
@@ -598,7 +599,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	lastDelay := Floor(QPC() - lastSendTime)
 
 	; 文字列を細切れにして出力
-	noIME := False
+	noIME := romanCharForNoIME := False
 	strSub := out := ""
 	strSubLength := 0
 	bracket := 0
@@ -886,14 +887,18 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					Sleep, % preDelay - lastDelay
 				Send, % out
 
-				; ローマ字の文字が入力された
+				; ローマ字の文字
 				If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
 				 || (strSubLength == 3 && Asc(strSub) == 123))
+				{
 					romanChar := True
+					If (noIME)
+						romanCharForNoIME := True
+				}
 				Else
 				{
-					; IME窓の検出が当てにできるか未判定で
-					; 変換1回目にはIME窓検出タイマーを起動
+					; IME窓の検出が当てにできるか判定
+					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
 						&& (out = "{vk20}" || out = "{Space down}") && romanChar && i > strLength)
 					{
@@ -919,16 +924,17 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 
-				If (strSub == "" || Asc(out) > 127 || SubStr(out, 1, 3) = "{U+"
-				 || (SubStr(out, 1, 5) = "{ASC " && SubStr(out, 6, strSubLength - 6) > 127))
+				; SendRawだったか、または一時IMEをオフにした間にローマ字(アスキー文字)を出力していない
+				If (!romanCharForNoIME)
 				 	preDelay := 20
+				; そうでなければシフトが残りやすいので、IMEごとにディレイを調整
 				Else If (imeName == "ATOK")
 					preDelay := 40
 				Else If (imeName == "NewMSIME")
 					preDelay := 60
 				Else If (imeName == "Google")
 					preDelay := 90
-				Else
+				Else	; 旧MS-IME
 					preDelay := 70
 
 				; 前回の出力からの時間が短ければ、ディレイを入れる
@@ -936,6 +942,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
 				lastDelay := IME_Get_Interval
+				romanCharForNoIME := False
 			}
 
 			preDelay := postDelay := -2
