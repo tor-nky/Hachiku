@@ -196,6 +196,8 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS, 1
 ; テスト表示	1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列, 他: なし ※iniになければ設定画面に表示しない
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
+; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
+	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval, 30
 
 ; 範囲外は初期値へ
 	If (shiftDelay < 0)
@@ -353,8 +355,11 @@ ButtonOK:
 	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
 	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
-	If (testMode != "ERROR")
+	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
+		IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
+
+	}
 
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
 	DeleteDefs()		; 配列定義をすべて消去する
@@ -403,10 +408,11 @@ PrefMenu:
 		Gui, Add, Edit, xm+132 yp-3 W45
 		Gui, Add, UpDown, VshiftDelay Range0-200, %shiftDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒
-		; テスト表示
+		; テストモード
 		If (testMode != "ERROR")
 		{
-			Gui, Add, Text, xm ys+172, テスト表示
+			; テスト表示
+			Gui, Add, Text, xm ys+150, テスト表示
 			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
 			Gui, Add, Radio, x+0 VtestMode1, 処理時間
 			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
@@ -419,6 +425,11 @@ PrefMenu:
 				GuiControl, , testMode2, 1
 			Else
 				GuiControl, , testMode3, 1
+			; 文字出力後に IME の状態を検出しない時間
+			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
+			Gui, Add, Edit, xm+235 yp-3 W51
+			Gui, Add, UpDown, VimeGetInterval Range0-2000 128, %imeGetInterval%
+			Gui, Add, Text, x+5 yp+3, ミリ秒
 		}
 	; 「キー」メニュー
 	Gui, Tab, キー

@@ -557,8 +557,8 @@ DetectIME()	; () -> String
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
 	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
-	static romanChar := False	; Bool型	ローマ字になり得る文字の入力中か(変換1回目のIME窓検出用)
-;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を入力したか
+	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
+;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
 ;		, title, class, process	; String型
 ;		, strLength				; Int型		str の長さ
@@ -1186,6 +1186,7 @@ Convert()	; () -> Void
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
+		, imeGetInterval
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
@@ -1222,9 +1223,6 @@ Convert()	; () -> Void
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
 ;		, interval			; Double型
-
-	; 定数
-	IME_Get_Interval := 30.0	; Double型定数	Send から IME_GET まで Sleep 抜きで必要な時間(ミリ秒)
 
 	; 判定期限タイマー停止
 	SetTimer, KeyTimer, Off
@@ -1273,7 +1271,7 @@ Convert()	; () -> Void
 			kanaMode := 0
 		Else If (sideShift <= 1 && (sft || rsft))	; 左右シフト英数２
 			kanaMode := 0
-		Else If (lastSendTime + IME_Get_Interval <= QPC())
+		Else If (lastSendTime + imeGetInterval <= QPC())
 		{
 			; IME状態を確実に検出できる時
 			imeState := IME_GET()
