@@ -885,7 +885,10 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
+
 				Send, % out
+				If (!noIME && i > strLength)
+					lastSendTime := QPC()	; 出力した時間を記録
 
 				; ローマ字の文字
 				If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
@@ -1031,7 +1034,7 @@ SplitKeyUpDown(str)	; (str: String) -> String
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)	; (i: Int) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames, R, lastSendTime
+	global outStrsLength, outStrs, outCtrlNames, R
 		, testMode
 ;	local out		; String型
 ;		, ctrlName	; String型
@@ -1067,7 +1070,6 @@ OutBuf(i:=2)	; (i: Int) -> Void
 			SendSP(out, ctrlName)
 		}
 
-		lastSendTime := QPC()	; 最後に出力した時間を記録
 		outStrs[1] := outStrs[2]
 		outCtrlNames[1] := outCtrlNames[2]
 		outStrsLength--

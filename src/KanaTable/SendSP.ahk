@@ -2,13 +2,17 @@
 SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 {
 	global koyuNumber, version, layoutName, layoutNameE, iniFilePath
+		, lastSendTime
 
 	SetKeyDelay, -1, -1
 
 	If (ctrlName == "ESCx3")
 		SendESCx3()
 	Else If (ctrlName == "そのまま")
+	{
 		Send, % strIn
+		lastSendTime := QPC()	; 出力した時間を記録
+	}
 	Else If (ctrlName == "横書き")
 		ChangeVertical(0)
 	Else If (ctrlName == "縦書き")
@@ -62,27 +66,30 @@ SendESCx3()	; () -> Void
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
 
-	; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
-	IME_Get_Interval := (imeName == "NewMSIME" ? 40 : 30)
-	; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
-	IME_GetConverting_Interval := (imeName == "Google" ? 30
-		: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
-
 	If (usingKeyConfig
 	 && imeName != "OldMSIME" && imeName != "NewMSIME" && class != "Hidemaru32Class")
+	{
 		Send, +^{vk1D 2}	; ※ Shift+Ctrl+無変換
+		lastSendTime := QPC()	; 出力した時間を記録
+	}
 	; IME窓検出が当てになる時(入力中のかながないのと変換1回目の区別がつく)
 	Else If (hwnd == goodHwnd)
 	{
+		; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
+		IME_Get_Interval := 40
+		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
+		IME_GetConverting_Interval := (imeName == "Google" ? 30
+			: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
+
 		delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
 		If (delay > 0)
 			Sleep, % delay
+		;　IME ONだが、無変換ではない
 		If (IME_GET() && IME_GetSentenceMode())
 		{
-			;　IME ONだが、無変換ではない
-			delay := IME_GetConverting_Interval - Floor(QPC() - lastSendTime)
 			; 時間を空けてIME窓検出へ
+			delay := IME_GetConverting_Interval - Floor(QPC() - lastSendTime)
 			If (delay > 0)
 				Sleep, % delay
 			Loop, 5 {
@@ -90,6 +97,7 @@ SendESCx3()	; () -> Void
 					; IME窓がなければループ終了
 					Break
 				Send, {Esc}
+				lastSendTime := QPC()	; 出力した時間を記録
 				Sleep, % IME_GetConverting_Interval
 			}
 		}
@@ -105,5 +113,6 @@ SendESCx3()	; () -> Void
 			IfWinActive, ahk_class #32770
 				Send, a
 		}
+		lastSendTime := QPC()	; 出力した時間を記録
 	}
 }
