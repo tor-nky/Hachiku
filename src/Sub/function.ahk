@@ -693,7 +693,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 							{
 								i += 6
 								noIME := False
-								kanaMode := 0
 							}
 							Else If (SubStr(str, i, 8) = "{IMEOFF}")
 							{
