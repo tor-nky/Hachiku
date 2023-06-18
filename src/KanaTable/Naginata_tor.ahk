@@ -781,16 +781,20 @@ KoyuRegist()	; () -> Void
 +^sc0B::Suspend, On		; 薙刀式中断 Shift+Ctrl+0
 +^sc02::Suspend, Off	; 薙刀式再開 Shift+Ctrl+1
 
-; ATOK用
-#If (imeSelect == 1 && kanaMode)
-^sc35::Send, {sc79}		; Ctrl+Slash → 変換
 ; ATOK以外用
 #If (imeSelect != 1)
-^sc27::Send, +{Esc}		; Ctrl+Semicolon →	全戻し
+^sc27::Send, +{Esc}{Home}	; Ctrl+Semicolon →	全戻し→文字先頭
+
 ; 新MS-IME用
 #If (DetectIME() == "NewMSIME")
 sc79::Send, {sc79 9}	; 変換 → 変換x9
 +sc79::Send, +{sc79 9}	; Shift+変換 → Shift+変換x9
 #If (DetectIME() == "NewMSIME" && kanaMode)
 ^sc35::Send, {sc79 9}	; Ctrl+Slash → 変換x9
++^sc35::Send, +{sc79 9}	; Shift+Ctrl+Slash → Shift+変換x9
+
+; 新MS-IME以外用
+#If (DetectIME() != "NewMSIME" && kanaMode)
+^sc35::Send, {sc79}		; Ctrl+Slash → 変換
++^sc35::Send, +{sc79}	; Shift+Ctrl+Slash → Shift+変換
 #If		; End #If ()
