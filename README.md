@@ -1,6 +1,6 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
 2023年4月13日付[【薙刀式】最近の版をまとめてみる](http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0)
-から、__薙刀式（4/13 D版）__ を Autohotkey に実装しました。  
+から、__薙刀式（4/13 A版）__ を Autohotkey に実装しました。  
 ソースコードから実行します。  
 
 ---
@@ -90,8 +90,8 @@ ATOK プロパティ → キー･ローマ字･色 → キーカスタマイ�
 全角記号を出力するために一旦、IMEをオフにしているためです。IMEの設定でなくすことができます。
 # 不具合
 * (秀丸エディタ)「名前を付けて保存」で IMEオフの状態だと、2文字目以降に大文字を入力してから何も入力ができない
-* 入力したキーがまれに無視される  
-超高速で打鍵すると起きる可能性があります。
+* 入力したキーが無視されたり、押した順序が入れ替わったりする  
+超高速で打鍵するとまれに起きる可能性があります。
 * (新MS-IME) かな変換中に英数入力に切り替え、確定しないでキーを押すと最初の文字が入力されない。  
 新MS-IME の仕様です。
 * (新MS-IME) かな入力できなくなったり、入力中のかなが消せなくなることがある  
@@ -102,14 +102,15 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 * ブラウザで GitHub 上のファイルを直接編集すると、誤動作する編集モードがある  
 [Issue #28](https://github.com/tor-nky/Hachiku/issues/28)
 # 動作確認
-* Windows 10 Home version 22H2 64-bit + AutoHotkey (v1.1.36.02) U64 Unicode 64-bit.bin  
+* Windows 10 Home version 22H2 64-bit + AutoHotkey (v1.1.37.00) U64 Unicode 64-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力  
 __AutoHotkey v2以降では使えません__
 
 # 参考
 * [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
 * [【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
-* [【薙刀式】最新版で困らなくなってきた](http://oookaworks.seesaa.net/article/498162337.html#gsc.tab=0)
+* [【薙刀式】冗長定義を復活させたら挙動が安定した](http://oookaworks.seesaa.net/article/498756961.html#gsc.tab=0)
+* [【薙刀式】最近の版をまとめてみる](http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```
