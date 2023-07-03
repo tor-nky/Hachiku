@@ -1077,7 +1077,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 	DispStoredStr()	; 表示待ち文字列表示
 }
 
-; 仮出力バッファを最後から backCount 回分を削除して、Str1 と ctrlName を保存
+; 仮出力バッファを最後から backCount 回分を削除して、str と ctrlName を保存
 StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNames
