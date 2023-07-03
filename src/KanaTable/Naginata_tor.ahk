@@ -797,4 +797,78 @@ sc79::Send, {sc79 9}	; 変換 → 変換x9
 #If (DetectIME() != "NewMSIME" && kanaMode)
 ^sc35::Send, {sc79}		; Ctrl+Slash → 変換
 +^sc35::Send, +{sc79}	; Shift+Ctrl+Slash → Shift+変換
+
+; ----------------------------------------------------------------------
+; IME 操作
+; ----------------------------------------------------------------------
+; 106日本語キーボードの場合
+#If (keyDriver == "kbd106.dll")
+sc3A::	; 英数キー単独で CapsLock をオンオフする
+	If (GetKeyState("CapsLock", "T"))
+		SetCapsLockState, Off
+	Else
+		SetCapsLockState, On
+	Return
+
+; 新MS-IME以外用
+#If (DetectIME() != "NewMSIME")
++sc70::	; Shift + ひらがな
++vk16::	; Shift + Macかな
+	SendEachChar("{vkF1}")	; カタカナ
+	Return
+
+; 設定がPC-9800キーボード以外の場合
+;#If (keyDriver != "kbdnec.dll")
+;!sc29::	; 漢字キー
+; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
 #If		; End #If ()
+; 全キーボード
+sc29::	; (JIS)半角/全角	(US)`
+	If (IME_GET() && (IME_GetConvMode() & 1))
+	{
+		SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+		kanaMode := 0
+	}
+	Else
+		SendEachChar("{vkF2}")	; ひらがな
+	Return
+sc7B::		; 無変換
+vk1A::		; Mac英数
+	SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+	kanaMode := 0
+	Return
++sc7B::		; Shift + 無変換
++vk1A::		; Shift + Mac英数
+	SendEachChar("{全英}")
+	Return
+sc70::		; ひらがな
+vk16::		; Macかな
+	If (A_PriorHotKey = A_ThisHotKey && A_TimeSincePriorHotkey < 200)
+		Send, #/	; 2連打で再変換
+	Else
+		SendEachChar("{vkF2}")	; ひらがな
+	Return
+
+; ----------------------------------------------------------------------
+; テンキー
+; ----------------------------------------------------------------------
+NumLock::
+	KeyWait, NumLock, T0.3	;0.3秒対象キーが押されたかどうか
+	If (ErrorLevel)
+	{
+		Send, =		; 長押しで"="入力
+		KeyWait, NumLock
+		Return
+	}
+	Send, :		; 単打で":"入力
+	Return
+NumpadDot::
+	KeyWait, NumpadDot, T0.3	;0.3秒対象キーが押されたかどうか
+	If (ErrorLevel)
+	{
+		Send, `,		; 長押しで","入力
+		KeyWait, NumpadDot
+		Return
+	}
+	Send, {NumpadDot}	; 単打で"."入力
+	Return
