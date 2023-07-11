@@ -17,17 +17,29 @@
 ;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
 
 ; ----------------------------------------------------------------------
-; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
+; 英数／かな配列の定義ファイル
+;
+;【縦書き用だけ書き、横書き用は自動変換する方法】
 ;
 ; 例：	SetKana( KC_Q | KC_L | KC_SPC		,"xwa"	, R)	; (ゎ)
 ;		~~~~~~~  ~~~~~~~~~~~~~~~~~~~~		  ~~~	  ~ 	  ~~~~
 ;		かな定義	スペース+Q+L	   縦書き用の出力 ↑	コメント
 ;													  ｜
-			;						リピートあり(省略はリピートなし)
+;									リピートあり(省略はリピートなし)
 ;
 ; 例：	 SetEisu( KC_H | KC_J			,"{vkF2 2}" )		; IME ON
 ;		 ~~~~~~~
 ;		 英数定義
+;
+; 【縦書き用と横書き用を分けて書く方法】
+;
+; 例：	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}")
+; 例：	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}")
+;		~~~~~~~  ~~~~~~~~~~~~~~~~~~		  ~~~~~~~~~~	~~~~~~~~~~
+;		かな定義	   J+K+Z		   縦書き用の出力   横書き用の出力
+;		英数定義
+;
+;	※ "(){確定}" はIMEに合わせ、"{一時半角}()" は半角になり、全角で定義した "（）" は全角になります
 ;
 ;	※再読み込みか、再起動で有効になります
 ;	※全角空白の違いが見えるエディタを使うことをおすすめします
@@ -415,37 +427,37 @@ kanaGroup := "1R"
 
 ; 左手
 kanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 最新部へ移動
-	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
-	SetKana( KC_J | KC_K | KC_W		,"《》{確定}{↑}"					)	; 《》
-	SetKana2(KC_J | KC_K | KC_S		,"（）{確定}{↑}", "(){確定}{←}"	)	; （）
-	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
-;	SetKana( KC_J | KC_K | KC_E		,"dhi"								)	; ディ
-	SetKana2(KC_J | KC_K | KC_D		,"？{確定}", "?{確定}"				)	; ？
-	SetKana2(KC_J | KC_K | KC_C		,"！{確定}", "{!}{確定}"			)	; ！
-	SetKana( KC_J | KC_K | KC_R		,"^s"								)	; 保存
-	SetKana2(KC_J | KC_K | KC_F		,"「」{確定}{↑}", "[]{確定}{←}"	)	; 「」
-	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"						)	; 確定次の文字
-	SetKana( KC_J | KC_K | KC_T		,"/"								)	; ・未確定
-	SetKana( KC_J | KC_K | KC_G		,"『』{確定}{↑}"					)	; 『』
-	SetKana( KC_J | KC_K | KC_B		,"／{確定}"							)	; ／
+	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"				)	; 最新部へ移動
+	SetKana( KC_J | KC_K | KC_A		,"……{確定}"				)	; ……
+	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"	)	; ──
+	SetKana( KC_J | KC_K | KC_W		,"《》{確定}{↑}"			)	; 《》
+	SetKana( KC_J | KC_K | KC_S		,"(){確定}{↑}"				)	; （）
+	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"			)	; 【】
+;	SetKana( KC_J | KC_K | KC_E		,"dhi"						)	; ディ
+	SetKana( KC_J | KC_K | KC_D		,"?{確定}"					)	; ？
+	SetKana( KC_J | KC_K | KC_C		,"{!}{確定}"				)	; ！
+	SetKana( KC_J | KC_K | KC_R		,"^s"						)	; 保存
+	SetKana( KC_J | KC_K | KC_F		,"[]{確定}{↑}"				)	; 「」
+	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"				)	; 確定次の文字
+	SetKana( KC_J | KC_K | KC_T		,"/"						)	; ・未確定
+	SetKana( KC_J | KC_K | KC_G		,"『』{確定}{↑}"			)	; 『』
+	SetKana( KC_J | KC_K | KC_B		,"／{確定}"					)	; ／
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 最新部へ移動
-	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
-	SetEisu( KC_J | KC_K | KC_W		,"《》{確定}{↑}"					)	; 《》
-	SetEisu2(KC_J | KC_K | KC_S		,"（）{確定}{↑}", "(){確定}{←}"	)	; （）
-	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
-;	SetEisu( KC_J | KC_K | KC_E		,"dhi"								)	; ディ
-	SetEisu2(KC_J | KC_K | KC_D		,"？{確定}", "?{確定}"				)	; ？
-	SetEisu2(KC_J | KC_K | KC_C		,"！{確定}", "{!}{確定}"			)	; ！
-	SetEisu( KC_J | KC_K | KC_R		,"^s"								)	; 保存
-	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"					)	; 「」
-	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"						)	; 確定次の文字
-	SetEisu( KC_J | KC_K | KC_T		,"・"								)	; ・未確定
-	SetEisu( KC_J | KC_K | KC_G		,"『』{確定}{↑}"					)	; 『』
-	SetEisu( KC_J | KC_K | KC_B		,"／{確定}"							)	; ／
+	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"				)	; 最新部へ移動
+	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"				)	; ……
+	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"	)	; ──
+	SetEisu( KC_J | KC_K | KC_W		,"《》{確定}{↑}"			)	; 《》
+	SetEisu( KC_J | KC_K | KC_S		,"(){確定}{↑}"				)	; （）
+	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"			)	; 【】
+;	SetEisu( KC_J | KC_K | KC_E		,"dhi"						)	; ディ
+	SetEisu( KC_J | KC_K | KC_D		,"?{確定}"					)	; ？
+	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"				)	; ！
+	SetEisu( KC_J | KC_K | KC_R		,"^s"						)	; 保存
+	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"			)	; 「」
+	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"				)	; 確定次の文字
+	SetEisu( KC_J | KC_K | KC_T		,"・"						)	; ・未確定
+	SetEisu( KC_J | KC_K | KC_G		,"『』{確定}{↑}"			)	; 『』
+	SetEisu( KC_J | KC_K | KC_B		,"／{確定}"					)	; ／
 
 
 ; 編集モード２
@@ -490,15 +502,13 @@ kanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_A	,"{Home}{Del 1}{BS}{←}"						)	; 前のセリフと結合
 	SetKana( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
 	SetKana( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetKana2(KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"
-									,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
+	SetKana( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
 	SetKana( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
 	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; ト書き改行
 	SetKana( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; セリフ改行
 	SetKana( KC_M | KC_COMM | KC_C	,"{確定}{End}{改行}"							)	; 確定次行
 	SetKana( KC_M | KC_COMM | KC_R	,"　　　"										)	; 三文字字下げ
-	SetKana2(KC_M | KC_COMM | KC_F	,"{C_Bkup}^x「^v」{確定}{C_Rstr}"
-									,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					)	; +「」
+	SetKana( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					)	; +「」
 	SetKana( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}[]{確定}{↑}"				)	; 確定次行「」
 	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"										)	; ○
 	SetKana( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				)	; +『』
@@ -508,8 +518,7 @@ kanaGroup := "2L"
 	SetEisu( KC_M | KC_COMM | KC_A	,"{Home}{Del 1}{BS}{←}"						)	; 前のセリフと結合
 	SetEisu( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
 	SetEisu( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetEisu2(KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"
-									,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
+	SetEisu( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"				)	; +（）
 	SetEisu( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
 	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; ト書き改行
 	SetEisu( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; セリフ改行
