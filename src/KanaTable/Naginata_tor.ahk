@@ -1,4 +1,5 @@
 ﻿; 薙刀式配列2022年12月23日付 薙刀式v15fix版仮最終候補 から改造
+; ATOKのローマ字カスタマイズを「MS-IMEスタイル」に変更
 ; **********************************************************************
 ; 【薙刀式】v15（仮最終候補）
 ; http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0
@@ -317,7 +318,7 @@ kanaGroup := "HA"
 
 ; ヴ; ヴァヴィヴェヴォヴュ
 	SetKana( AL_右半 | AL_ヴ | AL_え			,"ve"		)	; ヴぇ
-	SetKana( AL_右半 | AL_ヴ | AL_ゆ			,"vuxyu"	)	; ヴゅ
+	SetKana( AL_右半 | AL_ヴ | AL_ゆ			,"vyu"		)	; ヴゅ
 	SetKana( AL_右半 | AL_ヴ | AL_あ			,"va"		)	; ヴぁ
 	SetKana( AL_右半 | AL_ヴ | AL_い			,"vi"		)	; ヴぃ
 	SetKana( AL_右半 | AL_ヴ | AL_お			,"vo"		)	; ヴぉ
@@ -325,7 +326,7 @@ kanaGroup := "HA"
 ; う; ウィウェウォ　い；イェ
 	SetKana( AL_左半 | AL_う | AL_え			,"we"		)	; うぇ
 	SetKana( AL_左半 | AL_う | AL_い			,"wi"		)	; うぃ
-	SetKana( AL_左半 | AL_う | AL_お			,"uxo"		)	; うぉ
+	SetKana( AL_左半 | AL_う | AL_お			,"who"		)	; うぉ
 
 	SetKana( AL_左半 | AL_い | AL_え			,"ye"		)	; いぇ
 
@@ -333,18 +334,18 @@ kanaGroup := "HA"
 	SetKana( AL_左半 | AL_つ | AL_あ			,"tsa"		)	; つぁ
 
 ; ク; クァクィクェクォ
-	SetKana( AL_左半 | AL_く | AL_え			,"kuxe"		)	; くぇ
-	SetKana( AL_左半 | AL_く | AL_あ			,"kuxa"		)	; くぁ
-	SetKana( AL_左半 | AL_く | AL_い			,"kuxi"		)	; くぃ
-	SetKana( AL_左半 | AL_く | AL_お			,"kuxo"		)	; くぉ
+	SetKana( AL_左半 | AL_く | AL_え			,"qe"		)	; くぇ
+	SetKana( AL_左半 | AL_く | AL_あ			,"qa"		)	; くぁ
+	SetKana( AL_左半 | AL_く | AL_い			,"qi"		)	; くぃ
+	SetKana( AL_左半 | AL_く | AL_お			,"qo"		)	; くぉ
 	SetKana( AL_左半 | AL_く | AL_わ			,"kuxwa"	)	; くゎ
 
 ; グ; グァグィグェグォ
 kanaGroup := "DA"
-	SetKana( AL_左濁 | AL_く | AL_え			,"guxe"		)	; ぐぇ
+	SetKana( AL_左濁 | AL_く | AL_え			,"gwe"		)	; ぐぇ
 	SetKana( AL_左濁 | AL_く | AL_あ			,"gwa"		)	; ぐぁ
-	SetKana( AL_左濁 | AL_く | AL_い			,"guxi"		)	; ぐぃ
-	SetKana( AL_左濁 | AL_く | AL_お			,"guxo"		)	; ぐぉ
+	SetKana( AL_左濁 | AL_く | AL_い			,"gwi"		)	; ぐぃ
+	SetKana( AL_左濁 | AL_く | AL_お			,"gwo"		)	; ぐぉ
 	SetKana( AL_左濁 | AL_く | AL_わ			,"guxwa"	)	; ぐゎ
 
 ; IME ON/OFF
