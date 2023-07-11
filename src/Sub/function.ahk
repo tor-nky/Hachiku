@@ -127,9 +127,10 @@ ConvTateYoko(str)	; (str: String) -> String
 	Return str
 }
 
-; 機能置き換え処理 - DvorakJ との互換用
+; 機能置き換え処理
 ControlReplace(str)	; (str: String) -> String
 {
+	; DvorakJ との互換用
 	StringReplace, str, str, {→,			{Right,		A
 	StringReplace, str, str, {->,			{Right,		A
 	StringReplace, str, str, {右,			{Right,		A
@@ -150,7 +151,6 @@ ControlReplace(str)	; (str: String) -> String
 	StringReplace, str, str, {無変換,		{vk1D,		A
 	StringReplace, str, str, {変換,			{vk1C,		A
 	StringReplace, str, str, {ひらがな,		{vkF2,		A
-	StringReplace, str, str, {カタカナ,		{vkF1,		A
 	StringReplace, str, str, {改行,			{Enter,		A
 	StringReplace, str, str, {後退,			{BS,		A
 	StringReplace, str, str, {取消,			{Esc,		A
@@ -162,8 +162,12 @@ ControlReplace(str)	; (str: String) -> String
 	StringReplace, str, str, {Caps Lock,	{vkF0,		A
 	StringReplace, str, str, {Back Space,	{BS,		A
 
+	; 追加
+	StringReplace, str, str, {カタカナ,		{vkF1,		A
 	StringReplace, str, str, {漢字,			{vk19,		A
 	StringReplace, str, str, {英数,			{vkF0,		A
+	StringReplace, str, str, {一時半角},	{NoIME},	A
+	StringReplace, str, str, {IME戻す},		{UndoIME},	A
 	StringReplace, str, str, {Space,		{vk20,		A
 
 	Return str
