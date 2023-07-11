@@ -225,14 +225,8 @@ Analysis(str)	; (str: String) -> String
 					ret .= "{確定}"
 				If (!noIME)
 				{
-					; MS-IME 以外を使用時
-					If (imeSelect)
-						kakutei := False
-					Else
-					{
-						ret .= "{NoIME}"
-						kakutei := noIME := True
-					}
+					ret .= "{NoIME}"
+					kakutei := noIME := True
 				}
 				ret .= strSub
 				nonAscii := True
@@ -926,12 +920,12 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			{
 				noIME := False
 
+				; シフトが残りやすいので IMEごとにディレイを調整
+				If (imeName == "ATOK")
+					preDelay := 80
 				; SendRawだったか、または一時IMEをオフにした間にローマ字(アスキー文字)を出力していない
-				If (!romanCharForNoIME)
+				Else If (!romanCharForNoIME)
 				 	preDelay := 20
-				; そうでなければシフトが残りやすいので、IMEごとにディレイを調整
-				Else If (imeName == "ATOK")
-					preDelay := 40
 				Else If (imeName == "NewMSIME")
 					preDelay := 60
 				Else If (imeName == "Google")
