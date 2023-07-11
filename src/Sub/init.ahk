@@ -131,6 +131,9 @@ outStrs := []		; [String]型
 outCtrlNames := []	; [String]型
 outStrsLength := 0	; Int型			保存されている個数
 restStr := ""		; [String]型
+; シフト用キーの状態
+spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
+ent		:= 0	; Bool型	エンター
 
 goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
 

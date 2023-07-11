@@ -839,6 +839,12 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				Else If (imeName != "NewMSIME")
 					postDelay := 60
 			}
+			Else If (strSub == "{Up}" || strSub == "{Down}")
+			{
+				; Microsoft OneNote 対策ルーチンへ
+				SplitKeyUpDown(strSub)
+				SendKeyUp()		; 押し下げ出力中のキーを上げる
+			}
 			Else If (strSub = "^x")
 			{
 				out := strSub
@@ -956,7 +962,21 @@ SendBlind(str)	; (str: String) -> Void
 {
 	global lastSendTime
 
-	Send, % "{Blind}" . str
+	; Microsoft OneNote 対策
+	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
+	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
+	IfWinActive, ahk_class Framework::CFrame
+	{
+		If (str == "{Up down}")
+			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0) ;Up
+		Else If (str == "{Down down}")
+			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0) ;Down
+		Else
+			Send, % "{Blind}" . str
+	}
+	Else
+		Send, % "{Blind}" . str
+
 	lastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
@@ -1186,6 +1206,7 @@ Convert()	; () -> Void
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS
 		, imeGetInterval
+		, spc, ent
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
@@ -1200,10 +1221,11 @@ Convert()	; () -> Void
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		; シフト用キーの状態
-		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
-		, ent		:= 0	; Bool型	エンター
+		; グローバル変数へ移動
+;		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
+;		, ent		:= 0	; Bool型	エンター
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local keyTime			; Double型	キーを押した時間
 ;		, imeState			; Bool?型
@@ -1838,10 +1860,8 @@ sc34::	; .
 sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
-Up::	; ※小文字にしてはいけない
 Left::
 Right::
-Down::
 Home::
 End::
 PgUp::
@@ -1895,14 +1915,17 @@ PgDn::
 +sc35::	; /
 +sc73::	; (JIS)_
 +sc39::	; Space
-+Up::	; ※小文字にしてはいけない
 +Left::
 +Right::
-+Down::
 +Home::
 +End::
 +PgUp::
 +PgDn::
+; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
+; UpキーとDownキーを取得する
+#If (spc || ent)
+Up::	; ※小文字にしてはいけない
+Down::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
@@ -1981,10 +2004,8 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
-Up up::	; ※小文字にしてはいけない
 Left up::
 Right up::
-Down up::
 Home up::
 End up::
 PgUp up::
@@ -2038,14 +2059,17 @@ PgDn up::
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
 +sc39 up::	; Space
-+Up up::	; ※小文字にしてはいけない
 +Left up::
 +Right up::
-+Down up::
 +Home up::
 +End up::
 +PgUp up::
 +PgDn up::
+; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
+; UpキーとDownキーを取得する
+#If (spc || ent)
+Up up::	; ※小文字にしてはいけない
+Down up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
