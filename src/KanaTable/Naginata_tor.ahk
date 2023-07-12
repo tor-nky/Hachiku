@@ -393,37 +393,37 @@ kanaGroup := "HA"
 ; 「て」の部分は定義できない。「ディ」があるため
 ; 右手
 kanaGroup := "1R"
-	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ホーム
-	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定エンド
-	SetKana( KC_D | KC_F | KC_N		,"{End}"			)		; エンド
-	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 文末まで消去
-	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; 一文字前へ
-	SetKana( KC_D | KC_F | KC_M		,"{↓}"				, R)	; 一文字後へ
-	SetKana( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
-	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 一文字前を選択
-	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 一文字後を選択
-	SetKana( KC_D | KC_F | KC_O		,"{Del}"			, R)	; 一文字後を削除
-	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; 七文字前まで選択
-	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; 七文字後まで選択
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
-	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
-	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
+	SetKana( KC_D | KC_F | KC_Y		,"{Home}"		)		; ホーム
+	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"	)		; 確定エンド
+	SetKana( KC_D | KC_F | KC_N		,"{End}"		)		; エンド
+	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"	)		; 文末まで消去
+	SetKana( KC_D | KC_F | KC_J		,"{↑}"			, R)	; 一文字前へ
+	SetKana( KC_D | KC_F | KC_M		,"{↓}"			, R)	; 一文字後へ
+	SetKana( KC_D | KC_F | KC_I		,"#/"			)		; 再変換
+	SetKana( KC_D | KC_F | KC_K		,"+{↑}"		, R)	; 一文字前を選択
+	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"		, R)	; 一文字後を選択
+	SetKana( KC_D | KC_F | KC_O		,"{Del}"		, R)	; 一文字後を削除
+	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; 七文字前まで選択
+	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; 七文字後まで選択
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ変換
+	SetKana( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな変換
 
-	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"			)		; ホーム
-	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定エンド
-	SetEisu( KC_D | KC_F | KC_N		,"{End}"			)		; エンド
-	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 文末まで消去
-	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; 一文字前へ
-	SetEisu( KC_D | KC_F | KC_M		,"{↓}"				, R)	; 一文字後へ
-	SetEisu( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
-	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 一文字前を選択
-	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 一文字後を選択
-	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)	; 一文字後を削除
-	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; 七文字前まで選択
-	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; 七文字後まで選択
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
-	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
-	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
+	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"		)		; ホーム
+	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"	)		; 確定エンド
+	SetEisu( KC_D | KC_F | KC_N		,"{End}"		)		; エンド
+	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"	)		; 文末まで消去
+	SetEisu( KC_D | KC_F | KC_J		,"{↑}"			, R)	; 一文字前へ
+	SetEisu( KC_D | KC_F | KC_M		,"{↓}"			, R)	; 一文字後へ
+	SetEisu( KC_D | KC_F | KC_I		,"#/"			)		; 再変換
+	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"		, R)	; 一文字前を選択
+	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"		, R)	; 一文字後を選択
+	SetEisu( KC_D | KC_F | KC_O		,"{Del}"		, R)	; 一文字後を削除
+	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; 七文字前まで選択
+	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; 七文字後まで選択
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ変換
+	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな変換
 
 ; 左手
 kanaGroup := "1L"
@@ -811,6 +811,21 @@ sc79::Send, {sc79 9}	; 変換 → 変換x9
 ; ----------------------------------------------------------------------
 ; IME 操作
 ; ----------------------------------------------------------------------
+; 設定がPC-9800キーボード以外の場合
+;#If (keyDriver != "kbdnec.dll")
+;!sc29::	; 漢字キー
+; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
+#If (!USKB)	; 101英語キーボード以外の場合
+sc29::	; (JIS)半角/全角	(US)`
+	If (IME_GET() && (IME_GetConvMode() & 1))
+	{
+		SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+		kanaMode := 0
+	}
+	Else
+		SendEachChar("{vkF2}")	; ひらがな
+	Return
+
 ; 106日本語キーボードの場合
 #If (keyDriver == "kbd106.dll")
 sc3A::	; 英数キー単独で CapsLock をオンオフする
@@ -827,21 +842,8 @@ sc3A::	; 英数キー単独で CapsLock をオンオフする
 	SendEachChar("{vkF1}")	; カタカナ
 	Return
 
-; 設定がPC-9800キーボード以外の場合
-;#If (keyDriver != "kbdnec.dll")
-;!sc29::	; 漢字キー
-; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
-#If		; End #If ()
 ; 全キーボード
-sc29::	; (JIS)半角/全角	(US)`
-	If (IME_GET() && (IME_GetConvMode() & 1))
-	{
-		SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
-		kanaMode := 0
-	}
-	Else
-		SendEachChar("{vkF2}")	; ひらがな
-	Return
+#If		; End #If ()
 sc7B::		; 無変換
 vk1A::		; Mac英数
 	SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
