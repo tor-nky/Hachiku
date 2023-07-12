@@ -207,7 +207,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i > strLength)
 		{
-			If (RegExMatch(strSub, "\{Raw\}$"))
+			If (RegExMatch(strSub, "i)\{Raw\}$"))
 				; 残り全部を出力
 				Return ret . SubStr(str, i - strSubLength)
 			Else If (RegExMatch(strSub, "\{直接\}$"))
@@ -225,8 +225,8 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 			If (convYoko)
 				strSub := ConvTateYoko(strSub)
 
-			If (Asc(strSub) > 127 || RegExMatch(strSub, "^\{U\+")
-				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
+			If (Asc(strSub) > 127 || RegExMatch(strSub, "i)^\{U\+")
+				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", code) && code1 > 127))
 			{
 				; ASCIIコード以外の文字に変化したとき
 				If (!kakutei && !nonAscii)
@@ -848,31 +848,21 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					postDelay := 60
 			}
 			; {Up}、+{Up}、{Up 回数}、+{Up 回数}
-			Else If (RegExMatch(strSub, "i)^\+?\{Up\}$|^\+?\{Up\s\d+\}$"))
+			Else If (RegExMatch(strSub, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+				; count1 に回数が入る
 			{
-				; "+" から始まるか
-				inShifted := (Asc(strSub) == 43 ? True : False)
-				If (inShifted)
-					count := SubStr(strSub, 6, strSubLength - 6)
-				Else
-					count := SubStr(strSub, 5, strSubLength - 5)
 				; Microsoft OneNote 対策ルーチンへ
-				Loop, % (count ? count : 1)
-					SplitKeyUpDown(inShifted ? "+{Up}" : "{Up}")
+				Loop, % (count1 ? count1 : 1)
+					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Up}" : "{Up}")
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			; {Down}、+{Down}、{Down 回数}、+{Down 回数}
-			Else If (RegExMatch(strSub, "i)^\+?\{Down\}$|^\+?\{Down\s\d+\}$"))
+			Else If (RegExMatch(strSub, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
+				; count1 に回数が入る
 			{
-				; "+" から始まるか
-				inShifted := (Asc(strSub) == 43 ? True : False)
-				If (inShifted)
-					count := SubStr(strSub, 8, strSubLength - 8)
-				Else
-					count := SubStr(strSub, 7, strSubLength - 7)
 				; Microsoft OneNote 対策ルーチンへ
-				Loop, % (count ? count : 1)
-					SplitKeyUpDown(inShifted ? "+{Down}" : "{Down}")
+				Loop, % (count1 ? count1 : 1)
+					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Down}" : "{Down}")
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			Else If (strSub = "^x")
