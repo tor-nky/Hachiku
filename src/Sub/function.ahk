@@ -572,6 +572,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, clipSaved				; Any?型
 ;		, imeName				; String型
 ;		, IME_Get_Interval		; Int型
+;		, count, wait			; Int?型
+;		, inShifted				; Bool型
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
@@ -839,10 +841,32 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				Else If (imeName != "NewMSIME")
 					postDelay := 60
 			}
-			Else If (strSub == "{Up}" || strSub == "{Down}")
+			; {Up}、+{Up}、{Up 回数}、+{Up 回数}
+			Else If (RegExMatch(strSub, "i)^\+?\{Up\}$|^\+?\{Up\s\d+\}$"))
 			{
+				; "+" から始まるか
+				inShifted := (Asc(strSub) == 43 ? True : False)
+				If (inShifted)
+					count := SubStr(strSub, 6, strSubLength - 6)
+				Else
+					count := SubStr(strSub, 5, strSubLength - 5)
 				; Microsoft OneNote 対策ルーチンへ
-				SplitKeyUpDown(strSub)
+				Loop, % (count ? count : 1)
+					SplitKeyUpDown(inShifted ? "+{Up}" : "{Up}")
+				SendKeyUp()		; 押し下げ出力中のキーを上げる
+			}
+			; {Down}、+{Down}、{Down 回数}、+{Down 回数}
+			Else If (RegExMatch(strSub, "i)^\+?\{Down\}$|^\+?\{Down\s\d+\}$"))
+			{
+				; "+" から始まるか
+				inShifted := (Asc(strSub) == 43 ? True : False)
+				If (inShifted)
+					count := SubStr(strSub, 8, strSubLength - 8)
+				Else
+					count := SubStr(strSub, 7, strSubLength - 7)
+				; Microsoft OneNote 対策ルーチンへ
+				Loop, % (count ? count : 1)
+					SplitKeyUpDown(inShifted ? "+{Down}" : "{Down}")
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			Else If (strSub = "^x")
@@ -862,8 +886,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (SubStr(strSub, 1, 7) = "{C_Wait")
 			{
 				; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
-				Wait := SubStr(strSub, 9, strSubLength - 9)
-				ClipWait, (Wait ? Wait : 0.2), 1
+				wait := SubStr(strSub, 9, strSubLength - 9)
+				ClipWait, (wait ? wait : 0.2), 1
 			}
 			Else If (strSub = "{C_Bkup}")
 				clipSaved := ClipboardAll	; クリップボードの全内容を保存
