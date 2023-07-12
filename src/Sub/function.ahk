@@ -965,12 +965,16 @@ SendBlind(str)	; (str: String) -> Void
 	; Microsoft OneNote 対策
 	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
 	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
-	IfWinActive, ahk_class Framework::CFrame
-	{
+	IfWinActive, ahk_class Framework::CFrame	; Process: ONENOTE.EXE
+	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
 		If (str == "{Up down}")
-			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0) ;Up
+			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
 		Else If (str == "{Down down}")
-			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0) ;Down
+			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
+		Else If (str == "{Up up}")
+			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 3, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+		Else If (str == "{Down up}")
+			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 3, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 		Else
 			Send, % "{Blind}" . str
 	}
