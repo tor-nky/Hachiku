@@ -12,17 +12,29 @@
 ; **********************************************************************
 
 ; ----------------------------------------------------------------------
-; 英数／かな配列の定義ファイル 【すべて縦書き用で書くこと】
+; 英数／かな配列の定義ファイル
+;
+;【縦書き用だけ書き、横書き用は自動変換する方法】
 ;
 ; 例：	SetKana( KC_Q | KC_L | KC_SPC		,"xwa"	, R)	; (ゎ)
 ;		~~~~~~~  ~~~~~~~~~~~~~~~~~~~~		  ~~~	  ~ 	  ~~~~
 ;		かな定義	スペース+Q+L	   縦書き用の出力 ↑	コメント
 ;													  ｜
-			;						リピートあり(省略はリピートなし)
+;									リピートあり(省略はリピートなし)
 ;
 ; 例：	 SetEisu( KC_H | KC_J			,"{vkF2 2}" )		; IME ON
 ;		 ~~~~~~~
 ;		 英数定義
+;
+; 【縦書き用と横書き用を分けて書く方法】
+;
+; 例：	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}")
+; 例：	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}")
+;		~~~~~~~  ~~~~~~~~~~~~~~~~~~		  ~~~~~~~~~~	~~~~~~~~~~
+;		かな定義	   J+K+Z		   縦書き用の出力   横書き用の出力
+;		英数定義
+;
+;	※ "(){確定}" はIMEに合わせ、"{一時半角}()" は半角になり、全角で定義した "（）" は全角になります
 ;
 ;	※再読み込みか、再起動で有効になります
 ;	※全角空白の違いが見えるエディタを使うことをおすすめします
@@ -77,71 +89,71 @@ kanaGroup := "ENT"
 ; 「て」の部分は定義できない。「ディ」があるため
 ; 右手
 kanaGroup := "1R"
-	SetKana( KC_D | KC_F | KC_Y		,"{Home}"			)		; ホーム
-	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定エンド
-	SetKana( KC_D | KC_F | KC_N		,"{End}"			)		; エンド
-	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 文末まで消去
-	SetKana( KC_D | KC_F | KC_J		,"{↑}"				, R)	; 一文字前へ
-	SetKana( KC_D | KC_F | KC_M		,"{↓}"				, R)	; 一文字後へ
-	SetKana( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
-	SetKana( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 一文字前を選択
-	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 一文字後を選択
-	SetKana( KC_D | KC_F | KC_O		,"{Del}"			, R)	; 一文字後を削除
-	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; 七文字前まで選択
-	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; 七文字後まで選択
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
-	SetKana( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
-	SetKana( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
+	SetKana( KC_D | KC_F | KC_Y		,"{Home}"		)		; ホーム
+	SetKana( KC_D | KC_F | KC_H		,"{確定}{End}"	)		; 確定エンド
+	SetKana( KC_D | KC_F | KC_N		,"{End}"		)		; エンド
+	SetKana( KC_D | KC_F | KC_U		,"+{End}{BS}"	)		; 文末まで消去
+	SetKana( KC_D | KC_F | KC_J		,"{↑}"			, R)	; 一文字前へ
+	SetKana( KC_D | KC_F | KC_M		,"{↓}"			, R)	; 一文字後へ
+	SetKana( KC_D | KC_F | KC_I		,"#/"			)		; 再変換
+	SetKana( KC_D | KC_F | KC_K		,"+{↑}"		, R)	; 一文字前を選択
+	SetKana( KC_D | KC_F | KC_COMM	,"+{↓}"		, R)	; 一文字後を選択
+	SetKana( KC_D | KC_F | KC_O		,"{Del}"		, R)	; 一文字後を削除
+	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; 七文字前まで選択
+	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; 七文字後まで選択
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ変換
+	SetKana( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな変換
 
-	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"			)		; ホーム
-	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"		)		; 確定エンド
-	SetEisu( KC_D | KC_F | KC_N		,"{End}"			)		; エンド
-	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"		)		; 文末まで消去
-	SetEisu( KC_D | KC_F | KC_J		,"{↑}"				, R)	; 一文字前へ
-	SetEisu( KC_D | KC_F | KC_M		,"{↓}"				, R)	; 一文字後へ
-	SetEisu( KC_D | KC_F | KC_I		,"#/"				)		; 再変換
-	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"			, R)	; 一文字前を選択
-	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"			, R)	; 一文字後を選択
-	SetEisu( KC_D | KC_F | KC_O		,"{Del}"			, R)	; 一文字後を削除
-	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"			, R)	; 七文字前まで選択
-	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"			, R)	; 七文字後まで選択
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",		  "ESCx3")	; 入力キャンセル
-	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"				)		; カタカナ変換
-	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"				)		; ひらがな変換
+	SetEisu( KC_D | KC_F | KC_Y		,"{Home}"		)		; ホーム
+	SetEisu( KC_D | KC_F | KC_H		,"{確定}{End}"	)		; 確定エンド
+	SetEisu( KC_D | KC_F | KC_N		,"{End}"		)		; エンド
+	SetEisu( KC_D | KC_F | KC_U		,"+{End}{BS}"	)		; 文末まで消去
+	SetEisu( KC_D | KC_F | KC_J		,"{↑}"			, R)	; 一文字前へ
+	SetEisu( KC_D | KC_F | KC_M		,"{↓}"			, R)	; 一文字後へ
+	SetEisu( KC_D | KC_F | KC_I		,"#/"			)		; 再変換
+	SetEisu( KC_D | KC_F | KC_K		,"+{↑}"		, R)	; 一文字前を選択
+	SetEisu( KC_D | KC_F | KC_COMM	,"+{↓}"		, R)	; 一文字後を選択
+	SetEisu( KC_D | KC_F | KC_O		,"{Del}"		, R)	; 一文字後を削除
+	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; 七文字前まで選択
+	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; 七文字後まで選択
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ変換
+	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな変換
 
 ; 左手
 kanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 最新部へ移動
-	SetKana( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
-	SetKana( KC_J | KC_K | KC_W		,"《》{確定}{↑}"					)	; 《》
-	SetKana2(KC_J | KC_K | KC_S		,"（）{確定}{↑}", "(){確定}{←}"	)	; （）
-	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
-;	SetKana( KC_J | KC_K | KC_E		,"dhi"								)	; ディ
-	SetKana2(KC_J | KC_K | KC_D		,"？{確定}", "?{確定}"				)	; ？
-	SetKana2(KC_J | KC_K | KC_C		,"！{確定}", "{!}{確定}"			)	; ！
-	SetKana( KC_J | KC_K | KC_R		,"^s"								)	; 保存
-	SetKana2(KC_J | KC_K | KC_F		,"「」{確定}{↑}", "[]{確定}{←}"	)	; 「」
-	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"						)	; 確定次の文字
-	SetKana( KC_J | KC_K | KC_T		,"/"								)	; ・未確定
-	SetKana( KC_J | KC_K | KC_G		,"『』{確定}{↑}"					)	; 『』
-	SetKana( KC_J | KC_K | KC_B		,"／{確定}"							)	; ／
+	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"				)	; 最新部へ移動
+	SetKana( KC_J | KC_K | KC_A		,"……{確定}"				)	; ……
+	SetKana2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"	)	; ──
+	SetKana( KC_J | KC_K | KC_W		,"《》{確定}{↑}"			)	; 《》
+	SetKana( KC_J | KC_K | KC_S		,"(){確定}{↑}"				)	; （）
+	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"			)	; 【】
+;	SetKana( KC_J | KC_K | KC_E		,"dhi"						)	; ディ
+	SetKana( KC_J | KC_K | KC_D		,"?{確定}"					)	; ？
+	SetKana( KC_J | KC_K | KC_C		,"{!}{確定}"				)	; ！
+	SetKana( KC_J | KC_K | KC_R		,"^s"						)	; 保存
+	SetKana( KC_J | KC_K | KC_F		,"[]{確定}{↑}"				)	; 「」
+	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"				)	; 確定次の文字
+	SetKana( KC_J | KC_K | KC_T		,"/"						)	; ・未確定
+	SetKana( KC_J | KC_K | KC_G		,"『』{確定}{↑}"			)	; 『』
+	SetKana( KC_J | KC_K | KC_B		,"／{確定}"					)	; ／
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"						)	; 最新部へ移動
-	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"						)	; ……
-	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"			)	; ──
-	SetEisu( KC_J | KC_K | KC_W		,"《》{確定}{↑}"					)	; 《》
-	SetEisu2(KC_J | KC_K | KC_S		,"（）{確定}{↑}", "(){確定}{←}"	)	; （）
-	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"					)	; 【】
-;	SetEisu( KC_J | KC_K | KC_E		,"dhi"								)	; ディ
-	SetEisu2(KC_J | KC_K | KC_D		,"？{確定}", "?{確定}"				)	; ？
-	SetEisu2(KC_J | KC_K | KC_C		,"！{確定}", "{!}{確定}"			)	; ！
-	SetEisu( KC_J | KC_K | KC_R		,"^s"								)	; 保存
-	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"					)	; 「」
-	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"						)	; 確定次の文字
-	SetEisu( KC_J | KC_K | KC_T		,"・"								)	; ・未確定
-	SetEisu( KC_J | KC_K | KC_G		,"『』{確定}{↑}"					)	; 『』
-	SetEisu( KC_J | KC_K | KC_B		,"／{確定}"							)	; ／
+	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"				)	; 最新部へ移動
+	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"				)	; ……
+	SetEisu2(KC_J | KC_K | KC_Z		,"││{確定}", "──{確定}"	)	; ──
+	SetEisu( KC_J | KC_K | KC_W		,"《》{確定}{↑}"			)	; 《》
+	SetEisu( KC_J | KC_K | KC_S		,"(){確定}{↑}"				)	; （）
+	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"			)	; 【】
+;	SetEisu( KC_J | KC_K | KC_E		,"dhi"						)	; ディ
+	SetEisu( KC_J | KC_K | KC_D		,"?{確定}"					)	; ？
+	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"				)	; ！
+	SetEisu( KC_J | KC_K | KC_R		,"^s"						)	; 保存
+	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"			)	; 「」
+	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"				)	; 確定次の文字
+	SetEisu( KC_J | KC_K | KC_T		,"・"						)	; ・未確定
+	SetEisu( KC_J | KC_K | KC_G		,"『』{確定}{↑}"			)	; 『』
+	SetEisu( KC_J | KC_K | KC_B		,"／{確定}"					)	; ／
 
 
 ; 編集モード２
@@ -186,15 +198,13 @@ kanaGroup := "2L"
 	SetKana( KC_M | KC_COMM | KC_A	,"{Home}{Del 1}{BS}{←}"						)	; 前のセリフと結合
 	SetKana( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
 	SetKana( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetKana2(KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"
-									,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
+	SetKana( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
 	SetKana( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
 	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; ト書き改行
 	SetKana( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; セリフ改行
 	SetKana( KC_M | KC_COMM | KC_C	,"{確定}{End}{改行}"							)	; 確定次行
 	SetKana( KC_M | KC_COMM | KC_R	,"　　　"										)	; 三文字字下げ
-	SetKana2(KC_M | KC_COMM | KC_F	,"{C_Bkup}^x「^v」{確定}{C_Rstr}"
-									,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					)	; +「」
+	SetKana( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					)	; +「」
 	SetKana( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}[]{確定}{↑}"				)	; 確定次行「」
 	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"										)	; ○
 	SetKana( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				)	; +『』
@@ -204,8 +214,7 @@ kanaGroup := "2L"
 	SetEisu( KC_M | KC_COMM | KC_A	,"{Home}{Del 1}{BS}{←}"						)	; 前のセリフと結合
 	SetEisu( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
 	SetEisu( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetEisu2(KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"
-									,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
+	SetEisu( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"				)	; +（）
 	SetEisu( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
 	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; ト書き改行
 	SetEisu( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; セリフ改行
@@ -475,52 +484,60 @@ KoyuRegist()	; () -> Void
 ; ----------------------------------------------------------------------
 ; 追加のホットキー
 ; ----------------------------------------------------------------------
-sc59::Send, =		; (Apple Pro Keyboard)テンキー"="
-sc7E::Send, `,		; (Apple Pro Keyboard)テンキー","
+; 新MS-IME用
+#If (DetectIME() == "NewMSIME")
+sc79::Send, {sc79 9}	; 変換 → 変換x9
++sc79::Send, +{sc79 9}	; Shift+変換 → Shift+変換x9
 
-#If (keyDriver = "kbd106.dll")
+; ----------------------------------------------------------------------
+; IME 操作
+; ----------------------------------------------------------------------
+; 設定がPC-9800キーボード以外の場合
+;#If (keyDriver != "kbdnec.dll")
+;!sc29::	; 漢字キー
+; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
+#If (!USKB)	; 101英語キーボード以外の場合
+sc29::	; (JIS)半角/全角	(US)`
+	If (IME_GET() && (IME_GetConvMode() & 1))
+	{
+		SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+		kanaMode := 0
+	}
+	Else
+		SendEachChar("{vkF2}")	; ひらがな
+	Return
+
+; 106日本語キーボードの場合
+#If (keyDriver == "kbd106.dll")
 sc3A::	; 英数キー単独で CapsLock をオンオフする
 	If (GetKeyState("CapsLock", "T"))
 		SetCapsLockState, Off
 	Else
 		SetCapsLockState, On
 	Return
-#If		; End #If ()
 
-; 新MS-IME使用で
-#If (DetectIME() == "NewMSIME")
-; 変換
-sc79::Send, {sc79 9}
-+sc79::Send, +{sc79 9}
-#If		; End #If ()
+; 新MS-IME以外用
+#If (DetectIME() != "NewMSIME")
++sc70::	; Shift + ひらがな
++vk16::	; Shift + Macかな
+	SendEachChar("{vkF1}")	; カタカナ
+	Return
 
-; ----------------------------------------------------------------------
-; IME 操作
-; ----------------------------------------------------------------------
+; 全キーボード
+#If		; End #If ()
 sc7B::		; 無変換
-sc71 up::	; Mac英数(新MS-IME登場前)
 vk1A::		; Mac英数
-	StoreBuf("{vkF2}{vkF3}")	; ひらがな(IMEオンを兼ねる) → 半角/全角
-	OutBuf()
+	SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+	kanaMode := 0
 	Return
 +sc7B::		; Shift + 無変換
-+sc71 up::	; Shift + Mac英数(新MS-IME登場前)
 +vk1A::		; Shift + Mac英数
-	StoreBuf("{全英}")
-	OutBuf()
+	SendEachChar("{全英}")
 	Return
 sc70::		; ひらがな
-sc72 up::	; Macかな(新MS-IME登場前)
 vk16::		; Macかな
 	If (A_PriorHotKey = A_ThisHotKey && A_TimeSincePriorHotkey < 200)
-		StoreBuf("#/")		; 2連打で再変換
+		Send, #/	; 2連打で再変換
 	Else
-		StoreBuf("{vkF2}")	; ひらがな(IMEオンを兼ねる)
-	OutBuf()
-	Return
-+sc70::		; Shift + ひらがな
-+sc72 up::	; Shift + Macかな(新MS-IME登場前)
-+vk16::		; Shift + Macかな
-	StoreBuf("{vkF1}")	; ひらがな(IMEオンを兼ねる) → カタカナ
-	OutBuf()
+		SendEachChar("{vkF2}")	; ひらがな
 	Return
