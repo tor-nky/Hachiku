@@ -175,7 +175,8 @@ ControlReplace(str)	; (str: String) -> String
 
 ; ASCIIコードでない文字が入っていたら、"{確定}""{NoIME}"を書き足す
 ; "{直接}"は"{Raw}"に書き換え
-Analysis(str)	; (str: String) -> String
+; convYoko が True だったら縦書き用から横書き用に変換
+Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 {
 	global imeSelect
 ;	local strLength, strSubLength	; Int型
@@ -220,6 +221,9 @@ Analysis(str)	; (str: String) -> String
 			}
 
 			strSub := ControlReplace(strSub)
+			; 縦書き用から横書き用に変換
+			If (convYoko)
+				strSub := ConvTateYoko(strSub)
 
 			If (Asc(strSub) > 127 || RegExMatch(strSub, "^\{U\+")
 				|| (RegExMatch(strSub, "^\{ASC ") && SubStr(strSub, 6, strSubLength - 6) > 127))
@@ -397,8 +401,9 @@ SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 
 	If (!ctrlName || ctrlName == R)
 	{
-		tate := Analysis(str)		; 機能等を書き換え
-		yoko := ConvTateYoko(tate)	; 縦横変換
+		; 機能等を書き換え
+		tate := Analysis(str)
+		yoko := Analysis(str, True)	; 縦横変換あり
 		SetDefinition(1, keyComb, tate, yoko, ctrlName)
 	}
 	Else
@@ -421,8 +426,9 @@ SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 
 	If (!ctrlName || ctrlName == R)
 	{
-		tate := Analysis(str)		; 機能等を書き換え
-		yoko := ConvTateYoko(tate)	; 縦横変換
+		; 機能等を書き換え
+		tate := Analysis(str)
+		yoko := Analysis(str, True)	; 縦横変換あり
 		SetDefinition(0, keyComb, tate, yoko, ctrlName)
 	}
 	Else
