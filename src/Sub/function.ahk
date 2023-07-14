@@ -14,7 +14,6 @@
 
 ; **********************************************************************
 ;	3キー同時押し配列 メインルーチン
-;		※ ATOK で IME OFF にしないでユニコード入力
 ; **********************************************************************
 
 
@@ -182,13 +181,13 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 ;	local strLength, strSubLength	; Int型
 ;		, strSub, ret, c			; String型
 ;		, i, bracket				; Int型
-;		, kakutei, noIME, nonAscii	; Bool型
+;		, kakutei, noIME			; Bool型
 
 	If (str = "{Raw}" || str = "{直接}")
 		; 有効な文字列がないので空白を返す
 		Return ""
 
-	kakutei := noIME := nonAscii := False
+	kakutei := noIME := False
 	ret := ""	; 変換後文字列
 	strSub := ""
 	strSubLength := 0
@@ -229,94 +228,80 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", code) && code1 > 127))
 			{
 				; ASCIIコード以外の文字に変化したとき
-				If (!kakutei && !nonAscii)
+				If (!kakutei)
 					ret .= "{確定}"
 				If (!noIME)
-				{
 					ret .= "{NoIME}"
-					kakutei := noIME := True
-				}
 				ret .= strSub
-				nonAscii := True
+				kakutei := noIME := True
 			}
+			Else If (strSub = "{NoIME}")
+			{
+				If (!kakutei)
+					ret .= "{確定}"
+				If (!noIME)
+					ret .= "{NoIME}"
+				kakutei := noIME := True
+			}
+			Else If (strSub == "{確定}")
+			{
+				If (!kakutei)
+					ret .= "{確定}"
+				kakutei := True
+			}
+			Else If (RegExMatch(strSub, "^\{Enter"))
+			{
+				; "{Enter" で確定状態
+				ret .= strSub
+				kakutei := True
+			}
+			Else If (str != "^v" && strSub == "^v")
+			{
+				; "^v" 単独は除外
+				If (!kakutei)
+					ret .= "{確定}"
+				ret .= strSub
+				kakutei := True
+			}
+			Else If (strSub = "{UndoIME}")
+			{
+				; IME入力モードの回復
+				If (noIME)
+					ret .= "{UndoIME}"
+				noIME := False
+			}
+			Else If (strSub = "{IMEOFF}")
+			{
+				ret .= strSub
+				kakutei := True
+				noIME := False
+			}
+			Else If (strSub = "{IMEON}"
+				|| strSub = "{vkF3}"		|| strSub = "{vkF4}"	; 半角/全角
+				|| strSub = "{vk19}"								; 漢字	Alt+`
+				|| strSub = "{vkF0}"								; 英数
+				|| InStr(strSub, "{vk16")							; (Mac)かな
+				|| InStr(strSub, "{vk1A")							; (Mac)英数
+				|| InStr(strSub, "{vkF2")							; ひらがな
+				|| InStr(strSub, "{vkF1")							; カタカナ
+				|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
+			{
+				ret .= strSub
+				noIME := False
+			}
+			Else If (InStr(strSub, "{BS")		|| InStr(strSub, "{Del")
+				|| InStr(strSub, "{Esc")
+				|| InStr(strSub, "{Up")		|| InStr(strSub, "{Left")
+				|| InStr(strSub, "{Right")	|| InStr(strSub, "{Down")
+				|| InStr(strSub, "{Home")		|| InStr(strSub, "{End")
+				|| InStr(strSub, "{PgUp")		|| InStr(strSub, "{PgDn"))
+				ret .= strSub
 			Else
 			{
-				; ASCIIコード以外の文字から変化したとき
-				If (!kakutei && nonAscii)
-				{
-					ret .= "{確定}"
-					kakutei := True
-				}
-				nonAscii := False
-
-				If (strSub = "{NoIME}")
-				{
-					If (!kakutei)
-						ret .= "{確定}"
-					If (!noIME)
-						ret .= "{NoIME}"
-					kakutei := noIME := True
-				}
-				Else If (strSub == "{確定}")
-				{
-					If (!kakutei)
-						ret .= "{確定}"
-					kakutei := True
-				}
-				Else If (RegExMatch(strSub, "^\{Enter"))
-				{
-					; "{Enter" で確定状態
-					ret .= strSub
-					kakutei := True
-				}
-				Else If (str != "^v" && strSub == "^v")
-				{
-					; "^v" 単独は除外
-					If (!kakutei)
-						ret .= "{確定}"
-					ret .= strSub
-					kakutei := True
-				}
-				Else If (strSub = "{UndoIME}")
-				{
-					; IME入力モードの回復
-					If (noIME)
-						ret .= "{UndoIME}"
-					noIME := False
-				}
-				Else If (strSub = "{IMEOFF}")
-				{
-					ret .= strSub
-					kakutei := True
-					noIME := False
-				}
-				Else If (strSub = "{IMEON}"
-					|| strSub = "{vkF3}"		|| strSub = "{vkF4}"	; 半角/全角
-					|| strSub = "{vk19}"								; 漢字	Alt+`
-					|| strSub = "{vkF0}"								; 英数
-					|| InStr(strSub, "{vk16")							; (Mac)かな
-					|| InStr(strSub, "{vk1A")							; (Mac)英数
-					|| InStr(strSub, "{vkF2")							; ひらがな
-					|| InStr(strSub, "{vkF1")							; カタカナ
-					|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
-				{
-					ret .= strSub
-					noIME := False
-				}
-				Else If (InStr(strSub, "{BS")		|| InStr(strSub, "{Del")
-					|| InStr(strSub, "{Esc")
-					|| InStr(strSub, "{Up")		|| InStr(strSub, "{Left")
-					|| InStr(strSub, "{Right")	|| InStr(strSub, "{Down")
-					|| InStr(strSub, "{Home")		|| InStr(strSub, "{End")
-					|| InStr(strSub, "{PgUp")		|| InStr(strSub, "{PgDn"))
-					ret .= strSub
-				Else
-				{
-					; 空白は {vk20} に変える
-					ret .= (strSub == " " ? "{vk20}" : strSub)
-					If (!noIME)
-						kakutei := False
-				}
+				; 空白は {vk20} に変える
+				ret .= (strSub == " " ? "{vk20}" : strSub)
+				If (!noIME)
+					kakutei := False
 			}
 
 			strSub := ""
@@ -324,9 +309,6 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 		}
 	}
 
-	; 最後の文字がASCIIコード以外だったら、"{確定}"を入れる
-	If (!kakutei && nonAscii)
-		ret .= "{確定}"
 	; ATOKで"{確定}"から始まるときは、"{確定}"を2度出力する
 	If (imeSelect == 1 && RegExMatch(ret, "^\{確定\}"))
 		ret := "{確定}" . ret
