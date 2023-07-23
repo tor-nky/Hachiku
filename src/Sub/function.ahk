@@ -495,38 +495,35 @@ DetectIME()	; () -> String
 {
 	global imeSelect, goodHwnd, badHwnd
 	static existNewMSIME := ExistNewMSIME()
-		, imeName := "", lastSearchTime := 0
+		, imeName := "", lastSearchTime := 0x100000000
 ;	local value, nowIME	; String型
 
 	If (imeSelect == 1)
 		nowIME := "ATOK"
 	Else If (imeSelect)
 		nowIME := "Google"
-	Else If (!existNewMSIME)
-	{
-		nowIME := "OldMSIME"
-		If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
-		{
-			lastSearchTime := A_TickCount
-			RegRead, value, HKEY_CURRENT_USER, SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME, keystyle
-			if (value == "Custom")
-				nowIME := "CustomMSIME"
-		}
-	}
+	; MS-IME の種別を初回と、以後の10秒ごとに調べる
 	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
 	{
 		lastSearchTime := A_TickCount
-		; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
-		; 参考: https://registry.tomoroh.net/archives/11547
-		RegRead, value, HKEY_CURRENT_USER
-			, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-			, NoTsf3Override2
-		nowIME := (ErrorLevel == 1 || !value ? "NewMSIME" : "OldMSIME")
-		if (nowIME == "OldMSIME")
+;		nowIME := ""
+		If (existNewMSIME)
+		{
+			; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
+			; 参考: https://registry.tomoroh.net/archives/11547
+			RegRead, value, HKEY_CURRENT_USER
+				, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
+				, NoTsf3Override2
+			If (ErrorLevel == 1 || !value)
+				nowIME := "NewMSIME"
+		}
+		If (nowIME != "NewMSIME")
 		{
 			RegRead, value, HKEY_CURRENT_USER, SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME, keystyle
-			if (value == "Custom")
+			If (value == "Custom")
 				nowIME := "CustomMSIME"
+			Else
+				nowIME := "OldMSIME"
 		}
 	}
 	Else

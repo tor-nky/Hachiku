@@ -218,7 +218,6 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
-	DetectIME()
 
 ; ----------------------------------------------------------------------
 ; メニューで使う変数	Bool型
