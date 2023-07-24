@@ -653,7 +653,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						Else If (imeConvMode & 1)
 						{
 							Send, {vkF3}	; 半角/全角
-							Sleep, % IME_Get_Interval
+							Sleep, % IME_Get_Interval + 20	; Win11 + NewMSIME への対策
 							lastDelay := IME_Get_Interval
 							; 「半角/全角」でIMEオンのままだったら未変換文字あり
 							If (IME_GET())
