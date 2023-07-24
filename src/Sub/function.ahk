@@ -495,15 +495,17 @@ DetectIME()	; () -> String
 {
 	global imeSelect, goodHwnd, badHwnd
 	static existNewMSIME := ExistNewMSIME()
-		, imeName := "", lastSearchTime := 0x100000000
+		, imeName := "", lastSearchTime := 0
 ;	local value, nowIME	; String型
 
 	If (imeSelect == 1)
 		nowIME := "ATOK"
 	Else If (imeSelect)
 		nowIME := "Google"
-	; MS-IME の種別を初回と、以後の10秒ごとに調べる
-	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount)
+	; 10秒経過したか、
+	; 他の IME から設定変更したとき(10秒以内に他のIMEに変えてまた戻すのは現実的ではないが)
+	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount
+		|| SubStr(imeName, StrLen(imeName) - 4, 5) != "MSIME")
 	{
 		lastSearchTime := A_TickCount
 ;		nowIME := ""
