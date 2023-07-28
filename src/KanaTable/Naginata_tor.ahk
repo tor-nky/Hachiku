@@ -817,13 +817,20 @@ sc79::Send, {sc79 9}	; 変換 → 変換x9
 ; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
 #If (!USKB)	; 101英語キーボード以外の場合
 sc29::	; (JIS)半角/全角	(US)`
-	If (IME_GET() && (IME_GetConvMode() & 1))
+	imeConvMode := IME_GetConvMode()
+	IME_SetConvMode(25)	; IME 入力モード	ひらがな
+	If (!imeConvMode)
+		Send, {vkF3}	; 半角/全角キー
+	Else If (IME_GET() && (imeConvMode & 1))
 	{
-		SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+		Send, {vkF3}	; 半角/全角キー
 		kanaMode := 0
 	}
 	Else
-		SendEachChar("{vkF2}")	; ひらがな
+	{
+		Send, {vkF2}	; ひらがな
+		kanaMode := 1
+	}
 	Return
 
 ; 106日本語キーボードの場合
@@ -835,23 +842,17 @@ sc3A::	; 英数キー単独で CapsLock をオンオフする
 		SetCapsLockState, On
 	Return
 
-; 新MS-IME以外用
-#If (DetectIME() != "NewMSIME")
-+sc70::	; Shift + ひらがな
-+vk16::	; Shift + Macかな
-	SendEachChar("{vkF1}")	; カタカナ
-	Return
-
 ; 全キーボード
 #If		; End #If ()
 sc7B::		; 無変換
 vk1A::		; Mac英数
-	SendEachChar("{IMEON}{vkF3}")	; IMEオン→半角/全角キー
+	SendEachChar("{vkF2}{vkF3}")	; ひらがな→半角/全角キー
 	kanaMode := 0
 	Return
 +sc7B::		; Shift + 無変換
 +vk1A::		; Shift + Mac英数
 	SendEachChar("{全英}")
+;	kanaMode := 0
 	Return
 sc70::		; ひらがな
 vk16::		; Macかな
@@ -859,6 +860,12 @@ vk16::		; Macかな
 		Send, #/	; 2連打で再変換
 	Else
 		SendEachChar("{vkF2}")	; ひらがな
+	kanaMode := 1
+	Return
++sc70::	; Shift + ひらがな
++vk16::	; Shift + Macかな
+	SendEachChar("{vkF1}")	; カタカナ
+;	kanaMode := 1
 	Return
 
 ; ----------------------------------------------------------------------

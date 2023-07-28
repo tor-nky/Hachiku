@@ -746,46 +746,40 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			}
 			Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
 				|| strSub = "{vk19}"							; 漢字	Alt+`
-				|| strSub = "{vkF0}"							; 英数
-				|| InStr(strSub, "{vk16")						; 装飾 + (Mac)かな
-				|| InStr(strSub, "{vk1A"))						; 装飾 + (Mac)英数
+				|| strSub = "{vkF0}")							; 英数
 			{
 				noIME := False
 				out := strSub
 				postDelay := IME_Get_Interval
+				kanaMode := kanaMode ^ 1
 			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがな
+			Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
+				|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
 			{
 				noIME := False
-				IME_SET(1)			; IMEオン
 				; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
 				; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
 				IME_SetConvMode(25)	; IME 入力モード	ひらがな
-				; さらに Google日本語入力へは、ひらがなキーを送る
-				If (imeName == "Google")
-				{
-					out := strSub
-					postDelay := IME_Get_Interval
-				}
-				Else
-					lastDelay := IME_Get_Interval
+				out := "{vkF2 2}"	; ひらがな
+				postDelay := IME_Get_Interval
 				kanaMode := 1
 			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF1")	; カタカナ
+			Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
+				|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
 			{
 				noIME := False
-				IME_SET(1)			; IMEオン
-				If (imeName == "Google")
-				{
-					out := strSub
-					postDelay := IME_Get_Interval
-				}
-				Else
-				{
-					IME_SetConvMode(27)	; IME 入力モード	カタカナ
-					lastDelay := IME_Get_Interval
-				}
+				Send, {vkF2}
+				IME_SetConvMode(25)	; IME 入力モード	ひらがな
+				out := "{vkF1}"		; カタカナ
+				postDelay := IME_Get_Interval
 				kanaMode := 1
+			}
+			Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
+			{
+				noIME := False
+				out := strSub
+				postDelay := IME_Get_Interval
+				kanaMode := 0
 			}
 			Else If (strSub == "{全英}")
 			{
@@ -1137,7 +1131,7 @@ ChangeVertical(mode)	; (mode: Bool) -> Void
 	If (vertical != mode)
 	{
 		vertical := mode
-		IniWrite, %vertical%, %iniFilePath%, Naginata, vertical
+		IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
 	}
 
 	; タスクトレイ関連
@@ -1234,7 +1228,8 @@ Convert()	; () -> Void
 ;		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 ;		, ent		:= 0	; Bool型	エンター
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
-;	local keyTime			; Double型	キーを押した時間
+;	local class				; String型
+;		, keyTime			; Double型	キーを押した時間
 ;		, imeState			; Bool?型
 ;		, imeConvMode		; Int?型
 ;		, nowKey			; String型
@@ -1299,13 +1294,13 @@ Convert()	; () -> Void
 			kanaMode := 0
 		Else If (sideShift <= 1 && (sft || rsft))	; 左右シフト英数２
 			kanaMode := 0
-		Else If (lastSendTime + imeGetInterval <= QPC())
+		Else If (imeConvMode && lastSendTime + imeGetInterval <= QPC())
 		{
 			; IME状態を確実に検出できる時
 			imeState := IME_GET()
 			If (imeState == 0)
 				kanaMode := 0
-			Else If (imeState == 1 && imeConvMode != "")
+			Else If (imeState == 1)
 				kanaMode := imeConvMode & 1
 		}
 
@@ -1373,6 +1368,8 @@ Convert()	; () -> Void
 		{
 			If (ent == 1)
 				ent := 2	; 単独エンターではない
+
+			WinGetClass, class, A
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
@@ -1382,7 +1379,7 @@ Convert()	; () -> Void
 			}
 			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
 			; またはSandSなしの設定をした英数入力中
-			Else If ((!imeConvMode && DetectIME() != "NewMSIME")
+			Else If ((!imeConvMode && DetectIME() != "NewMSIME" && class == "MozillaWindowClass")
 				|| (!eisuSandS && !kanaMode))
 			{
 				StoreBuf("{Space}", 0, R)
