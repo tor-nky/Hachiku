@@ -138,7 +138,7 @@ ent		:= 0	; Bool型	エンター
 goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
 
 ; ----------------------------------------------------------------------
-; 設定ファイル読み込み
+; 設定ファイル読み込み ※規定外の値が書かれていたら、初期値になる
 ; ----------------------------------------------------------------------
 
 ; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
@@ -150,63 +150,99 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, iniVersion, %iniFilePath%, general, Version, ""
 
 ; [Basic]
-; IMESelect		0または空: MS-IME専用, 1: ATOK使用, 他: Google 日本語入力
-	IniRead, imeSelect, %iniFilePath%, Basic, IMESelect, 0
-; UsingKeyConfig	0または空: なし, 他: あり
-	IniRead, usingKeyConfig, %iniFilePath%, Basic, UsingKeyConfig, 0
-; USLike		0以下または空: 英数表記通り, 他: USキーボード風配列
-	IniRead, usLike, %iniFilePath%, Basic, USLike, 0
-; SideShift		左右シフト	1以下または空: 英数２, 他: かな
-	IniRead, sideShift, %iniFilePath%, Basic, SideShift, 1
-; EnterShift	0または空: 通常のエンター, 他: エンター同時押しをシフトとして扱う
-	IniRead, enterShift, %iniFilePath%, Basic, EnterShift, 0
-; ShiftDelay	0または空: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
-	IniRead, shiftDelay, %iniFilePath%, Basic, ShiftDelay, 0
-; CombDelay		0または空: 同時押しは時間無制限
+; IMESelect		0: MS-IME専用, 1: ATOK使用, 2: Google 日本語入力
+	IniRead, imeSelect, %iniFilePath%, Basic, IMESelect
+	If (imeSelect != Floor(imeSelect) || imeSelect < 0 || imeSelect > 2)
+		imeSelect := 0	; 初期値
+; UsingKeyConfig	0: なし, 1: あり
+	IniRead, usingKeyConfig, %iniFilePath%, Basic, UsingKeyConfig
+	If (usingKeyConfig != Floor(usingKeyConfig) || usingKeyConfig < 0 || usingKeyConfig > 1)
+		usingKeyConfig := 0	; 初期値
+; USLike		0: 英数表記通り, 1: USキーボード風配列
+	IniRead, usLike, %iniFilePath%, Basic, USLike
+	If (usLike != Floor(usLike) || usLike < 0 || usLike > 1)
+		usLike := 0	; 初期値
+; SideShift		左右シフト	0または1: 英数２, 2: かな
+	IniRead, sideShift, %iniFilePath%, Basic, SideShift
+	If (sideShift != Floor(sideShift) || sideShift < 0 || sideShift > 2)
+		sideShift := 1	; 初期値
+; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
+	IniRead, enterShift, %iniFilePath%, Basic, EnterShift
+	If (enterShift != Floor(enterShift) || enterShift < 0 || enterShift > 1)
+		enterShift := 0	; 初期値
+; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
+	IniRead, shiftDelay, %iniFilePath%, Basic, ShiftDelay
+	If (shiftDelay < 0 || shiftDelay > 200)
+		shiftDelay := 0	; 初期値
+; CombDelay		0: 同時押しは時間無制限
 ; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, combDelay, %iniFilePath%, Basic, CombDelay, 50
-; SpaceKeyRepeat	スペースキーの長押し	0または空: 何もしない, 1: 空白キャンセル, 他: 空白リピート
-	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat, 0
+	IniRead, combDelay, %iniFilePath%, Basic, CombDelay
+	If (combDelay < 0 || combDelay > 200)
+		combDelay := 50	; 初期値
+; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
+	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat
+	If (spaceKeyRepeat != Floor(spaceKeyRepeat) || spaceKeyRepeat < 0 || spaceKeyRepeat > 2)
+		spaceKeyRepeat := 0	; 初期値
 
 ; [Naginata]
-; Vertical		0または空: 横書き用, 他: 縦書き用
-	IniRead, vertical, %iniFilePath%, Naginata, Vertical, 1
+; Vertical		0: 横書き用, 1: 縦書き用
+	IniRead, vertical, %iniFilePath%, Naginata, Vertical
+	If (vertical != Floor(vertical) || vertical < 0 || vertical > 1)
+		vertical := 1	; 初期値
 ; 固有名詞ショートカットの選択
 	IniRead, koyuNumber, %iniFilePath%, Naginata, KoyuNumber, 1
 
 ; [Advanced]
 ;	通常時
-;		同時打鍵の判定期限	0または空: なし, 他: あり
-		IniRead, combLimitN, %iniFilePath%, Advanced, CombLimitN, 0
-;		文字キーシフト		0または空: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
-		IniRead, combStyleN, %iniFilePath%, Advanced, CombStyleN, 3
-;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全部出力済みなら解除 ※他は1と同じ
-		IniRead, combKeyUpN, %iniFilePath%, Advanced, CombKeyUpN, 0
+;		同時打鍵の判定期限	0: なし, 1: あり
+		IniRead, combLimitN, %iniFilePath%, Advanced, CombLimitN
+		If (combLimitN != Floor(combLimitN) || combLimitN < 0 || combLimitN > 1)
+			combLimitN := 0	; 初期値
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+		IniRead, combStyleN, %iniFilePath%, Advanced, CombStyleN
+		If (combStyleN != Floor(combStyleN) || combStyleN < 0 || combStyleN > 3)
+			combStyleN := 3	; 初期値
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
+		IniRead, combKeyUpN, %iniFilePath%, Advanced, CombKeyUpN
+		If (combKeyUpN != Floor(combKeyUpN) || combKeyUpN < 0 || combKeyUpN > 2)
+			combKeyUpN := 0	; 初期値
 ;	スペース押下時
-;		同時打鍵の判定期限	0または空: なし, 他: あり
-		IniRead, combLimitS, %iniFilePath%, Advanced, CombLimitS, 1
-;		文字キーシフト		0または空: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ ※他は1と同じ
-		IniRead, combStyleS, %iniFilePath%, Advanced, CombStyleS, 3
-;		キーを離すと		0または空: 全復活, 1: そのまま, 2: 全部出力済みなら解除 ※他は1と同じ
-		IniRead, combKeyUpS, %iniFilePath%, Advanced, CombKeyUpS, 2
-;	英数時の同時打鍵期限を強制する	0または空: なし, 他: あり
-		IniRead, combLimitE, %iniFilePath%, Advanced, CombLimitE, 0
-;	スペースキーを離した時の設定	0または空: 通常時, 他: スペース押下時
-		IniRead, combKeyUpSPC, %iniFilePath%, Advanced, CombKeyUpSPC, 1
-; キーを離せば常に全部出力する	0または空: いいえ, 他: はい
-	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll, 0
-; 英数入力時のSandS		0または空: なし, 他: あり
-	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS, 1
-; テスト表示	1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列, 他: なし ※iniになければ設定画面に表示しない
+;		同時打鍵の判定期限	0: なし, 1: あり
+		IniRead, combLimitS, %iniFilePath%, Advanced, CombLimitS
+		If (combLimitS != Floor(combLimitS) || combLimitS < 0 || combLimitS > 1)
+			combLimitS := 1	; 初期値
+;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+		IniRead, combStyleS, %iniFilePath%, Advanced, CombStyleS
+		If (combStyleS != Floor(combStyleS) || combStyleS < 0 || combStyleS > 3)
+			combStyleS := 3	; 初期値
+;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
+		IniRead, combKeyUpS, %iniFilePath%, Advanced, CombKeyUpS
+		If (combKeyUpS != Floor(combKeyUpS) || combKeyUpS < 0 || combKeyUpS > 2)
+			combKeyUpS := 2	; 初期値
+;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
+		IniRead, combLimitE, %iniFilePath%, Advanced, CombLimitE
+		If (combLimitE != Floor(combLimitE) || combLimitE < 0 || combLimitE > 1)
+			combLimitE := 0	; 初期値
+;	スペースキーを離した時の設定	0: 通常時, 1: スペース押下時
+		IniRead, combKeyUpSPC, %iniFilePath%, Advanced, CombKeyUpSPC
+		If (combKeyUpSPC != Floor(combKeyUpSPC) || combKeyUpSPC < 0 || combKeyUpSPC > 1)
+			combKeyUpSPC := 1	; 初期値
+; キーを離せば常に全部出力する	0: しない, 1: する
+	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
+	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
+		keyUpToOutputAll := 0	; 初期値
+; 英数入力時のSandS		0: なし, 1: あり
+	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS
+	If (eisuSandS != Floor(eisuSandS) || eisuSandS < 0 || eisuSandS > 1)
+		eisuSandS := 1	; 初期値
+; テスト表示	0: なし, 1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列 ※iniになければ設定画面に表示しない
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
+	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
+		testMode := 0	; 初期値
 ; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
 	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval, 30
-
-; 範囲外は初期値へ
-	If (shiftDelay < 0)
-		shiftDelay := 0
-	If (combDelay < 0)
-		combDelay := 0
+	If (imeGetInterval < 0 || imeGetInterval > 2000)
+		imeGetInterval := 30	; 初期値
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
