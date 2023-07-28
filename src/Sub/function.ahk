@@ -581,6 +581,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	preDelay := postDelay := -2
 	If (class == "CabinetWClass" && delay < 10)
 		delay := 10	; エクスプローラーにはゆっくり出力する
+	Else If (class == "Notepad" && delay < 20)
+		delay := 20	; メモ帳にはゆっくり出力する
 	Else If (!romanChar && SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
 		postDelay := 30	; 1文字目を必ずゆっくり出力する
 	lastDelay := Floor(QPC() - lastSendTime)
