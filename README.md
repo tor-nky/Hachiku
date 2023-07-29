@@ -1,6 +1,6 @@
 # Hachiku - Windows で薙刀式を使うスクリプト
-2023年4月13日付[【薙刀式】最近の版をまとめてみる](http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0)
-から、__薙刀式（4/13 A版）__ を Autohotkey に実装しました。  
+2023年7月28日付[【薙刀式】v15fix版、発表](http://oookaworks.seesaa.net/article/500180437.html#gsc.tab=0)
+から、__薙刀式v15fix版__ を Autohotkey に実装しました。  
 ソースコードから実行します。  
 
 ---
@@ -10,7 +10,7 @@
 不要になったら Hachiku.exe と Hachiku.ini を削除してください。
 
 キーカスタマイズができる IME では「Shift+Ctrl+変換キー」に「全確定」、「Shift+Ctrl+無変換キー」に「全消去」を割り当てると動作を改善できます。
-## 実行ファイル(薙刀式v14集大成版)
+## 実行ファイル(薙刀式v15fix版)
 https://github.com/tor-nky/Hachiku/releases
 ## ソースコードを直接実行する方法
 ディレクトリ src の下にあるファイルをすべて保存します。  
@@ -111,10 +111,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 __AutoHotkey v2以降では使えません__
 
 # 参考
-* [【薙刀式】v14集大成版](http://oookaworks.seesaa.net/article/484704326.html#gsc.tab=0)
-* [【薙刀式】v15（仮最終候補）](http://oookaworks.seesaa.net/article/495043083.html#gsc.tab=0)
-* [【薙刀式】冗長定義を復活させたら挙動が安定した](http://oookaworks.seesaa.net/article/498756961.html#gsc.tab=0)
-* [【薙刀式】最近の版をまとめてみる](http://oookaworks.seesaa.net/article/498994569.html#gsc.tab=0)
+* [【薙刀式】v15fix版、発表](http://oookaworks.seesaa.net/article/500180437.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```
