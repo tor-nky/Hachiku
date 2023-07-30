@@ -829,8 +829,15 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				; count1 に回数が入る
 			{
 				; Microsoft OneNote 対策ルーチンへ
-				Loop, % (count1 ? count1 : 1)
+				Loop
+				{
 					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Up}" : "{Up}")
+					count1--
+					If (count1 < 1)
+						Break
+					; 繰り返すときはディレイを入れる
+					Sleep, 1
+				}
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			; {Down}、+{Down}、{Down 回数}、+{Down 回数}
@@ -838,8 +845,15 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				; count1 に回数が入る
 			{
 				; Microsoft OneNote 対策ルーチンへ
-				Loop, % (count1 ? count1 : 1)
+				Loop
+				{
 					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Down}" : "{Down}")
+					count1--
+					If (count1 < 1)
+						Break
+					; 繰り返すときはディレイを入れる
+					Sleep, 1
+				}
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			Else If (strSub = "^x")
