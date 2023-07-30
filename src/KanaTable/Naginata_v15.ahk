@@ -545,8 +545,8 @@ kanaGroup := "1L"
 	SetEisu( KC_J | KC_K | KC_Q | KC_SPC	,"{確定}^{End}"		)
 	SetEisu( KC_J | KC_K | KC_A				,"……{確定}"		)	; ……
 	SetEisu( KC_J | KC_K | KC_A | KC_SPC	,"……{確定}"		)
-	SetEisu( KC_J | KC_K | KC_Z				,"──{確定}"		)	; ──
-	SetEisu( KC_J | KC_K | KC_Z | KC_SPC	,"──{確定}"		)
+	SetEisu( KC_J | KC_K | KC_Z				,"――{確定}"		)	; ──
+	SetEisu( KC_J | KC_K | KC_Z | KC_SPC	,"――{確定}"		)
 	SetEisu( KC_J | KC_K | KC_W				,"『』{確定}{↑}"	)	; 『』
 	SetEisu( KC_J | KC_K | KC_W | KC_SPC	,"『』{確定}{↑}"	)
 	SetEisu( KC_J | KC_K | KC_S				,"(){確定}{↑}"		)	; （）
