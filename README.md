@@ -107,7 +107,7 @@ Google 日本語入力 が一時的に英数入力になっていることを検
 * Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.01) U64 Unicode 64-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力  
 * Windows 11 Pro version 22H2 + AutoHotkey (v1.1.37.01) U64 Unicode 64-bit.bin  
-新MS-IME
+新旧MS-IME、Google 日本語入力  
 __AutoHotkey v2以降では使えません__
 
 # 参考
