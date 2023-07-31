@@ -630,7 +630,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					out := "+^{vk1C}"
 					; 誤動作防止
 					If (imeName == "CustomMSIME")
-						postDelay := 30
+						postDelay := 50
 				}
 				; 未変換文字があったらエンターを押す
 				Else
@@ -1296,7 +1296,8 @@ Convert()	; () -> Void
 		imeConvMode := IME_GetConvMode()
 		IfWinExist, ahk_class #32768	; コンテキストメニューが出ているか
 			kanaMode := 0
-		Else If (sideShift <= 1 && (sft || rsft))	; 左右シフト英数２
+		Else If ((sideShift <= 1 && (sft || rsft))				; 左右シフト英数２
+		 || (!imeConvMode && class == "MozillaWindowClass"))	; Firefox と Thunderbird
 			kanaMode := 0
 		Else If (imeConvMode && lastSendTime + imeGetInterval <= QPC())
 		{
@@ -1383,7 +1384,7 @@ Convert()	; () -> Void
 			}
 			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
 			; またはSandSなしの設定をした英数入力中
-			Else If ((!imeConvMode && DetectIME() != "NewMSIME" && class == "MozillaWindowClass")
+			Else If ((!imeConvMode && class == "MozillaWindowClass")
 				|| (!eisuSandS && !kanaMode))
 			{
 				StoreBuf("{Space}", 0, R)
