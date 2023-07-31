@@ -630,7 +630,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					out := "+^{vk1C}"
 					; 誤動作防止
 					If (imeName == "CustomMSIME")
-						postDelay := 30
+						postDelay := 50
 				}
 				; 未変換文字があったらエンターを押す
 				Else
