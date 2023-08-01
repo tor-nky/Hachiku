@@ -74,10 +74,8 @@ kanaGroup := ""	; グループなし
 ; Enter
 ; VとMの同時押し
 kanaGroup := "ENT"
-	SetKana( KC_V | KC_M			,"{Enter}"	)	; 行送り
-	SetKana( KC_V | KC_M | KC_SPC	,"{Enter}"	)
-	SetEisu( KC_V | KC_M			,"{Enter}"	)	; 行送り
-	SetEisu( KC_V | KC_M | KC_SPC	,"{Enter}"	)
+	SetKana( KC_V | KC_M	,"{Enter}"	)	; 行送り
+	SetEisu( KC_V | KC_M	,"{Enter}"	)	; 行送り
 
 ;***********************************
 ;***********************************
