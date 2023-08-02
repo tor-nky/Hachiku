@@ -757,21 +757,41 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
 			{
 				noIME := False
-				; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
-				; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
-				IME_SetConvMode(25)	; IME 入力モード	ひらがな
-				out := "{vkF2 2}"	; ひらがな
-				postDelay := IME_Get_Interval
+				If (imeName != "Google" && IME_GetConvMode())
+				{
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(25)	; IME 入力モード	ひらがな
+					lastDelay := IME_Get_Interval
+				}
+				Else
+				{
+					; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
+					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
+					IME_SetConvMode(25)	; IME 入力モード	ひらがな
+					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
+					postDelay := IME_Get_Interval
+				}
 				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 				|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
 			{
 				noIME := False
-				Send, {vkF2}
-				IME_SetConvMode(25)	; IME 入力モード	ひらがな
-				out := "{vkF1}"		; カタカナ
-				postDelay := IME_Get_Interval
+				If (imeName != "Google" && IME_GetConvMode())
+				{
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(27)	; IME 入力モード	カタカナ
+					lastDelay := IME_Get_Interval
+				}
+				Else
+				{
+					If (imeName == "NewMSIME")
+						Send, {vk16}
+					Else
+						Send, {vkF2}
+					out := "{vkF1}"		; カタカナ
+					postDelay := IME_Get_Interval
+				}
 				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
@@ -784,16 +804,20 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			Else If (strSub == "{全英}")
 			{
 				noIME := False
-				IME_SET(1)			; IMEオン
-				If (imeName == "Google")
+				If (imeName != "Google" && IME_GetConvMode())
 				{
-					out := "+{vk1D}"	; シフト+無変換
-					postDelay := IME_Get_Interval
+					IME_SET(1)			; IMEオン
+					IME_SetConvMode(24)	; IME 入力モード	全英数
+					lastDelay := IME_Get_Interval
 				}
 				Else
 				{
-					IME_SetConvMode(24)	; IME 入力モード	全英数
-					lastDelay := IME_Get_Interval
+					If (imeName == "NewMSIME")
+						Send, {vk16}
+					Else
+						Send, {vkF2}
+					out := "+{vk1D}"	; シフト+無変換
+					postDelay := IME_Get_Interval
 				}
 				kanaMode := 0
 			}
@@ -802,6 +826,8 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				noIME := False
 				If (imeName == "Google")
 					TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
+				Else If (!IME_GetConvMode())
+					TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
 				Else
 				{
 					IME_SET(1)			; IMEオン
