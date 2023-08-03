@@ -52,7 +52,7 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 
 SendESCx3()	; () -> Void
 {
-	global	usingKeyConfig, goodHwnd, lastSendTime
+	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver
 ;	local hwnd		; Int型
 ;		, class		; String型
 ;		, process	; String型
@@ -66,8 +66,11 @@ SendESCx3()	; () -> Void
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
 
+	; Shift+Ctrl+無変換 のキー設定利用して良いか
+	; (秀丸エディタ、あるいはPC-9801キーボードでは使えないので除外)
 	If (usingKeyConfig
-	 && imeName != "OldMSIME" && imeName != "NewMSIME" && class != "Hidemaru32Class")
+	 && imeName != "OldMSIME" && imeName != "NewMSIME"
+	 && class != "Hidemaru32Class" && keyDriver != "kbdnec.dll")
 	{
 		Send, +^{vk1D 2}	; ※ Shift+Ctrl+無変換
 		lastSendTime := QPC()	; 出力した時間を記録
