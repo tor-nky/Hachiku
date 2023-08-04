@@ -921,14 +921,15 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					lastSendTime := QPC()	; 出力した時間を記録
 
 				; ローマ字の文字
-				If ((strSubLength == 1 && Asc(strSub) >= 33 && Asc(strSub) <= 127)
-				 || (strSubLength == 3 && Asc(strSub) == 123))
+				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
+				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
+				 || SubStr(strSub, 3, 6) = " down}" && RegExMatch(strSub, "^\{[a-z\-]\s"))
 				{
 					romanChar := True
 					If (noIME)
 						romanCharForNoIME := True
 				}
-				Else
+				Else If (SubStr(strSub, 3, 4) != " up}")
 				{
 					; IME窓の検出が当てにできるか判定
 					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
