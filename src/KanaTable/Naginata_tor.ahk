@@ -847,7 +847,7 @@ sc3A::	; 英数キー単独で CapsLock をオンオフする
 sc7B::		; 無変換
 vk1A::		; Mac英数
 	SendEachChar("{vkF2}{vkF3}")	; ひらがな→半角/全角キー
-	kanaMode := 0
+;	kanaMode := 0
 	Return
 +sc7B::		; Shift + 無変換
 +vk1A::		; Shift + Mac英数
