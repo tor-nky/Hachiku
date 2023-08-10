@@ -187,13 +187,41 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 		; 有効な文字列がないので空白を返す
 		Return ""
 
-	kakutei := noIME := False
 	ret := ""	; 変換後文字列
+	i := 1
+	strLength := StrLen(str)
+/*
+	; ※ ローマ字のキー下げをまとめて行い、それからキー上げを行いたいときコメントを外す
+	; ※ ただし、処理量は増加する
+	; ローマ字だけなら、{? down}{? up} 形式に変換して終了
+	If (RegExMatch(str, "^[a-z\-]+$"))
+	{
+		While (i <= strLength)
+		{
+			c := SubStr(str, i, 1)
+			; down を出力している文字は一旦 up する
+			If (InStr(SubStr(str, 1, i - 1), c))
+				ret .= "{" . c . " up}"
+			ret .= "{" . c . " down}"
+			i++
+		}
+		; 押した順番でキーを上げる
+		i := 1
+		While (i <= strLength)
+		{
+			c := SubStr(str, i, 1)
+			; あとで up がくるなら今は up しない
+			If (!InStr(SubStr(str, i + 1), c))
+				ret .= "{" . c . " up}"
+			i++
+		}
+		Return ret
+	}
+*/
+	kakutei := noIME := False
 	strSub := ""
 	strSubLength := 0
 	bracket := 0
-	i := 1
-	strLength := StrLen(str)
 	While (i <= strLength)
 	{
 		c := SubStr(str, i++, 1)
@@ -860,6 +888,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Up}" : "{Up}")
 					SendKeyUp()		; 押し下げ出力中のキーを上げる
 				}
+				lastDelay := 0
 			}
 			; {Down}、+{Down}、{Down 回数}、+{Down 回数}
 			Else If (RegExMatch(strSub, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
@@ -871,6 +900,13 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Down}" : "{Down}")
 					SendKeyUp()		; 押し下げ出力中のキーを上げる
 				}
+				lastDelay := 0
+			}
+			Else If (strSub = "{Up down}" || strSub = "{Down down}"
+			 || strSub = "{Up up}" || strSub = "{Down up}")
+			{
+				SendBlind(strSub)
+				lastDelay := 0
 			}
 			Else If (strSub = "^x")
 			{
@@ -919,8 +955,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				Send, % out
 				If (!noIME && i > strLength)
 					lastSendTime := QPC()	; 出力した時間を記録
+				postDelay := (postDelay < delay ? delay : postDelay)
 
-				; ローマ字の文字
+				; ローマ字の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
 				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
 				 || SubStr(strSub, 3, 6) = " down}" && RegExMatch(strSub, "^\{[a-z\-]\s"))
@@ -929,6 +966,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					If (noIME)
 						romanCharForNoIME := True
 				}
+				; キーを上げたのではなく、ローマ字の文字を押したのでもない時
 				Else If (SubStr(strSub, 3, 4) != " up}")
 				{
 					; IME窓の検出が当てにできるか判定
@@ -941,13 +979,14 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					}
 					romanChar := False
 				}
+				; キーを上げただけの時
+				Else
+					postDelay := -2
 
 				; 出力直後のディレイ
-				lastDelay := (postDelay < delay ? delay : postDelay)
-				If (lastDelay > -2)
-					Sleep, % lastDelay
-				If (lastDelay <= 0)
-					lastDelay := 0
+				If (postDelay > -2)
+					Sleep, % postDelay
+				lastDelay := (postDelay < 0 ? 0 : postDelay)
 			}
 			Else
 				romanChar := False
@@ -995,13 +1034,13 @@ SendBlind(str)	; (str: String) -> Void
 	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
 	IfWinActive, ahk_class Framework::CFrame	; Process: ONENOTE.EXE
 	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
-		If (str == "{Up down}")
+		If (str = "{Up down}")
 			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
-		Else If (str == "{Down down}")
+		Else If (str = "{Down down}")
 			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
-		Else If (str == "{Up up}")
+		Else If (str = "{Up up}")
 			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 3, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
-		Else If (str == "{Down up}")
+		Else If (str = "{Down up}")
 			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 3, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 		Else
 			Send, % "{Blind}" . str
