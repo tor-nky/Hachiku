@@ -658,7 +658,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					out := "+^{vk1C}"
 					; 誤動作防止
 					If (imeName == "CustomMSIME")
-						postDelay := 110
+						postDelay := 120
 				}
 				; 未変換文字があったらエンターを押す
 				Else
@@ -737,7 +737,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 						}
 					}
 				}
-				; 秀丸エディタと旧MS-IMEに "{Enter}" を送るときはディレイが必要
+				; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
 				If (class == "Hidemaru32Class" && out == "{Enter}"
 				 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
 					postDelay := 110
