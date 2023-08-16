@@ -1358,16 +1358,22 @@ Convert()	; () -> Void
 			nextKey := ""
 		}
 
-		; 英数入力かかな入力か検出
+		WinGetClass, class, A
+		; IME 入力モードを検出
 		imeConvMode := IME_GetConvMode()
-		IfWinExist, ahk_class #32768	; コンテキストメニューが出ているか
-			kanaMode := 0
-		Else If ((sideShift <= 1 && (sft || rsft))				; 左右シフト英数２
-		 || (!imeConvMode && class == "MozillaWindowClass"))	; Firefox と Thunderbird
-			kanaMode := 0
+
+		; コンテキストメニューが出ている時
+		IfWinExist, ahk_class #32768
+			kanaMode := 0	; 英数モード
+		; 左右シフト英数、または
+		; (Excel のコメント欄以外と、Firefox と Thunderbird で) IME 入力モードが検出できない時
+		Else If ((sideShift <= 1 && (sft || rsft))
+		 || (!imeConvMode && (class == "XLMAIN" || class == "MozillaWindowClass")))
+			kanaMode := 0	; 英数モード
+		; IME の状態を検出しない時間を過ぎていたら
 		Else If (imeConvMode && lastSendTime + imeGetInterval <= QPC())
 		{
-			; IME状態を確実に検出できる時
+			; 検出して反映する
 			imeState := IME_GET()
 			If (imeState == 0)
 				kanaMode := 0
@@ -1440,7 +1446,6 @@ Convert()	; () -> Void
 			If (ent == 1)
 				ent := 2	; 単独エンターではない
 
-			WinGetClass, class, A
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
