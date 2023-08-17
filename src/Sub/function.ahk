@@ -902,12 +902,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				}
 				lastDelay := 0
 			}
-			Else If (strSub = "{Up down}" || strSub = "{Down down}"
-			 || strSub = "{Up up}" || strSub = "{Down up}")
-			{
-				SendBlind(strSub)
-				lastDelay := 0
-			}
 			Else If (strSub = "^x")
 			{
 				out := strSub
