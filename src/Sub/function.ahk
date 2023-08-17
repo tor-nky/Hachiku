@@ -1053,12 +1053,12 @@ SendKeyUp(str:="")	; (str: String) -> Void
 	If (restStr != "")
 	{
 		; Shift は押し下げ中
-		If (SubStr(restStr, StrLen(restStr) - 9, 9) = "{ShiftUp}")
+		If (SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
 		{
 			; "{ShiftUp}" より左を出力
 			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))
 			; 更新後は {ShiftUp} がないとき
-			If (SubStr(str, StrLen(str) - 9, 9) != "{ShiftUp}")
+			If (SubStr(str, StrLen(str) - 8, 9) != "{ShiftUp}")
 				SendBlind("{ShiftUp}")
 		}
 		Else
