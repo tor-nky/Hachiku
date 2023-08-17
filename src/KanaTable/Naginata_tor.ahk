@@ -813,18 +813,15 @@ sc79::Send, {sc79 9}	; 変換 → 変換x9
 ; ※ 上記3行は Xbox Game Bar が暴発するので使用できず
 #If (!USKB)	; 101英語キーボード以外の場合
 sc29::	; (JIS)半角/全角	(US)`
-	imeConvMode := IME_GetConvMode()
 	IME_SetConvMode(25)	; IME 入力モード	ひらがな
-	If (!imeConvMode)
-		Send, {vkF3}	; 半角/全角キー
-	Else If (IME_GET() && (imeConvMode & 1))
+	If (kanaMode)
 	{
-		Send, {vkF3}	; 半角/全角キー
-		kanaMode := 0
+		SendEachChar("{vkF2}{vkF3}")	; ひらがな→半角/全角キー
+	;	kanaMode := 0
 	}
 	Else
 	{
-		Send, {vkF2}	; ひらがな
+		SendEachChar("{vkF2}")	; ひらがな
 		kanaMode := 1
 	}
 	Return
