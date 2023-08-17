@@ -1088,25 +1088,31 @@ SplitKeyUpDown(str)	; (str: String) -> String
 
 	; 先頭の "+" は消去
 	ret := (inShifted ? SubStr(str, 2) : str)
-	; 上げ下げを分離したいキーを取り出し
+	; キー下げを取り出し
 	keyDown := keyDowns[ret]
-	; 分離がいらない時
+	; 分離をしないキーだったら戻る
 	If (keyDown == "")
 	{
 		SendKeyUp()			; 押したままだったキーを上げる
 		Return str
 	}
 
-	; キーを上げるときのために準備
+	; キー上げを取り出し
 	keyUp := keyUps[ret]
 	If (inShifted)
 		keyUp .= "{ShiftUp}"
-
+	; 前回と変わっていたら
 	If (restStr != keyUp)
 	{
-		SendKeyUp(keyUp)	; 押したままにするキーを入れ替え
-		If (inShifted)
-			SendBlind("{ShiftDown}")
+		; Shift あり→あり
+		If (inShifted && SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
+			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
+		Else
+		{
+			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
+			If (inShifted)
+				SendBlind("{ShiftDown}")
+		}
 	}
 	SendBlind(keyDown)
 	Return ""
