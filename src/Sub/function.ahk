@@ -1293,6 +1293,7 @@ Convert()	; () -> Void
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
+		, lastIMEConvMode	; Int型
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
@@ -1369,6 +1370,10 @@ Convert()	; () -> Void
 		{
 			imeState := IME_GET()
 			imeConvMode := IME_GetConvMode()
+			; IME_GetConvMode() の値が 0 になった直後を英数モードに
+			If (imeConvMode == 0 && lastIMEConvMode)
+				kanaMode := 0
+			lastIMEConvMode := imeConvMode
 		}
 		Else
 		{
@@ -1379,9 +1384,8 @@ Convert()	; () -> Void
 		; コンテキストメニューが出ている時
 		IfWinExist, ahk_class #32768
 			kanaMode := 0	; 英数モード
-		Else If ((imeConvMode && imeState == 0)		; ※ 約17行前のコメントを参照のこと
-			|| ((sft || rsft) && sideShift <= 1)	; 左右シフト英数で左右シフトを押している
-			|| (imeConvMode == 0 && (class == "XLMAIN" || class == "MozillaWindowClass")))	; Excel のコメント欄以外と、Firefox と Thunderbird
+		Else If ((imeConvMode && imeState == 0)		; ※ 約22行前のコメントを参照のこと
+			|| ((sft || rsft) && sideShift <= 1))	; 左右シフト英数で左右シフトを押している
 		{
 			kanaMode := 0	; 英数モード
 		}
