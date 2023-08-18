@@ -190,10 +190,8 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	ret := ""	; 変換後文字列
 	i := 1
 	strLength := StrLen(str)
-/*
-	; ※ ローマ字のキー下げをまとめて行い、それからキー上げを行いたいときコメントを外す
-	; ※ ただし、処理量は増加する
-	; ローマ字だけなら、{? down}{? up} 形式に変換して終了
+
+	; アルファベットかハイフンだけなら、{? down}{? up} 形式に変換して終了
 	If (RegExMatch(str, "^[a-z\-]+$"))
 	{
 		While (i <= strLength)
@@ -217,7 +215,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 		}
 		Return ret
 	}
-*/
+
 	kakutei := noIME := False
 	strSub := ""
 	strSubLength := 0
