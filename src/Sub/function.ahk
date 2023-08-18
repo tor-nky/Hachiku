@@ -1091,7 +1091,7 @@ SplitKeyUpDown(str)	; (str: String) -> String
 	; 分離をしないキーだったら戻る
 	If (keyDown == "")
 	{
-		SendKeyUp()			; 押したままだったキーを上げる
+		SendKeyUp()	; 押したままだったキーを上げる
 		Return str
 	}
 
@@ -1124,6 +1124,9 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		, testMode
 ;	local out		; String型
 ;		, ctrlName	; String型
+;		, class		; String型
+
+	WinGetClass, class, A
 
 	While (i > 0 && outStrsLength > 0)
 	{
@@ -1137,8 +1140,8 @@ OutBuf(i:=2)	; (i: Int) -> Void
 			SetTimer, RemoveToolTip, 2500
 		}
 
-		; リピートなし
-		If (!ctrlName)
+		; リピートなし、またはジャストシステム製品(矢印キーの上げ下げをエミュレートしない方が良い)
+		If (!ctrlName || SubStr(class, 1, 3) == "js:")
 		{
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
