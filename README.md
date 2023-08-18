@@ -63,7 +63,7 @@ ATOK プロパティ → キー･ローマ字･色 → キーカスタマイ�
 |---|:---:|:---:|
 |変換前入力中|Ctrl Shift Henkan|確定|
 |変換中|〃|〃|
-|変換前入力中|Ctrl Shift Muhenkan|入力キャンセル|
+|変換前入力中|Ctrl Shift Muhenkan|キャンセル|
 |変換中|〃|〃|
 |変換前入力中|Shift Muhenkan|全角英数に入力切替|
 |変換中|〃|〃|
