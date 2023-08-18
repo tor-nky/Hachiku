@@ -1292,13 +1292,13 @@ Convert()	; () -> Void
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
 		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
+		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
 		; グローバル変数へ移動
 ;		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
 ;		, ent		:= 0	; Bool型	エンター
-		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 ;	local class				; String型
 ;		, keyTime			; Double型	キーを押した時間
 ;		, imeState			; Bool?型
@@ -1364,6 +1364,7 @@ Convert()	; () -> Void
 		; ※ 通常、IME_GET() の値が 0 でも IME_GetConvMode() の値は 0 にならない
 		;		例外1: IME のアイコンが "×" になっているとき。ただし Google Chrome と Edge の入力欄でないところは別
 		;		例外2: Excel と PowerPoint のコメント。でも IME のアイコンは "×" になっていない
+		;		例外3: IME_SetConvMode(0) を実行したとき
 		If (lastSendTime + imeGetInterval <= QPC())
 		{
 			imeState := IME_GET()
