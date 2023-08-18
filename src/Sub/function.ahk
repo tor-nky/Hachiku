@@ -783,41 +783,23 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 				|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
 			{
 				noIME := False
-				If (imeName != "Google" && IME_GetConvMode())
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(25)	; IME 入力モード	ひらがな
-					lastDelay := IME_Get_Interval
-				}
-				Else
-				{
-					; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
-					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
-					IME_SetConvMode(25)	; IME 入力モード	ひらがな
-					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
-					postDelay := IME_Get_Interval
-				}
+				; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
+				; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
+				IME_SetConvMode(25)	; IME 入力モード	ひらがな
+				out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
+				postDelay := IME_Get_Interval
 				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 				|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
 			{
 				noIME := False
-				If (imeName != "Google" && IME_GetConvMode())
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(27)	; IME 入力モード	カタカナ
-					lastDelay := IME_Get_Interval
-				}
+				If (imeName == "NewMSIME")
+					Send, {vk16}
 				Else
-				{
-					If (imeName == "NewMSIME")
-						Send, {vk16}
-					Else
-						Send, {vkF2}
-					out := "{vkF1}"		; カタカナ
-					postDelay := IME_Get_Interval
-				}
+					Send, {vkF2}
+				out := "{vkF1}"		; カタカナ
+				postDelay := IME_Get_Interval
 				kanaMode := 1
 			}
 			Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
