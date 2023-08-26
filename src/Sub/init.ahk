@@ -184,6 +184,10 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat
 	If (spaceKeyRepeat != Floor(spaceKeyRepeat) || spaceKeyRepeat < 0 || spaceKeyRepeat > 2)
 		spaceKeyRepeat := 0	; 初期値
+; 英数単打のリピート	0: なし, 1: あり
+	IniRead, eisuRepeat, %iniFilePath%, Basic, EisuRepeat
+	If (eisuRepeat != Floor(eisuRepeat) || eisuRepeat < 0 || eisuRepeat > 1)
+		eisuRepeat := 1	; 初期値
 
 ; [Naginata]
 ; Vertical		0: 横書き用, 1: 縦書き用
@@ -232,10 +236,6 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS
 	If (eisuSandS != Floor(eisuSandS) || eisuSandS < 0 || eisuSandS > 1)
 		eisuSandS := 1	; 初期値
-; 英数単打のリピート	0: なし, 1: あり
-	IniRead, eisuRepeat, %iniFilePath%, Advanced, EisuRepeat
-	If (eisuRepeat != Floor(eisuRepeat) || eisuRepeat < 0 || eisuRepeat > 1)
-		eisuRepeat := 0	; 初期値
 ; キーを離せば常に全部出力する	0: しない, 1: する
 	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
 	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
@@ -395,6 +395,7 @@ ButtonOK:
 	IniWrite, %shiftDelay%, %iniFilePath%, Basic, ShiftDelay
 	IniWrite, %combDelay%, %iniFilePath%, Basic, CombDelay
 	IniWrite, %spaceKeyRepeat%, %iniFilePath%, Basic, SpaceKeyRepeat
+	IniWrite, %eisuRepeat%, %iniFilePath%, Basic, EisuRepeat
 	; [Naginata]
 	IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
 	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
@@ -408,7 +409,6 @@ ButtonOK:
 	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
 	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
 	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
-	IniWrite, %eisuRepeat%, %iniFilePath%, Advanced, EisuRepeat
 	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
@@ -460,9 +460,13 @@ PrefMenu:
 			GuiControl, , usingKeyConfig, 1
 		; 後置シフトの待ち時間
 		Gui, Add, Text, xm y+15, 後置シフトの待ち時間
-		Gui, Add, Edit, xm+132 yp-3 W45
+		Gui, Add, Edit, xm+122 yp-3 W45 Number Right
 		Gui, Add, UpDown, VshiftDelay Range0-200, %shiftDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒
+		; 英数単打のリピート
+		Gui, Add, Checkbox, x+55 VeisuRepeat, 英数単打のリピート
+		If (eisuRepeat)
+			GuiControl, , eisuRepeat, 1
 		; テストモード
 		If (testMode != "ERROR")
 		{
@@ -496,7 +500,7 @@ PrefMenu:
 				GuiControl, , repeatStyle3, 1
 			; 文字出力後に IME の状態を検出しない時間
 			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51
+			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
 			Gui, Add, UpDown, VimeGetInterval Range0-2000 128, %imeGetInterval%
 			Gui, Add, Text, x+5 yp+3, ミリ秒
 		}
@@ -542,10 +546,6 @@ PrefMenu:
 		Gui, Add, Checkbox, xm y+15 VeisuSandS, 英数入力時のSandS
 		If (eisuSandS)
 			GuiControl, , eisuSandS, 1
-		; 英数単打のリピート
-		Gui, Add, Checkbox, x+15 VeisuRepeat, 英数単打のリピート
-		If (eisuRepeat)
-			GuiControl, , eisuRepeat, 1
 		; キーを離せば常に全部出力する
 		Gui, Add, Checkbox, xm y+15 VkeyUpToOutputAll, キーを離せば常に全部出力する
 		If (keyUpToOutputAll)
@@ -554,7 +554,7 @@ PrefMenu:
 	Gui, Tab, 同時打鍵
 		; 同時打鍵判定
 		Gui, Add, Text, xm y+10, 同時打鍵判定
-		Gui, Add, Edit, xm+95 yp-3 W45
+		Gui, Add, Edit, xm+95 yp-3 W45 Number Right
 		Gui, Add, UpDown, VcombDelay Range0-200, %combDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒 ※ 0 は無制限
 		; 通常
