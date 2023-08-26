@@ -1671,10 +1671,10 @@ Convert()	; () -> Void
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
 
 			; 文字キーによるシフトの適用範囲
-			If (combLimitE && !kanaMode)
-				shiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
-			Else
-				shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
+			shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
+			; 英数入力時に判定期限ありなら、文字キーシフトは「同グループのみ継続」か「1回のみ」
+			If (combLimitE && !kanaMode && shiftStyle < 2)
+				shiftStyle := 2
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 前に押したキーと同時押しにならない

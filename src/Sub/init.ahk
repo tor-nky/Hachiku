@@ -613,7 +613,7 @@ PrefMenu:
 		; 英数入力時
 		Gui, Add, Text, xm+10 y+5, 英数入力時
 			; 判定期限ありを強制する
-			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitE, 判定期限ありを強制する ※文字キーシフトは1回のみとなる
+			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitE, 判定期限強制 ※文字キーシフトは｢同グループのみ｣か｢1回のみ｣
 			If (combLimitE)
 				GuiControl, , combLimitE, 1
 		; スペースキーを離した時の設定
