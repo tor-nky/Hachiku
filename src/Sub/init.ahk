@@ -228,14 +228,18 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		IniRead, combKeyUpSPC, %iniFilePath%, Advanced, CombKeyUpSPC
 		If (combKeyUpSPC != Floor(combKeyUpSPC) || combKeyUpSPC < 0 || combKeyUpSPC > 1)
 			combKeyUpSPC := 1	; 初期値
-; キーを離せば常に全部出力する	0: しない, 1: する
-	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
-	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
-		keyUpToOutputAll := 0	; 初期値
 ; 英数入力時のSandS		0: なし, 1: あり
 	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS
 	If (eisuSandS != Floor(eisuSandS) || eisuSandS < 0 || eisuSandS > 1)
 		eisuSandS := 1	; 初期値
+; 英数単打のリピート	0: なし, 1: あり
+	IniRead, eisuRepeat, %iniFilePath%, Advanced, EisuRepeat
+	If (eisuRepeat != Floor(eisuRepeat) || eisuRepeat < 0 || eisuRepeat > 1)
+		eisuRepeat := 0	; 初期値
+; キーを離せば常に全部出力する	0: しない, 1: する
+	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
+	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
+		keyUpToOutputAll := 0	; 初期値
 ; テスト表示	0: なし, 1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列 ※iniになければ設定画面に表示しない
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
 	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
@@ -403,8 +407,9 @@ ButtonOK:
 	IniWrite, %combKeyUpS%, %iniFilePath%, Advanced, CombKeyUpS
 	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
 	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
-	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
+	IniWrite, %eisuRepeat%, %iniFilePath%, Advanced, EisuRepeat
+	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
 		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
@@ -537,6 +542,10 @@ PrefMenu:
 		Gui, Add, Checkbox, xm y+15 VeisuSandS, 英数入力時のSandS
 		If (eisuSandS)
 			GuiControl, , eisuSandS, 1
+		; 英数単打のリピート
+		Gui, Add, Checkbox, x+15 VeisuRepeat, 英数単打のリピート
+		If (eisuRepeat)
+			GuiControl, , eisuRepeat, 1
 		; キーを離せば常に全部出力する
 		Gui, Add, Checkbox, xm y+15 VkeyUpToOutputAll, キーを離せば常に全部出力する
 		If (keyUpToOutputAll)
