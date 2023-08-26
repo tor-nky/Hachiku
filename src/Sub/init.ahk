@@ -100,6 +100,7 @@ KC_INT1	:= 1 << 0x38	; sc73
 KC_SPC	:= 1 << 0x39
 
 ; リピート定義用
+NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
 ; ----------------------------------------------------------------------
@@ -239,6 +240,10 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
 	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
 		testMode := 0	; 初期値
+; リピートの好み	0: 全てする, 1: 基本する, 2: 基本しない, 3: 全くしない
+		IniRead, repeatStyle, %iniFilePath%, Advanced, RepeatStyle
+		If (repeatStyle != Floor(repeatStyle) || repeatStyle < 0 || repeatStyle > 3)
+			repeatStyle := 2	; 初期値
 ; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
 	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval, 30
 	If (imeGetInterval < 0 || imeGetInterval > 2000)
@@ -292,6 +297,10 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		testMode1 := (testMode == 1 ? 1 : 0)
 		testMode2 := (testMode == 2 ? 1 : 0)
 		testMode3 := (testMode == 3 ? 1 : 0)
+		repeatStyle0 := (repeatStyle == 0 ? 1 : 0)
+		repeatStyle1 := (repeatStyle == 1 ? 1 : 0)
+		repeatStyle2 := (repeatStyle == 2 ? 1 : 0)
+		repeatStyle3 := (repeatStyle == 3 ? 1 : 0)
 	}
 
 ; ----------------------------------------------------------------------
@@ -366,7 +375,10 @@ ButtonOK:
 	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
 	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
 	If (testMode != "ERROR")
+	{
 		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
+		repeatStyle := (repeatStyle0 ? 0 : (repeatStyle1 ? 1 : (repeatStyle2 ? 2 : 3)))
+	}
 	; 設定ファイル書き込み
 	; [general]
 	IniWrite, %iniVersion%, %iniFilePath%, general, Version
@@ -395,8 +407,8 @@ ButtonOK:
 	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
 	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
+		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
 		IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
-
 	}
 
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
@@ -450,7 +462,7 @@ PrefMenu:
 		If (testMode != "ERROR")
 		{
 			; テスト表示
-			Gui, Add, Text, xm ys+150, テスト表示
+			Gui, Add, Text, xm ys+132, テスト表示
 			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
 			Gui, Add, Radio, x+0 VtestMode1, 処理時間
 			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
@@ -463,6 +475,20 @@ PrefMenu:
 				GuiControl, , testMode2, 1
 			Else
 				GuiControl, , testMode3, 1
+			; リピートの好み
+			Gui, Add, Text, xm y+8, リピートの好み
+			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 全てする
+			Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
+			Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
+			Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない
+			If (repeatStyle0)
+				GuiControl, , repeatStyle0, 1
+			Else If (repeatStyle1)
+				GuiControl, , repeatStyle1, 1
+			Else If (repeatStyle2)
+				GuiControl, , repeatStyle2, 1
+			Else
+				GuiControl, , repeatStyle3, 1
 			; 文字出力後に IME の状態を検出しない時間
 			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
 			Gui, Add, Edit, xm+235 yp-3 W51
