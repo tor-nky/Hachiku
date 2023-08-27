@@ -1316,8 +1316,8 @@ Convert()	; () -> Void
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
 		; グローバル変数へ移動
-;		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
-;		, ent		:= 0	; Int型	エンター
+;		, spc		:= 0	; Int型	スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3, 5: リピート中(3: かなを押すと変換取消→シフト側文字)
+;		, ent		:= 0	; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
 ;	local class				; String型
 ;		, keyTime			; Double型	キーを押した時間
 ;		, imeState			; Bool?型
@@ -1493,10 +1493,10 @@ Convert()	; () -> Void
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
 			}
-			; 英数単打のリピート
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle) && (spc & 1))
+			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && (spc & 1))
 			{
-				spc := 3	; 空白をリピート中
+				spc := 5	; 空白をリピート中
 				StoreBuf("{Space}", 0, R)
 				OutBuf()
 				DispTime(keyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
@@ -1550,7 +1550,7 @@ Convert()	; () -> Void
 				; 英数単打のリピート
 				If ((!kanaMode && eisuRepeat || !repeatStyle) && (ent & 1))
 				{
-					ent := 3	; エンターをリピート中
+					ent := 5	; エンターをリピート中
 					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
 					OutBuf()
 					DispTime(keyTime, "`nエンター長押し")	; キー変化からの経過時間を表示
@@ -1583,6 +1583,7 @@ Convert()	; () -> Void
 		; スペースのリピートを止める
 		Else If (spc == 3)
 		{
+			; かなを押すと変換取消→シフト側文字
 			If (kanaMode)
 			{
 				nextKey := nowKey
