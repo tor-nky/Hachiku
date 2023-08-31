@@ -86,7 +86,7 @@ DeleteDefs()	; () -> Void
 	defsKanaMode := []	; 0: 英数入力用, 1: かな入力用
 	defsTateStr := []	; 縦書き用定義
 	defsYokoStr := []	; 横書き用定義
-	defsCtrlName := []	; 0または空: なし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
+	defsCtrlName := []	; NR: リピートなし, R: リピートできる, 他: 特別出力(かな定義ファイルで操作)
 	defsCombinableBit := []	; 0: 出力確定しない,
 							; 1: 通常シフトのみ出力確定, 2: どちらのシフトも出力確定
 	defBegin := [1, 1, 1]	; 定義の始め 1キー, 2キー同時, 3キー同時
@@ -347,17 +347,19 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 ; keyComb	キーをビットに置き換えたものの集合
 ; tate		縦書き定義
 ; yoko		横書き定義
-; ctrlName	0または空: なし, R: リピートあり, 他: かな配列ごとの特殊コード
+; ctrlName	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
 	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, defBegin, defEnd
-		, kanaGroup, R
+		, kanaGroup, NR, R
+		, eisuRepeat
 ;	local keyCount	; Int型	何キー同時押しか
 ;		, i, imax	; Int型	カウンタ用
 
-	; 登録
-	keyCount := CountBit(keyComb)	; 何キー同時押しか
+	; 何キー同時押しか
+	keyCount := CountBit(keyComb)
+
 	i := defBegin[keyCount]			; 始まり
 	imax := defEnd[keyCount]		; 終わり
 	While (i < imax)
@@ -382,9 +384,9 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 		}
 		i++
 	}
-	If ((ctrlName && ctrlName != R) || tate != "" || yoko != "")
+	; 定義を登録
+	If ((ctrlName != NR && ctrlName != R) || tate != "" || yoko != "")
 	{
-		; 定義あり
 		i := defEnd[keyCount]
 		defsKey.InsertAt(i, keyComb)
 		defsGroup.InsertAt(i, kanaGroup)
@@ -401,13 +403,34 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 	}
 }
 
+; リピートの好みを ctrlName に反映させる
+; ctrlName が特別出力の時はそのまま返す(全てリピートさせるのは、関数Convet()内でも行う)
+RepeatStyleToCtrlName(ctrlName:="")	; (ctrlName: String) -> String
+{
+	global NR, R, repeatStyle
+
+	; リピート 全てする
+	If (!repeatStyle)
+		Return (ctrlName && ctrlName != NR ? ctrlName : R)
+	; リピート 基本する
+	Else If (repeatStyle == 1)
+		Return (ctrlName ? ctrlName : R)
+	; リピート 基本しない
+	Else If (repeatStyle == 2)
+		Return (ctrlName ? ctrlName : NR)
+	; リピート 全くしない
+	Else
+		Return (ctrlName && ctrlName != R ? ctrlName : NR)
+}
+
 ; かな定義登録
 SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	global R
+	global NR, R
 ;	local tate, yoko	; String型
 
-	If (!ctrlName || ctrlName == R)
+	ctrlName := RepeatStyleToCtrlName(ctrlName)
+	If (ctrlName == NR || ctrlName == R)
 	{
 		; 機能等を書き換え
 		tate := Analysis(str)
@@ -419,9 +442,10 @@ SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 }
 SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global R
+	global NR, R
 
-	If (!ctrlName || ctrlName == R)
+	ctrlName := RepeatStyleToCtrlName(ctrlName)
+	If (ctrlName == NR || ctrlName == R)
 		SetDefinition(1, keyComb, Analysis(tate), Analysis(yoko), ctrlName)
 	Else
 		SetDefinition(1, keyComb, tate, yoko, ctrlName)
@@ -429,10 +453,16 @@ SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yok
 ; 英数定義登録
 SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	global R
+	global NR, R, eisuRepeat
 ;	local tate, yoko	; String型
 
-	If (!ctrlName || ctrlName == R)
+	; 英数単打のリピートありの処理
+	If (eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
+		ctrlName := R
+	Else
+		ctrlName := RepeatStyleToCtrlName(ctrlName)
+
+	If (ctrlName == NR || ctrlName == R)
 	{
 		; 機能等を書き換え
 		tate := Analysis(str)
@@ -444,9 +474,15 @@ SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 }
 SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global R
+	global NR, R, eisuRepeat
 
-	If (!ctrlName || ctrlName == R)
+	; 英数単打のリピートありの処理
+	If (eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
+		ctrlName := R
+	Else
+		ctrlName := RepeatStyleToCtrlName(ctrlName)
+
+	If (ctrlName == NR || ctrlName == R)
 		SetDefinition(0, keyComb, Analysis(tate), Analysis(yoko), ctrlName)
 	Else
 		SetDefinition(0, keyComb, tate, yoko, ctrlName)
@@ -591,7 +627,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
 	WinGet, hwnd, ID, A
-	WinGetTitle, title, ahk_id %hwnd%
+;	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
@@ -609,7 +645,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		delay := 10	; エクスプローラーにはゆっくり出力する
 	Else If (class == "Notepad" && delay < 20)
 		delay := 20	; メモ帳にはゆっくり出力する
-	Else If (!romanChar && SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
+	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; 1文字目を必ずゆっくり出力する
 	lastDelay := Floor(QPC() - lastSendTime)
 
@@ -1102,7 +1138,7 @@ SplitKeyUpDown(str)	; (str: String) -> String
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)	; (i: Int) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames, R
+	global outStrsLength, outStrs, outCtrlNames, NR, R
 		, testMode
 ;	local out		; String型
 ;		, ctrlName	; String型
@@ -1123,7 +1159,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 
 		; リピートなし、またはジャストシステム製品(矢印キーの上げ下げをエミュレートしない方が良い)
-		If (!ctrlName || SubStr(class, 1, 3) == "js:")
+		If (ctrlName == NR || SubStr(class, 1, 3) == "js:")
 		{
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
@@ -1150,7 +1186,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 }
 
 ; 仮出力バッファを最後から backCount 回分を削除して、str と ctrlName を保存
-StoreBuf(str, backCount:=0, ctrlName:="")	; (str: String, backCount: Int, ctrlName: String) -> Void
+StoreBuf(str, backCount, ctrlName)	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
 	global outStrsLength, outStrs, outCtrlNames
 
@@ -1253,13 +1289,13 @@ DispStoredStr()	; () -> Void
 Convert()	; () -> Void
 {
 	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
-		, KC_SPC, JP_YEN, KC_INT1, R
+		, KC_SPC, JP_YEN, KC_INT1, NR, R
 		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName, defBegin, defEnd
 		, outStrsLength, lastSendTime, kanaMode
 		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
-		, keyUpToOutputAll, eisuSandS
-		, imeGetInterval
+		, keyUpToOutputAll, eisuSandS, eisuRepeat
+		, repeatStyle, imeGetInterval
 		, spc, ent
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
@@ -1273,15 +1309,15 @@ Convert()	; () -> Void
 		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
 		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
-		, ctrlName	:= ""	; String型	0または空: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
+		, ctrlName	:= NR	; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 		, lastIMEConvMode	; Int型
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
 		; グローバル変数へ移動
-;		, spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
-;		, ent		:= 0	; Bool型	エンター
+;		, spc		:= 0	; Int型	スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3, 5: リピート中(3: かなを押すと変換取消→シフト側文字)
+;		, ent		:= 0	; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
 ;	local class				; String型
 ;		, keyTime			; Double型	キーを押した時間
 ;		, imeState			; Bool?型
@@ -1457,6 +1493,15 @@ Convert()	; () -> Void
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
 			}
+			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && (spc & 1))
+			{
+				spc := 5	; 空白をリピート中
+				StoreBuf("{Space}", 0, R)
+				OutBuf()
+				DispTime(keyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
+				Continue
+			}
 			; スペースキーの長押し
 			Else If (spaceKeyRepeat && (spc & 1))
 			{
@@ -1502,7 +1547,16 @@ Convert()	; () -> Void
 			If !(sft || rsft || spc)
 			{
 				nowKey := "sc39"	; センターシフト押す
-				If (!ent)
+				; 英数単打のリピート
+				If ((!kanaMode && eisuRepeat || !repeatStyle) && (ent & 1))
+				{
+					ent := 5	; エンターをリピート中
+					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
+					OutBuf()
+					DispTime(keyTime, "`nエンター長押し")	; キー変化からの経過時間を表示
+					Continue
+				}
+				Else If (!ent)
 					ent := 1
 			}
 		}
@@ -1529,6 +1583,7 @@ Convert()	; () -> Void
 		; スペースのリピートを止める
 		Else If (spc == 3)
 		{
+			; かなを押すと変換取消→シフト側文字
 			If (kanaMode)
 			{
 				nextKey := nowKey
@@ -1647,10 +1702,10 @@ Convert()	; () -> Void
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
 
 			; 文字キーによるシフトの適用範囲
-			If (combLimitE && !kanaMode)
-				shiftStyle := 3	; 英数入力時に判定期限ありなら、文字キーシフトは1回のみ
-			Else
-				shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
+			shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
+			; 英数入力時に判定期限ありなら、文字キーシフトは「同グループのみ継続」か「1回のみ」
+			If (combLimitE && !kanaMode && shiftStyle < 2)
+				shiftStyle := 2
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 前に押したキーと同時押しにならない
@@ -1789,19 +1844,25 @@ Convert()	; () -> Void
 			If (ent == 1)
 				ent := 2	; 単独エンターではない
 
-			; 仮出力する文字列を選ぶ
+			; 仮出力する文字列を変数に入れる
+			; 定義が見つかった時
 			If (keyCount > 0)
 			{
-				; 定義が見つかった時
 				toBuf := SelectStr(i)
 				ctrlName := defsCtrlName[i]
 			}
-			Else
+			; 定義がなく、英数単打のリピートあり
+			Else If (!kanaMode && eisuRepeat)
 				ctrlName := R
+			Else
+				; リピートの好みを反映
+				ctrlName := RepeatStyleToCtrlName()
+
 			; 仮出力バッファに入れる
 			StoreBuf(toBuf, backCount, ctrlName)
+
 			; キーリピート用
-			If (ctrlName == R)
+			If (ctrlName == R || !repeatStyle)
 				repeatBit := nowBit	; キーリピートする
 			Else
 				repeatBit := 0

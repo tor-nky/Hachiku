@@ -100,6 +100,7 @@ KC_INT1	:= 1 << 0x38	; sc73
 KC_SPC	:= 1 << 0x39
 
 ; リピート定義用
+NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
 ; ----------------------------------------------------------------------
@@ -132,8 +133,8 @@ outCtrlNames := []	; [String]型
 outStrsLength := 0	; Int型			保存されている個数
 restStr := ""		; [String]型
 ; シフト用キーの状態
-spc		:= 0	; Int型		スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3: リピート中
-ent		:= 0	; Bool型	エンター
+spc		:= 0	; Int型	スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3, 5: リピート中(3: かなを押すと変換取消→シフト側文字)
+ent		:= 0	; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
 
 goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
 
@@ -183,6 +184,10 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat
 	If (spaceKeyRepeat != Floor(spaceKeyRepeat) || spaceKeyRepeat < 0 || spaceKeyRepeat > 2)
 		spaceKeyRepeat := 0	; 初期値
+; 英数単打のリピート	0: なし, 1: あり
+	IniRead, eisuRepeat, %iniFilePath%, Basic, EisuRepeat
+	If (eisuRepeat != Floor(eisuRepeat) || eisuRepeat < 0 || eisuRepeat > 1)
+		eisuRepeat := 1	; 初期値
 
 ; [Naginata]
 ; Vertical		0: 横書き用, 1: 縦書き用
@@ -227,22 +232,26 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		IniRead, combKeyUpSPC, %iniFilePath%, Advanced, CombKeyUpSPC
 		If (combKeyUpSPC != Floor(combKeyUpSPC) || combKeyUpSPC < 0 || combKeyUpSPC > 1)
 			combKeyUpSPC := 1	; 初期値
-; キーを離せば常に全部出力する	0: しない, 1: する
-	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
-	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
-		keyUpToOutputAll := 0	; 初期値
 ; 英数入力時のSandS		0: なし, 1: あり
 	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS
 	If (eisuSandS != Floor(eisuSandS) || eisuSandS < 0 || eisuSandS > 1)
 		eisuSandS := 1	; 初期値
+; キーを離せば常に全部出力する	0: しない, 1: する
+	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
+	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
+		keyUpToOutputAll := 0	; 初期値
 ; テスト表示	0: なし, 1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列 ※iniになければ設定画面に表示しない
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
 	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
 		testMode := 0	; 初期値
+; リピートの好み	0: 全てする, 1: 基本する, 2: 基本しない, 3: 全くしない
+		IniRead, repeatStyle, %iniFilePath%, Advanced, RepeatStyle
+		If (repeatStyle != Floor(repeatStyle) || repeatStyle < 0 || repeatStyle > 3)
+			repeatStyle := 2	; 初期値
 ; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
-	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval, 30
+	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval
 	If (imeGetInterval < 0 || imeGetInterval > 2000)
-		imeGetInterval := 30	; 初期値
+		imeGetInterval := 50	; 初期値
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
@@ -292,6 +301,10 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 		testMode1 := (testMode == 1 ? 1 : 0)
 		testMode2 := (testMode == 2 ? 1 : 0)
 		testMode3 := (testMode == 3 ? 1 : 0)
+		repeatStyle0 := (repeatStyle == 0 ? 1 : 0)
+		repeatStyle1 := (repeatStyle == 1 ? 1 : 0)
+		repeatStyle2 := (repeatStyle == 2 ? 1 : 0)
+		repeatStyle3 := (repeatStyle == 3 ? 1 : 0)
 	}
 
 ; ----------------------------------------------------------------------
@@ -366,7 +379,10 @@ ButtonOK:
 	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
 	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
 	If (testMode != "ERROR")
+	{
 		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
+		repeatStyle := (repeatStyle0 ? 0 : (repeatStyle1 ? 1 : (repeatStyle2 ? 2 : 3)))
+	}
 	; 設定ファイル書き込み
 	; [general]
 	IniWrite, %iniVersion%, %iniFilePath%, general, Version
@@ -379,6 +395,7 @@ ButtonOK:
 	IniWrite, %shiftDelay%, %iniFilePath%, Basic, ShiftDelay
 	IniWrite, %combDelay%, %iniFilePath%, Basic, CombDelay
 	IniWrite, %spaceKeyRepeat%, %iniFilePath%, Basic, SpaceKeyRepeat
+	IniWrite, %eisuRepeat%, %iniFilePath%, Basic, EisuRepeat
 	; [Naginata]
 	IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
 	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
@@ -391,12 +408,12 @@ ButtonOK:
 	IniWrite, %combKeyUpS%, %iniFilePath%, Advanced, CombKeyUpS
 	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
 	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
-	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
+	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
 	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
+		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
 		IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
-
 	}
 
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
@@ -443,14 +460,18 @@ PrefMenu:
 			GuiControl, , usingKeyConfig, 1
 		; 後置シフトの待ち時間
 		Gui, Add, Text, xm y+15, 後置シフトの待ち時間
-		Gui, Add, Edit, xm+132 yp-3 W45
+		Gui, Add, Edit, xm+122 yp-3 W45 Number Right
 		Gui, Add, UpDown, VshiftDelay Range0-200, %shiftDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒
+		; 英数単打のリピート
+		Gui, Add, Checkbox, x+55 VeisuRepeat, 英数単打のリピート
+		If (eisuRepeat)
+			GuiControl, , eisuRepeat, 1
 		; テストモード
 		If (testMode != "ERROR")
 		{
 			; テスト表示
-			Gui, Add, Text, xm ys+150, テスト表示
+			Gui, Add, Text, xm ys+132, テスト表示
 			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
 			Gui, Add, Radio, x+0 VtestMode1, 処理時間
 			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
@@ -463,9 +484,23 @@ PrefMenu:
 				GuiControl, , testMode2, 1
 			Else
 				GuiControl, , testMode3, 1
+			; リピートの好み
+			Gui, Add, Text, xm y+8, リピートの好み
+			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 全てする
+			Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
+			Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
+			Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない
+			If (repeatStyle0)
+				GuiControl, , repeatStyle0, 1
+			Else If (repeatStyle1)
+				GuiControl, , repeatStyle1, 1
+			Else If (repeatStyle2)
+				GuiControl, , repeatStyle2, 1
+			Else
+				GuiControl, , repeatStyle3, 1
 			; 文字出力後に IME の状態を検出しない時間
 			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51
+			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
 			Gui, Add, UpDown, VimeGetInterval Range0-2000 128, %imeGetInterval%
 			Gui, Add, Text, x+5 yp+3, ミリ秒
 		}
@@ -519,7 +554,7 @@ PrefMenu:
 	Gui, Tab, 同時打鍵
 		; 同時打鍵判定
 		Gui, Add, Text, xm y+10, 同時打鍵判定
-		Gui, Add, Edit, xm+95 yp-3 W45
+		Gui, Add, Edit, xm+95 yp-3 W45 Number Right
 		Gui, Add, UpDown, VcombDelay Range0-200, %combDelay%
 		Gui, Add, Text, x+5 yp+3, ミリ秒 ※ 0 は無制限
 		; 通常
@@ -587,7 +622,7 @@ PrefMenu:
 		; 英数入力時
 		Gui, Add, Text, xm+10 y+5, 英数入力時
 			; 判定期限ありを強制する
-			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitE, 判定期限ありを強制する ※文字キーシフトは1回のみとなる
+			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitE, 判定期限強制 ※文字キーシフトは｢同グループのみ｣か｢1回のみ｣
 			If (combLimitE)
 				GuiControl, , combLimitE, 1
 		; スペースキーを離した時の設定
