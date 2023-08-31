@@ -627,7 +627,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 	SetKeyDelay, -1, -1
 	WinGet, hwnd, ID, A
-	WinGetTitle, title, ahk_id %hwnd%
+;	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
@@ -645,7 +645,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		delay := 10	; エクスプローラーにはゆっくり出力する
 	Else If (class == "Notepad" && delay < 20)
 		delay := 20	; メモ帳にはゆっくり出力する
-	Else If (!romanChar && SubStr(title, 1, 18) = "P-touch Editor - [")	; brother P-touch Editor
+	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; 1文字目を必ずゆっくり出力する
 	lastDelay := Floor(QPC() - lastSendTime)
 
