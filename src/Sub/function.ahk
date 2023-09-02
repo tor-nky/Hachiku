@@ -1512,7 +1512,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && (spc & 1))
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && repeatCount)
 			{
 				spc := 5	; 空白をリピート中
 				StoreBuf("{Space}", 0, R)
@@ -1521,7 +1521,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; スペースキーの長押し
-			Else If (spaceKeyRepeat && (spc & 1))
+			Else If (spaceKeyRepeat && repeatCount)
 			{
 				; 空白キャンセル
 				If (spaceKeyRepeat == 1)
@@ -1566,7 +1566,7 @@ Convert()	; () -> Void
 			{
 				nowKey := "sc39"	; センターシフト押す
 				; 英数単打のリピート
-				If ((!kanaMode && eisuRepeat || !repeatStyle) && (ent & 1))
+				If ((!kanaMode && eisuRepeat || !repeatStyle) && repeatCount)
 				{
 					ent := 5	; エンターをリピート中
 					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
