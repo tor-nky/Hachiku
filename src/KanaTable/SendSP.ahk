@@ -2,7 +2,7 @@
 SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 {
 	global koyuNumber, version, layoutName, layoutNameE, iniFilePath, vertical
-		, lastSendTime, repeatCount
+		, lastSendTime, repeatCount, repeatStyle
 
 	SetKeyDelay, -1, -1
 
@@ -12,8 +12,8 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
 		SendEachChar(strIn)
 	}
-	; リピート中ではない
-	Else If (!repeatCount)
+	; 初回、または全てリピートする場合
+	Else If (!repeatCount || !repeatStyle)
 	{
 		If (ctrlName == "ESCx3")
 			SendESCx3()
