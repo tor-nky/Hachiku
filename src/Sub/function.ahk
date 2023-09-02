@@ -1323,7 +1323,7 @@ Convert()	; () -> Void
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
 		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
-		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
+		, repeatFlg	:= False ; Bool型	リピート中か
 		, ctrlName	:= NR	; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 		, lastIMEConvMode	; Int型
@@ -1685,7 +1685,6 @@ Convert()	; () -> Void
 			Else If (!nowBit)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
-			repeatBit &= bitMask
 			last2Bit &= bitMask
 			lastBit &= bitMask
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
@@ -1694,17 +1693,17 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
-		Else If (nowBit == KC_SPC && !(realBit & nowBit)
+		Else If (nowBit == KC_SPC && !repeatCount
 			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
 		{
 			OutBuf()
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			realBit |= KC_SPC
-			repeatBit := 0		; リピート解除
+			repeatFlg := False	; リピート解除
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; リピート中のキー
-		Else If (repeatBit && repeatCount)
+		Else If (repeatFlg && repeatCount)
 		{
 			; 前回の文字列を出力
 			If (!outStrsLength)
@@ -1816,16 +1815,14 @@ Convert()	; () -> Void
 
 					While (i < imax)
 					{
-						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i])
+						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i]
+							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
-							If (!lastGroup || lastGroup == defsGroup[i])
-							{
-								; 見つかった!
-								If (nowBit == KC_SPC)
-									backCount := 1
-								keyCount := 1
-								Break
-							}
+							; 見つかった!
+							If (nowBit == KC_SPC)
+								backCount := 1
+							keyCount := 1
+							Break
 						}
 						i++
 					}
@@ -1845,7 +1842,7 @@ Convert()	; () -> Void
 				If (!outStrsLength)
 				{
 					SendKeyUp()			; 押し下げ出力中のキーを上げる
-					repeatBit := 0		; リピート解除
+					repeatFlg := False	; リピート解除
 					DispTime(keyTime)	; キー変化からの経過時間を表示
 					Continue
 				}
@@ -1880,9 +1877,9 @@ Convert()	; () -> Void
 
 			; キーリピート用
 			If (ctrlName == R || !repeatStyle)
-				repeatBit := nowBit	; キーリピートする
+				repeatFlg := True	; キーリピートする
 			Else
-				repeatBit := 0
+				repeatFlg := False
 
 			; 次回の検索用に変数を更新(グループの保存は後で)
 			lastToBuf := toBuf			; 今回の文字列を保存
