@@ -1,53 +1,63 @@
 ﻿; 特別出力
 SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 {
-	global koyuNumber, version, layoutName, layoutNameE, iniFilePath
-		, lastSendTime
+	global koyuNumber, version, layoutName, layoutNameE, iniFilePath, vertical
+		, lastSendTime, repeatCount
 
 	SetKeyDelay, -1, -1
 
-	If (ctrlName == "ESCx3")
-		SendESCx3()
-	Else If (ctrlName == "そのまま")
+	; 20行移動は、初回またはリピート中では 200ms 以上の空けて実行
+	If (ctrlName == "interval" && (!repeatCount || lastSendTime + 200.0 <= QPC()))
 	{
-		Send, % strIn
-		lastSendTime := QPC()	; 出力した時間を記録
-	}
-	Else If (ctrlName == "横書き")
-		ChangeVertical(0)
-	Else If (ctrlName == "縦書き")
-		ChangeVertical(1)
-	; 固有名詞ショートカットを切り替える
-	Else If (ctrlName == "KoyuChange")
-	{
-		; 番号が変わらない時
-		If (strIn == koyuNumber)
-		{
-			MsgBox, , , 固有名詞セット%koyuNumber%
-			Return
-		}
-		MsgBox, 1, , 固有名詞 セット%koyuNumber% → %strIn%
-		; キャンセル
-		IfMsgBox, Cancel
-			Return
-
-		koyuNumber := strIn
-		; 設定ファイル書き込み
-		IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
-		; ツールチップを変更する
-		If (layoutNameE)
-			Menu, TRAY, Tip, Hachiku %version%`n%layoutNameE%`n+ %layoutName%`n固有名詞セット%koyuNumber%
-		Else
-			Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
-
-		; 固有名詞ショートカットの読み込み・登録
-		KoyuReadAndRegist(koyuNumber)
-		; 出力確定する定義に印をつける
-		SettingLayout()
-	}
-	; その他、未定義のもの。念のため。
-	Else
+		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
 		SendEachChar(strIn)
+	}
+	; リピート中ではない
+	Else If (!repeatCount)
+	{
+		If (ctrlName == "ESCx3")
+			SendESCx3()
+		Else If (ctrlName == "そのまま")
+		{
+			Send, % strIn
+			lastSendTime := QPC()	; 出力した時間を記録
+		}
+		Else If (ctrlName == "横書き")
+			ChangeVertical(0)
+		Else If (ctrlName == "縦書き")
+			ChangeVertical(1)
+		; 固有名詞ショートカットを切り替える
+		Else If (ctrlName == "KoyuChange")
+		{
+			; 番号が変わらない時
+			If (strIn == koyuNumber)
+			{
+				MsgBox, , , 固有名詞セット%koyuNumber%
+				Return
+			}
+			MsgBox, 1, , 固有名詞 セット%koyuNumber% → %strIn%
+			; キャンセル
+			IfMsgBox, Cancel
+				Return
+
+			koyuNumber := strIn
+			; 設定ファイル書き込み
+			IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
+			; ツールチップを変更する
+			If (layoutNameE)
+				Menu, TRAY, Tip, Hachiku %version%`n%layoutNameE%`n+ %layoutName%`n固有名詞セット%koyuNumber%
+			Else
+				Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
+
+			; 固有名詞ショートカットの読み込み・登録
+			KoyuReadAndRegist(koyuNumber)
+			; 出力確定する定義に印をつける
+			SettingLayout()
+		}
+		; その他、未定義のもの。念のため。
+		Else
+			SendEachChar(strIn)
+	}
 }
 
 SendESCx3()	; () -> Void

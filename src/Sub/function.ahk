@@ -1876,7 +1876,7 @@ Convert()	; () -> Void
 			StoreBuf(toBuf, backCount, ctrlName)
 
 			; キーリピート用
-			If (ctrlName == R || !repeatStyle)
+			If (ctrlName != NR || !repeatStyle)
 				repeatFlg := True	; キーリピートする
 			Else
 				repeatFlg := False
