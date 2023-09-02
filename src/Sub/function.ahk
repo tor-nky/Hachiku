@@ -1285,6 +1285,21 @@ DispStoredStr()	; () -> Void
 	}
 }
 
+; リピート回数を更新する
+RepeatCount(nowKey)	; (nowKey: String) -> Void
+{
+	global repeatCount
+	static lastKey := ""	; String型	前回押したキー入力
+
+	If (nowKey == lastKey)
+		repeatCount++
+	Else
+	{
+		lastKey := nowKey
+		repeatCount := 0
+	}
+}
+
 ; 変換、出力
 Convert()	; () -> Void
 {
@@ -1296,7 +1311,7 @@ Convert()	; () -> Void
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS, eisuRepeat
 		, repeatStyle, imeGetInterval
-		, spc, ent
+		, spc, ent, repeatCount
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
@@ -1308,7 +1323,7 @@ Convert()	; () -> Void
 		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
 		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
 		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
-		, repeatBit	:= 0	; Int64型	リピート中のキーのビット
+		, repeatFlg	:= False ; Bool型	リピート中か
 		, ctrlName	:= NR	; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 		, lastIMEConvMode	; Int型
@@ -1370,6 +1385,9 @@ Convert()	; () -> Void
 					SetTimer, KeyTimer, -10
 				Continue
 			}
+
+			; リピート回数を数える
+			RepeatCount(nowKey)
 		}
 		Else
 		{
@@ -1494,7 +1512,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && (spc & 1))
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && repeatCount)
 			{
 				spc := 5	; 空白をリピート中
 				StoreBuf("{Space}", 0, R)
@@ -1503,7 +1521,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; スペースキーの長押し
-			Else If (spaceKeyRepeat && (spc & 1))
+			Else If (spaceKeyRepeat && repeatCount)
 			{
 				; 空白キャンセル
 				If (spaceKeyRepeat == 1)
@@ -1548,7 +1566,7 @@ Convert()	; () -> Void
 			{
 				nowKey := "sc39"	; センターシフト押す
 				; 英数単打のリピート
-				If ((!kanaMode && eisuRepeat || !repeatStyle) && (ent & 1))
+				If ((!kanaMode && eisuRepeat || !repeatStyle) && repeatCount)
 				{
 					ent := 5	; エンターをリピート中
 					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
@@ -1653,7 +1671,6 @@ Convert()	; () -> Void
 			{
 				OutBuf()
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
-				lastToBuf := ""
 				lastKeyCount := 0
 				; 全部出力済みならシフト解除
 				If (shiftStyle == 2)
@@ -1668,7 +1685,6 @@ Convert()	; () -> Void
 			Else If (!nowBit)
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
-			repeatBit &= bitMask
 			last2Bit &= bitMask
 			lastBit &= bitMask
 			reuseBit := (shiftStyle ? 0 : realBit)	; 文字キーシフト全復活
@@ -1677,23 +1693,23 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
-		Else If (nowBit == KC_SPC && !(realBit & nowBit)
+		Else If (nowBit == KC_SPC && !repeatCount
 			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
 		{
 			OutBuf()
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			realBit |= KC_SPC
-			repeatBit := 0		; リピート解除
+			repeatFlg := False	; リピート解除
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; リピート中のキー
-		Else If (repeatBit && nowBit == repeatBit && lastToBuf != "")
+		Else If (repeatFlg && repeatCount)
 		{
 			; 前回の文字列を出力
 			If (!outStrsLength)
 				StoreBuf(lastToBuf, 0, ctrlName)
 			OutBuf()
-			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
+			DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
 		Else If !(realBit & nowBit)
@@ -1799,16 +1815,14 @@ Convert()	; () -> Void
 
 					While (i < imax)
 					{
-						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i])
+						If (searchBit == defsKey[i] && kanaMode == defsKanaMode[i]
+							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
-							If (!lastGroup || lastGroup == defsGroup[i])
-							{
-								; 見つかった!
-								If (nowBit == KC_SPC)
-									backCount := 1
-								keyCount := 1
-								Break
-							}
+							; 見つかった!
+							If (nowBit == KC_SPC)
+								backCount := 1
+							keyCount := 1
+							Break
 						}
 						i++
 					}
@@ -1828,7 +1842,7 @@ Convert()	; () -> Void
 				If (!outStrsLength)
 				{
 					SendKeyUp()			; 押し下げ出力中のキーを上げる
-					repeatBit := 0		; リピート解除
+					repeatFlg := False	; リピート解除
 					DispTime(keyTime)	; キー変化からの経過時間を表示
 					Continue
 				}
@@ -1863,9 +1877,9 @@ Convert()	; () -> Void
 
 			; キーリピート用
 			If (ctrlName == R || !repeatStyle)
-				repeatBit := nowBit	; キーリピートする
+				repeatFlg := True	; キーリピートする
 			Else
-				repeatBit := 0
+				repeatFlg := False
 
 			; 次回の検索用に変数を更新(グループの保存は後で)
 			lastToBuf := toBuf			; 今回の文字列を保存
