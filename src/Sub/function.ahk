@@ -1285,6 +1285,21 @@ DispStoredStr()	; () -> Void
 	}
 }
 
+; リピート回数を更新する
+RepeatCount(nowKey)	; (nowKey: String) -> Void
+{
+	global repeatCount
+	static lastKey := ""	; String型	前回押したキー入力
+
+	If (nowKey == lastKey)
+		repeatCount++
+	Else
+	{
+		lastKey := nowKey
+		repeatCount := 0
+	}
+}
+
 ; 変換、出力
 Convert()	; () -> Void
 {
@@ -1296,7 +1311,7 @@ Convert()	; () -> Void
 		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
 		, keyUpToOutputAll, eisuSandS, eisuRepeat
 		, repeatStyle, imeGetInterval
-		, spc, ent
+		, spc, ent, repeatCount
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
@@ -1370,6 +1385,9 @@ Convert()	; () -> Void
 					SetTimer, KeyTimer, -10
 				Continue
 			}
+
+			; リピート回数を数える
+			RepeatCount(nowKey)
 		}
 		Else
 		{
@@ -1693,7 +1711,7 @@ Convert()	; () -> Void
 			If (!outStrsLength)
 				StoreBuf(lastToBuf, 0, ctrlName)
 			OutBuf()
-			DispTime(keyTime, "`nリピート")	; キー変化からの経過時間を表示
+			DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
 		Else If !(realBit & nowBit)
