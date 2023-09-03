@@ -510,11 +510,11 @@ kanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_H		,"^c"		, NR)	; Copy
 	SetKana( KC_C | KC_V | KC_N		,"+{End}"	, NR)	; +End
 	SetKana( KC_C | KC_V | KC_U		,"^x"		, NR)	; Cut
-	SetKana( KC_C | KC_V | KC_J		,"{→ 5}"	, R)	; →5
-	SetKana( KC_C | KC_V | KC_M		,"{← 5}"	, R)	; ←5
+	SetKana( KC_C | KC_V | KC_J		,"{→ 5}"	, "interval")	; →5
+	SetKana( KC_C | KC_V | KC_M		,"{← 5}"	, "interval")	; ←5
 	SetKana( KC_C | KC_V | KC_I		,"^v"		)		; Paste
-	SetKana( KC_C | KC_V | KC_K		,"+{→ 5}"	, R)	; +→5
-	SetKana( KC_C | KC_V | KC_COMM	,"+{← 5}"	, R)	; +←5
+	SetKana( KC_C | KC_V | KC_K		,"+{→ 5}"	, "interval")	; +→5
+	SetKana( KC_C | KC_V | KC_COMM	,"+{← 5}"	, "interval")	; +←5
 	SetKana( KC_C | KC_V | KC_O		,"^y"		)		; Redo
 	SetKana( KC_C | KC_V | KC_L		,"+{→ 20}"	, "interval")	; +→20
 	SetKana( KC_C | KC_V | KC_DOT	,"+{← 20}"	, "interval")	; +←20
@@ -526,11 +526,11 @@ kanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_H		,"^c"		, NR)	; Copy
 	SetEisu( KC_C | KC_V | KC_N		,"+{End}"	, NR)	; +End
 	SetEisu( KC_C | KC_V | KC_U		,"^x"		, NR)	; Cut
-	SetEisu( KC_C | KC_V | KC_J		,"{→ 5}"	, R)	; →5
-	SetEisu( KC_C | KC_V | KC_M		,"{← 5}"	, R)	; ←5
+	SetEisu( KC_C | KC_V | KC_J		,"{→ 5}"	, "interval")	; →5
+	SetEisu( KC_C | KC_V | KC_M		,"{← 5}"	, "interval")	; ←5
 	SetEisu( KC_C | KC_V | KC_I		,"^v"		)		; Paste
-	SetEisu( KC_C | KC_V | KC_K		,"+{→ 5}"	, R)	; +→5
-	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"	, R)	; +←5
+	SetEisu( KC_C | KC_V | KC_K		,"+{→ 5}"	, "interval")	; +→5
+	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"	, "interval")	; +←5
 	SetEisu( KC_C | KC_V | KC_O		,"^y"		)		; Redo
 	SetEisu( KC_C | KC_V | KC_L		,"+{→ 20}"	, "interval")	; +→20
 	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 20}"	, "interval")	; +←20

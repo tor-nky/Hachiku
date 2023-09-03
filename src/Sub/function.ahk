@@ -625,7 +625,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, inShifted				; Bool型
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
-	SetKeyDelay, -1, -1
+;	SetKeyDelay, -1, -1
 	WinGet, hwnd, ID, A
 ;	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %hwnd%
@@ -1039,6 +1039,9 @@ SendBlind(str)	; (str: String) -> Void
 {
 	global lastSendTime
 
+	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+;	SetKeyDelay, -1, -1
+
 	; Microsoft OneNote 対策
 	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
 	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
@@ -1159,7 +1162,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 
 		; リピートなし、またはジャストシステム製品(矢印キーの上げ下げをエミュレートしない方が良い)
-		If (ctrlName == NR || SubStr(class, 1, 3) == "js:")
+		If (ctrlName == NR || (SubStr(class, 1, 3) == "js:" && ctrlName == R))
 		{
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
@@ -1172,10 +1175,7 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		}
 		; 特別出力(かな定義ファイルで操作)
 		Else
-		{
-			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendSP(out, ctrlName)
-		}
 
 		outStrs[1] := outStrs[2]
 		outCtrlNames[1] := outCtrlNames[2]
@@ -1712,7 +1712,7 @@ Convert()	; () -> Void
 			DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
-		Else If !(realBit & nowBit)
+		Else If (!repeatCount)
 		{
 			realBit |= nowBit
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
@@ -1865,12 +1865,9 @@ Convert()	; () -> Void
 				toBuf := SelectStr(i)
 				ctrlName := defsCtrlName[i]
 			}
-			; 定義がなく、英数単打のリピートあり
-			Else If (!kanaMode && eisuRepeat)
-				ctrlName := R
+			; 定義がなければリピートあり
 			Else
-				; リピートの好みを反映
-				ctrlName := RepeatStyleToCtrlName()
+				ctrlName := R
 
 			; 仮出力バッファに入れる
 			StoreBuf(toBuf, backCount, ctrlName)

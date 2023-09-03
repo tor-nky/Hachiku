@@ -1,20 +1,19 @@
 ﻿; 特別出力
 SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 {
-	global koyuNumber, version, layoutName, layoutNameE, iniFilePath, vertical
+	global koyuNumber, version, layoutName, layoutNameE, iniFilePath
 		, lastSendTime, repeatCount, repeatStyle
 
-	SetKeyDelay, -1, -1
+	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+;	SetKeyDelay, -1, -1
 
-	; 20行移動は、初回またはリピート中では 200ms 以上の空けて実行
-	If (ctrlName == "interval" && (!repeatCount || lastSendTime + 200.0 <= QPC()))
-	{
-		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
-		SendEachChar(strIn)
-	}
+	; 20行移動など
+	If (ctrlName == "interval")
+		SendInterval(strIn)
 	; 初回、または全てリピートする場合
 	Else If (!repeatCount || !repeatStyle)
 	{
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
 		If (ctrlName == "ESCx3")
 			SendESCx3()
 		Else If (ctrlName == "そのまま")
@@ -57,6 +56,76 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 		; その他、未定義のもの。念のため。
 		Else
 			SendEachChar(strIn)
+	}
+}
+
+; 20行移動など
+SendInterval(strIn)	; (strIn: String) -> Void
+{
+	global repeatStyle, repeatCount, lastSendTime, vertical
+;	local hwnd	; Int型
+;		, class	; String型
+;		, interval, count, count1	; Int型
+
+	WinGet, hwnd, ID, A
+	WinGetClass, class, ahk_id %hwnd%
+
+	; 出力間隔を設定
+	interval := 0
+	If (RegExMatch(strIn, "^\+?\{→\s(\d+)\}$", count)
+	 || RegExMatch(strIn, "^\+?\{←\s(\d+)\}$", count))
+		; count1 に回数が入る
+	{
+		If (count1 >= 20)
+		{
+			If (SubStr(class, 1, 3) == "js:")
+				interval := 500
+			Else
+				interval := 80
+		}
+		Else If (count1 >= 5)
+		{
+			If (SubStr(class, 1, 3) == "js:")
+				interval := 120
+		}
+	}
+
+	If (!repeatStyle)
+	{
+		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
+		SendEachChar(strIn)
+	}
+	If (class == "Hidemaru32Class" && count1 > 1)
+	{
+		If (SubStr(strIn, 1, 3) = "+{→")
+		{
+			If (!repeatCount)
+				SendEachChar((vertical ? "+{Right " : "+{Up ") . count1 - 1 . "}")
+			SplitKeyUpDown(vertical ? "+{Right}" : "+{Up}")	; キーの上げ下げを分離
+		}
+		Else If (SubStr(strIn, 1, 3) = "+{←")
+		{
+			If (!repeatCount)
+				SendEachChar((vertical ? "+{Left " : "+{Down ") . count1 - 1 . "}")
+			SplitKeyUpDown(vertical ? "+{Left}" : "+{Down}")	; キーの上げ下げを分離
+		}
+		Else If (SubStr(strIn, 1, 2) = "{→")
+		{
+			If (!repeatCount)
+				SendEachChar((vertical ? "{Right " : "{Up ") . count1 - 1 . "}")
+			SplitKeyUpDown(vertical ? "{Right}" : "{Up}")	; キーの上げ下げを分離
+		}
+		Else If (SubStr(strIn, 1, 2) = "{←")
+		{
+			If (!repeatCount)
+				SendEachChar((vertical ? "{Left " : "{Down ") . count1 - 1 . "}")
+			SplitKeyUpDown(vertical ? "{Left}" : "{Down}")	; キーの上げ下げを分離
+		}
+	}
+	Else If (!repeatCount || lastSendTime + interval <= QPC())
+	{
+		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
+		SendEachChar(strIn)
 	}
 }
 

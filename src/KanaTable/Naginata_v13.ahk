@@ -611,11 +611,11 @@ kanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_H		,"^c"			, NR)	; コピー
 	SetKana( KC_C | KC_V | KC_N		,"+{End}"		, NR)	; 選択End▼
 	SetKana( KC_C | KC_V | KC_U		,"^x"			, NR)	; カット
-	SetKana( KC_C | KC_V | KC_J		,"{→ 5}"		, R)	; →5
-	SetKana( KC_C | KC_V | KC_M		,"{← 5}"		, R)	; ←5
+	SetKana( KC_C | KC_V | KC_J		,"{→ 5}"		, "interval")	; →5
+	SetKana( KC_C | KC_V | KC_M		,"{← 5}"		, "interval")	; ←5
 	SetKana( KC_C | KC_V | KC_I		,"^v"			)		; ペースト
-	SetKana( KC_C | KC_V | KC_K		,"+{→ 5}"		, R)	; →5選択
-	SetKana( KC_C | KC_V | KC_COMM	,"+{← 5}"		, R)	; ←5選択
+	SetKana( KC_C | KC_V | KC_K		,"+{→ 5}"		, "interval")	; →5選択
+	SetKana( KC_C | KC_V | KC_COMM	,"+{← 5}"		, "interval")	; ←5選択
 	SetKana( KC_C | KC_V | KC_O		,"^y"			)		; リドゥ
 	SetKana( KC_C | KC_V | KC_L		,"^{PgUp}"		, R)	; 前ページ▶先頭
 	SetKana( KC_C | KC_V | KC_DOT	,"^{PgDn}"		, R)	; 次◀ページ先頭
@@ -627,11 +627,11 @@ kanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_H		,"^c"			, NR)	; コピー
 	SetEisu( KC_C | KC_V | KC_N		,"+{End}"		, NR)	; 選択End▼
 	SetEisu( KC_C | KC_V | KC_U		,"^x"			, NR)	; カット
-	SetEisu( KC_C | KC_V | KC_J		,"{→ 5}"		, R)	; →5
-	SetEisu( KC_C | KC_V | KC_M		,"{← 5}"		, R)	; ←5
+	SetEisu( KC_C | KC_V | KC_J		,"{→ 5}"		, "interval")	; →5
+	SetEisu( KC_C | KC_V | KC_M		,"{← 5}"		, "interval")	; ←5
 	SetEisu( KC_C | KC_V | KC_I		,"^v"			)		; ペースト
-	SetEisu( KC_C | KC_V | KC_K		,"+{→ 5}"		, R)	; →5選択
-	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"		, R)	; ←5選択
+	SetEisu( KC_C | KC_V | KC_K		,"+{→ 5}"		, "interval")	; →5選択
+	SetEisu( KC_C | KC_V | KC_COMM	,"+{← 5}"		, "interval")	; ←5選択
 	SetEisu( KC_C | KC_V | KC_O		,"^y"			)		; リドゥ
 	SetEisu( KC_C | KC_V | KC_L		,"^{PgUp}"		, R)	; 前ページ▶先頭
 	SetEisu( KC_C | KC_V | KC_DOT	,"^{PgDn}"		, R)	; 次◀ページ先頭
