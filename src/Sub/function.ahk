@@ -1868,12 +1868,9 @@ Convert()	; () -> Void
 				toBuf := SelectStr(i)
 				ctrlName := defsCtrlName[i]
 			}
-			; 定義がなく、英数単打のリピートあり
-			Else If (!kanaMode && eisuRepeat)
-				ctrlName := R
+			; 定義がなければリピートあり
 			Else
-				; リピートの好みを反映
-				ctrlName := RepeatStyleToCtrlName()
+				ctrlName := R
 
 			; 仮出力バッファに入れる
 			StoreBuf(toBuf, backCount, ctrlName)
