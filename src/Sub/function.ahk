@@ -1674,6 +1674,8 @@ Convert()	; () -> Void
 			{
 				OutBuf()
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
+				If (lastBit & nowBit)
+					lastToBuf := ""
 				lastKeyCount := 0
 				; 全部出力済みならシフト解除
 				If (shiftStyle == 2)
@@ -1706,7 +1708,7 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; リピート中のキー
-		Else If (repeatFlg && repeatCount)
+		Else If (repeatFlg && repeatCount && lastToBuf != "")
 		{
 			; 前回の文字列を出力
 			If (!outStrsLength)
