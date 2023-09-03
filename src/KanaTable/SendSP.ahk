@@ -4,7 +4,8 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 	global koyuNumber, version, layoutName, layoutNameE, iniFilePath
 		, lastSendTime
 
-	SetKeyDelay, -1, -1
+	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+;	SetKeyDelay, -1, -1
 
 	If (ctrlName == "ESCx3")
 		SendESCx3()

@@ -625,7 +625,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, inShifted				; Bool型
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
-	SetKeyDelay, -1, -1
+;	SetKeyDelay, -1, -1
 	WinGet, hwnd, ID, A
 ;	WinGetTitle, title, ahk_id %hwnd%
 	WinGetClass, class, ahk_id %hwnd%
@@ -1038,6 +1038,9 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 SendBlind(str)	; (str: String) -> Void
 {
 	global lastSendTime
+
+	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+;	SetKeyDelay, -1, -1
 
 	; Microsoft OneNote 対策
 	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
