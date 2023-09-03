@@ -71,29 +71,20 @@ SendInterval(strIn)	; (strIn: String) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 
 	; 出力間隔を設定
-	interval := 0
 	If (RegExMatch(strIn, "^\+?\{→\s(\d+)\}$", count)
 	 || RegExMatch(strIn, "^\+?\{←\s(\d+)\}$", count))
 		; count1 に回数が入る
 	{
-		If (count1 >= 20)
-		{
-			If (SubStr(class, 1, 3) == "js:")
-				interval := 500
-			Else
-				interval := 80
-		}
-		Else If (count1 >= 5)
-		{
-			If (SubStr(class, 1, 3) == "js:")
-				interval := 120
-		}
+		If (SubStr(class, 1, 3) == "js:")	; ジャストシステム製品
+			interval := 25 * count1
+		Else
+			interval := count1
 	}
 
 	If (!repeatStyle)
 	{
-		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
-		SendEachChar(strIn)
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
+		SendEachChar(Analysis(strIn, !vertical))	; 必要なら縦横変換
 	}
 	If (class == "Hidemaru32Class" && count1 > 1)
 	{
@@ -124,8 +115,8 @@ SendInterval(strIn)	; (strIn: String) -> Void
 	}
 	Else If (!repeatCount || lastSendTime + interval <= QPC())
 	{
-		strIn := Analysis(strIn, !vertical)	; 必要なら縦横変換
-		SendEachChar(strIn)
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
+		SendEachChar(Analysis(strIn, !vertical))	; 必要なら縦横変換
 	}
 }
 
