@@ -1712,7 +1712,7 @@ Convert()	; () -> Void
 			DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
 		}
 		; 押されていなかったキー、sc**以外のキー
-		Else If (!repeatCount)
+		Else If !(realBit & nowBit)
 		{
 			realBit |= nowBit
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
