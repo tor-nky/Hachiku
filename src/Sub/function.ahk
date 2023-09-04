@@ -191,7 +191,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	i := 1
 	strLength := StrLen(str)
 
-	; アルファベットかハイフンだけなら、{? down}{? up} 形式に変換して終了
+	; アルファベットかハイフンだけなら、{? down}{? up} 形式に変換
 	If (RegExMatch(str, "^[a-z\-]+$"))
 	{
 		While (i <= strLength)
@@ -1086,18 +1086,18 @@ SendKeyUp(str:="")	; (str: String) -> Void
 	restStr := str
 }
 
-; キーの上げ下げを分離
-;	返り値: 下げるキー
+; 矢印系キーの上げ下げを模倣して出力
+;	返り値	0: 成功, 1: 失敗
 ;	restStr: 後で上げるキー
-SplitKeyUpDown(str)	; (str: String) -> String
+SplitKeyUpDown(str)	; (str: String) -> Bool
 {
 	global restStr	; まだ上げていないキー
 	static keyDowns := Object("{Space}", "{Space down}"
-;			, "{Home}", "{Home down}", "{End}", "{End down}", "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}"
-			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}")
+			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
+			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
 		, keyUps := Object("{Space}", "{Space up}"
-;			, "{Home}", "{Home up}", "{End}", "{End up}", "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}"
-			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}")
+			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}"
+			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
 								; keyDowns: [String : String]型定数
 								; keyUps: [String : String]型定数
 ;	local ret, keyDown, keyUp	; String型
@@ -1109,11 +1109,11 @@ SplitKeyUpDown(str)	; (str: String) -> String
 	ret := (inShifted ? SubStr(str, 2) : str)
 	; キー下げを取り出し
 	keyDown := keyDowns[ret]
-	; 分離をしないキーだったら戻る
+	; 上げ下げの模倣をしないキーだったら退出
 	If (keyDown == "")
 	{
 		SendKeyUp()	; 押したままだったキーを上げる
-		Return str
+		Return 1
 	}
 
 	; キー上げを取り出し
@@ -1134,7 +1134,79 @@ SplitKeyUpDown(str)	; (str: String) -> String
 		}
 	}
 	SendBlind(keyDown)
-	Return ""
+	Return 0
+}
+
+; 矢印系キーのリピートを注意しながら出力
+SendRepeatable(str)	; (strIn: String) -> Void
+{
+	global repeatCount, lastSendTime
+;	local hwnd						; Int型
+;		, class, process			; String型
+;		, interval, count, count1	; Int型
+;		, arrow						; String型
+
+	WinGet, hwnd, ID, A
+	WinGetClass, class, ahk_id %hwnd%
+	WinGet, process, ProcessName, ahk_id %hwnd%
+
+	; 矢印系キーの検出
+	arrow := ""
+	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+		arrow := "{Up"
+	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
+		arrow := "{Down"
+	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
+		arrow := "{Right"
+	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
+		arrow := "{Left"
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
+		arrow := "{PgUp"
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
+		arrow := "{PgDn"
+
+	; 矢印系キーがなければ普通に出力して退出
+	If (!arrow)
+	{
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
+		SendEachChar(str)
+		Return
+	}
+	; 矢印系キーの単打を出力して退出
+	; (矢印系キーの上げ下げをエミュレートしない方が良いジャストシステム製品を除く)
+	Else If (!count1 && SubStr(class, 1, 3) != "js:")
+	{
+		SplitKeyUpDown(str)	; キーの上げ下げを模倣して出力
+		Return
+	}
+
+	; 出力間隔を設定
+	If (SubStr(class, 1, 3) == "js:")	; ジャストシステム製品
+		interval := 25 * count1
+	Else
+		interval := count1
+
+	; WORD と秀丸エディタ
+	; 初回は矢印キーを連打して押したままにし、リピート時は1回押すだけ
+	If (count1 > 1
+	 && (process == "WINWORD.EXE" || class == "Hidemaru32Class"))
+	{
+		If (Asc(str) == 43)
+			arrow := "+" . arrow
+		If (!repeatCount)
+		{
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
+			SendEachChar(arrow . " " . count1 - 1 . "}")	; 1回少なく押す
+		}
+		SplitKeyUpDown(arrow . "}")	; キーの上げ下げを模倣
+	}
+	; 他のソフトウェア
+	; 間隔を空けて出力
+	Else If (!repeatCount || lastSendTime + interval <= QPC())
+	{
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
+		SendEachChar(str)
+	}
 }
 
 ; 仮出力バッファの先頭から i 個出力する
@@ -1145,9 +1217,6 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		, testMode
 ;	local out		; String型
 ;		, ctrlName	; String型
-;		, class		; String型
-
-	WinGetClass, class, A
 
 	While (i > 0 && outStrsLength > 0)
 	{
@@ -1161,18 +1230,15 @@ OutBuf(i:=2)	; (i: Int) -> Void
 			SetTimer, RemoveToolTip, 2500
 		}
 
-		; リピートなし、またはジャストシステム製品(矢印キーの上げ下げをエミュレートしない方が良い)
-		If (ctrlName == NR || SubStr(class, 1, 3) == "js:")
+		; リピートなし
+		If (ctrlName == NR)
 		{
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
 		}
 		; リピート可能
 		Else If (ctrlName == R)
-		{
-			out := SplitKeyUpDown(out)	; キーの上げ下げを分離
-			SendEachChar(out)
-		}
+			SendRepeatable(out)
 		; 特別出力(かな定義ファイルで操作)
 		Else
 		{
