@@ -649,13 +649,12 @@ SendKeyUp(str:="")	; (str: String) -> Void
 	restStr := str
 }
 
-; 矢印系キーの上げ下げを模倣して出力
+; 矢印系キーとスペースキーの上げ下げを模倣して出力
 ;	返り値	0: 成功, 1: 失敗
 ;	restStr: 後で上げるキー
-SplitKeyUpDown(str)	; (str: String) -> Bool
+SplitKeyUpDown(str, delay:=-2)	; (str: String, delay: Int) -> Bool
 {
 	global restStr	; まだ上げていないキー
-		, osBuild
 	static keyDowns := Object("{Space}", "{Space down}"
 			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
 			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
@@ -664,12 +663,7 @@ SplitKeyUpDown(str)	; (str: String) -> Bool
 			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
 								; keyDowns: [String : String]型定数
 								; keyUps: [String : String]型定数
-;	local hwnd	; Int型
-;		, class	; String型
-;		, ret, keyDown, keyUp	; String型
-
-	WinGet, hwnd, ID, A
-	WinGetClass, class, ahk_id %hwnd%
+;	local ret, keyDown, keyUp	; String型
 
 	; "+" から始まるか
 	inShifted := (Asc(str) == 43 ? True : False)
@@ -704,15 +698,14 @@ SplitKeyUpDown(str)	; (str: String) -> Bool
 	}
 	SendBlind(keyDown)
 
-	; Windows 11 以降のメモ帳
-	If (osBuild >= 20000 && class == "Notepad")
-		Sleep, 20
+	If (delay > -2)
+		Sleep, % delay
 
 	Return 0
 }
 
-; 矢印系キーのリピートを注意しながら出力
-SendRepeatable(str)	; (strIn: String) -> Void
+; 矢印系キーを注意しながら出力
+SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
 	global osBuild, repeatCount, lastSendTime, vertical
 ;	local hwnd				; Int型
@@ -728,7 +721,7 @@ SendRepeatable(str)	; (strIn: String) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 
-	; 矢印系キーの検出と、行移動の判定
+	; 矢印系キーの回数検出と、行移動の判定
 	arrow := ""
 	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
 	{
@@ -765,7 +758,9 @@ SendRepeatable(str)	; (strIn: String) -> Void
 	If (!arrow)
 	{
 		SendKeyUp()		; 押し下げ出力中のキーを上げる
-		SendEachChar(str)
+		SetKeyDelay, delay, -1
+		Send, % str
+		SetKeyDelay, -1, -1
 		Return
 	}
 
@@ -795,10 +790,10 @@ SendRepeatable(str)	; (strIn: String) -> Void
 
 	Loop % count1 - 1
 	{
-		SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
-		SendKeyUp()				; 押し下げ出力中のキーを上げる
+		SplitKeyUpDown(arrow, delay)	; キーの上げ下げを模倣
+		SendKeyUp()	; 押し下げ出力中のキーを上げる
 	}
-	SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
+	SplitKeyUpDown(arrow, delay)	; キーの上げ下げを模倣
 }
 
 ; 文字列 str を適宜スリープを入れながら出力する
@@ -871,292 +866,291 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i > strLength)
 		{
-			; "{Raw}"からの残りは全部出力する
-			If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
+			; 矢印系キーの上げ下げを模倣して出力
+			If (SubStr(strSub, 1, 3) = "{Up" || SubStr(strSub, 1, 4) = "+{Up"
+				|| SubStr(strSub, 1, 5) = "{Down" || SubStr(strSub, 1, 6) = "+{Down"
+				|| SubStr(strSub, 1, 5) = "{Left" || SubStr(strSub, 1, 6) = "+{Left"
+				|| SubStr(strSub, 1, 6) = "{Right" || SubStr(strSub, 1, 7) = "+{Right"
+				|| SubStr(strSub, 1, 5) = "{PgUp" || SubStr(strSub, 1, 6) = "+{PgUp"
+				|| SubStr(strSub, 1, 5) = "{PgDn" || SubStr(strSub, 1, 6) = "+{PgDn")
 			{
-				lastDelay := (delay < 10 ? 10 : delay)
-				While (i <= strLength)
-				{
-					SendRaw, % SubStr(str, i++, 1)
-					; 出力直後のディレイ
-					Sleep, % lastDelay
-				}
-				; 後で誤作動しないように消去
-				strSub := ""
+				SendArrowKeys(strSub, delay)	; 矢印系キーを出力
+				lastDelay := delay
 			}
-
-			; 出力するキーを変換
-			Else If (strSub == "{確定}")
+			; スペースキーの上げ下げを模倣して出力
+			Else If (strSub = "{Space}" || strSub = "+{Space}")
 			{
-				; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
-				If (usingKeyConfig
-				 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
+				SplitKeyUpDown(strSub, delay)	; 矢印系キーを出力
+				lastDelay := delay
+			}
+			; その他のキー
+			Else
+			{
+				SendKeyUp()		; 押し下げ出力中のキーを上げる
+
+				; "{Raw}"からの残りは全部出力する
+				If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 				{
-					out := "+^{vk1C}"
-					; 誤動作防止
-					If (imeName == "CustomMSIME")
-						postDelay := 120
+					lastDelay := (delay < 10 ? 10 : delay)
+					While (i <= strLength)
+					{
+						SendRaw, % SubStr(str, i++, 1)
+						; 出力直後のディレイ
+						Sleep, % lastDelay
+					}
+					; 後で誤作動しないように消去
+					strSub := ""
 				}
-				; 未変換文字があったらエンターを押す
-				Else
+
+				; 出力するキーを変換
+				Else If (strSub == "{確定}")
 				{
-					; IME_GET() の前に一定時間空ける
+					; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
+					If (usingKeyConfig
+					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
+					{
+						out := "+^{vk1C}"
+						; 誤動作防止
+						If (imeName == "CustomMSIME")
+							postDelay := 120
+					}
+					; 未変換文字があったらエンターを押す
+					Else
+					{
+						; IME_GET() の前に一定時間空ける
+						If (lastDelay < IME_Get_Interval)
+						{
+							Sleep, % IME_Get_Interval - lastDelay
+							lastDelay := IME_Get_Interval
+						}
+						; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
+						If (IME_GET() && IME_GetSentenceMode())
+						{
+							imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
+							; この関数が アスキー文字→{確定} で呼ばれたとき
+							; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
+							If ((romanChar && i > 5)
+							 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
+								; 確定のためのエンター
+								out := "{Enter}"
+							; かな入力中
+							Else If (imeConvMode & 1)
+							{
+								Send, {vkF3}	; 半角/全角
+								Sleep, % IME_Get_Interval + 20	; Win11 + NewMSIME への対策
+								lastDelay := IME_Get_Interval
+								; 「半角/全角」でIMEオンのままだったら未変換文字あり
+								If (IME_GET())
+								{
+									; IME入力モードを元に戻す
+									If (imeName != "Google")
+										IME_SetConvMode(imeConvMode)
+									Else If ((imeConvMode & 0xF) == 9)
+										Send, {vkF2}	; ひらがな
+									Else
+										Send, {vkF1}	; カタカナ
+									; 確定のためのエンター
+									out := "{Enter}"
+								}
+								; 未変換文字がない
+								; 直後の定義によってはIMEオフのままで良いのでカウンタを進めその先へ
+								Else If (SubStr(str, i, 7) = "{NoIME}")
+								{
+									i += 7
+									noIME := True
+								}
+								Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
+									|| SubStr(str, i, 6) = "{vk19}")
+								{
+									i += 6
+									noIME := False
+								}
+								Else If (SubStr(str, i, 8) = "{IMEOFF}")
+								{
+									i += 8
+									noIME := False
+									kanaMode := 0
+								}
+								; 「半角/全角」で元に戻す
+								Else
+								{
+									out := "{vkF3}"
+									postDelay := IME_Get_Interval
+								}
+							}
+							; 未変換文字があるか不明
+							Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
+							{
+								Send, _
+								Send, {Enter}
+								If (imeName != "Google")
+									; ブラウザのフィールド対策
+									; 次行「」 "{確定}{End}{改行}[]{確定}{←}" が失敗しやすい
+									Sleep, 90
+								out := "{BS}"
+							}
+						}
+					}
+					; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
+					If (class == "Hidemaru32Class" && out == "{Enter}"
+					 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
+						postDelay := 110
+				}
+				Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
+				{
 					If (lastDelay < IME_Get_Interval)
 					{
+						; 前回の出力から一定時間空けて IME_GET() へ
 						Sleep, % IME_Get_Interval - lastDelay
 						lastDelay := IME_Get_Interval
 					}
-					; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
-					If (IME_GET() && IME_GetSentenceMode())
+					If (IME_GET())
 					{
-						imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
-						; この関数が アスキー文字→{確定} で呼ばれたとき
-						; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
-						If ((romanChar && i > 5)
-						 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
-							; 確定のためのエンター
-							out := "{Enter}"
-						; かな入力中
-						Else If (imeConvMode & 1)
-						{
-							Send, {vkF3}	; 半角/全角
-							Sleep, % IME_Get_Interval + 20	; Win11 + NewMSIME への対策
-							lastDelay := IME_Get_Interval
-							; 「半角/全角」でIMEオンのままだったら未変換文字あり
-							If (IME_GET())
-							{
-								; IME入力モードを元に戻す
-								If (imeName != "Google")
-									IME_SetConvMode(imeConvMode)
-								Else If ((imeConvMode & 0xF) == 9)
-									Send, {vkF2}	; ひらがな
-								Else
-									Send, {vkF1}	; カタカナ
-								; 確定のためのエンター
-								out := "{Enter}"
-							}
-							; 未変換文字がない
-							; 直後の定義によってはIMEオフのままで良いのでカウンタを進めその先へ
-							Else If (SubStr(str, i, 7) = "{NoIME}")
-							{
-								i += 7
-								noIME := True
-							}
-							Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
-								|| SubStr(str, i, 6) = "{vk19}")
-							{
-								i += 6
-								noIME := False
-							}
-							Else If (SubStr(str, i, 8) = "{IMEOFF}")
-							{
-								i += 8
-								noIME := False
-								kanaMode := 0
-							}
-							; 「半角/全角」で元に戻す
-							Else
-							{
-								out := "{vkF3}"
-								postDelay := IME_Get_Interval
-							}
-						}
-						; 未変換文字があるか不明
-						Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
-						{
-							Send, _
-							Send, {Enter}
-							If (imeName != "Google")
-								; ブラウザのフィールド対策
-								; 次行「」 "{確定}{End}{改行}[]{確定}{←}" が失敗しやすい
-								Sleep, 90
-							out := "{BS}"
-						}
+						noIME := True
+						out := "{vkF3}"		; 半角/全角
+						postDelay := IME_Get_Interval
 					}
 				}
-				; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
-				If (class == "Hidemaru32Class" && out == "{Enter}"
-				 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
-					postDelay := 110
-			}
-			Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
-			{
-				If (lastDelay < IME_Get_Interval)
+				Else If (strSub = "{IMEOFF}")
 				{
-					; 前回の出力から一定時間空けて IME_GET() へ
-					Sleep, % IME_Get_Interval - lastDelay
+					noIME := False
+					preDelay := 50
+					If (lastDelay < preDelay)
+						Sleep, % preDelay - lastDelay
+					IME_SET(kanaMode := 0)	; IMEオフ
 					lastDelay := IME_Get_Interval
 				}
-				If (IME_GET())
+				Else If (strSub = "{IMEON}")
 				{
-					noIME := True
-					out := "{vkF3}"		; 半角/全角
+					noIME := False
+					IME_SET(1)		; IMEオン
+					lastDelay := IME_Get_Interval
+				}
+				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
+					|| strSub = "{vk19}"							; 漢字	Alt+`
+					|| strSub = "{vkF0}")							; 英数
+				{
+					noIME := False
+					out := strSub
 					postDelay := IME_Get_Interval
+					kanaMode := kanaMode ^ 1
 				}
-			}
-			Else If (strSub = "{IMEOFF}")
-			{
-				noIME := False
-				preDelay := 50
-				If (lastDelay < preDelay)
-					Sleep, % preDelay - lastDelay
-				IME_SET(kanaMode := 0)	; IMEオフ
-				lastDelay := IME_Get_Interval
-			}
-			Else If (strSub = "{IMEON}")
-			{
-				noIME := False
-				IME_SET(1)		; IMEオン
-				lastDelay := IME_Get_Interval
-			}
-			Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
-				|| strSub = "{vk19}"							; 漢字	Alt+`
-				|| strSub = "{vkF0}")							; 英数
-			{
-				noIME := False
-				out := strSub
-				postDelay := IME_Get_Interval
-				kanaMode := kanaMode ^ 1
-			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
-				|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
-			{
-				noIME := False
-				; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
-				; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
-				IME_SetConvMode(25)	; IME 入力モード	ひらがな
-				out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
-				postDelay := IME_Get_Interval
-				kanaMode := 1
-			}
-			Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
-				|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
-			{
-				noIME := False
-				If (imeName == "NewMSIME")
-					Send, {vk16}
-				Else
-					Send, {vkF2}
-				out := "{vkF1}"		; カタカナ
-				postDelay := IME_Get_Interval
-				kanaMode := 1
-			}
-			Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
-			{
-				noIME := False
-				out := strSub
-				postDelay := IME_Get_Interval
-				kanaMode := 0
-			}
-			Else If (strSub == "{全英}")
-			{
-				noIME := False
-				If (imeName != "Google" && IME_GetConvMode())
+				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
+					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
 				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(24)	; IME 入力モード	全英数
-					lastDelay := IME_Get_Interval
+					noIME := False
+					; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
+					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
+					IME_SetConvMode(25)	; IME 入力モード	ひらがな
+					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
+					postDelay := IME_Get_Interval
+					kanaMode := 1
 				}
-				Else
+				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
+					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
 				{
+					noIME := False
 					If (imeName == "NewMSIME")
 						Send, {vk16}
 					Else
 						Send, {vkF2}
-					out := "+{vk1D}"	; シフト+無変換
+					out := "{vkF1}"		; カタカナ
 					postDelay := IME_Get_Interval
-				}
-				kanaMode := 0
-			}
-			Else If (strSub == "{半ｶﾅ}")
-			{
-				noIME := False
-				If (imeName == "Google")
-					TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
-				Else If (!IME_GetConvMode())
-					TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
-				Else
-				{
-					IME_SET(1)			; IMEオン
-					IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-					lastDelay := IME_Get_Interval
 					kanaMode := 1
 				}
-			}
-			; 秀丸エディタでエンターを押した
-			; ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
-			Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
-			 && class == "Hidemaru32Class")
-			{
-				out := strSub
-				If (imeName == "Google" || imeName == "ATOK")
+				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
 				{
-					preDelay := 10
+					noIME := False
+					out := strSub
+					postDelay := IME_Get_Interval
+					kanaMode := 0
+				}
+				Else If (strSub == "{全英}")
+				{
+					noIME := False
+					If (imeName != "Google" && IME_GetConvMode())
+					{
+						IME_SET(1)			; IMEオン
+						IME_SetConvMode(24)	; IME 入力モード	全英数
+						lastDelay := IME_Get_Interval
+					}
+					Else
+					{
+						If (imeName == "NewMSIME")
+							Send, {vk16}
+						Else
+							Send, {vkF2}
+						out := "+{vk1D}"	; シフト+無変換
+						postDelay := IME_Get_Interval
+					}
+					kanaMode := 0
+				}
+				Else If (strSub == "{半ｶﾅ}")
+				{
+					noIME := False
+					If (imeName == "Google")
+						TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
+					Else If (!IME_GetConvMode())
+						TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
+					Else
+					{
+						IME_SET(1)			; IMEオン
+						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
+						lastDelay := IME_Get_Interval
+						kanaMode := 1
+					}
+				}
+				; 秀丸エディタでエンターを押した
+				; ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
+				Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
+				 && class == "Hidemaru32Class")
+				{
+					out := strSub
+					If (imeName == "Google" || imeName == "ATOK")
+					{
+						preDelay := 10
+						postDelay := 60
+					}
+					Else If (imeName != "NewMSIME")
+						postDelay := 60
+				}
+				Else If (strSub = "^x")
+				{
+					out := strSub
+					preDelay := (imeName == "NewMSIME" ? 100 : 70)
+					postDelay := 40
+				}
+				Else If (strSub = "^v")
+				{
+					out := strSub
+					preDelay := 40
 					postDelay := 60
 				}
-				Else If (imeName != "NewMSIME")
-					postDelay := 60
-			}
-			; {Up}、+{Up}、{Up 回数}、+{Up 回数}
-			Else If (RegExMatch(strSub, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
-				; count1 に回数が入る
-			{
-				; Microsoft OneNote 対策ルーチンへ
- 				Loop, % (count1 ? count1 : 1)
+				Else If (strSub = "{C_Clr}")
+					Clipboard :=				; クリップボードを空にする
+				Else If (SubStr(strSub, 1, 7) = "{C_Wait")
 				{
-					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Up}" : "{Up}")
-					SendKeyUp()		; 押し下げ出力中のキーを上げる
+					; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+					wait := SubStr(strSub, 9, strSubLength - 9)
+					ClipWait, (wait ? wait : 0.2), 1
 				}
-				lastDelay := 0
-			}
-			; {Down}、+{Down}、{Down 回数}、+{Down 回数}
-			Else If (RegExMatch(strSub, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
-				; count1 に回数が入る
-			{
-				; Microsoft OneNote 対策ルーチンへ
- 				Loop, % (count1 ? count1 : 1)
+				Else If (strSub = "{C_Bkup}")
+					clipSaved := ClipboardAll	; クリップボードの全内容を保存
+				Else If (strSub = "{C_Rstr}")
 				{
-					SplitKeyUpDown(Asc(strSub) == 43 ? "+{Down}" : "{Down}")
-					SendKeyUp()		; 押し下げ出力中のキーを上げる
+					Clipboard := clipSaved		; クリップボードの内容を復元
+					clipSaved :=				; 保存用変数に使ったメモリを開放
 				}
-				lastDelay := 0
+				Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
+					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
+				{
+					out := strSub
+					If (postDelay < 10)
+						postDelay := 10
+				}
+				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
+					out := strSub
 			}
-			Else If (strSub = "^x")
-			{
-				out := strSub
-				preDelay := (imeName == "NewMSIME" ? 100 : 70)
-				postDelay := 40
-			}
-			Else If (strSub = "^v")
-			{
-				out := strSub
-				preDelay := 40
-				postDelay := 60
-			}
-			Else If (strSub = "{C_Clr}")
-				Clipboard :=				; クリップボードを空にする
-			Else If (SubStr(strSub, 1, 7) = "{C_Wait")
-			{
-				; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
-				wait := SubStr(strSub, 9, strSubLength - 9)
-				ClipWait, (wait ? wait : 0.2), 1
-			}
-			Else If (strSub = "{C_Bkup}")
-				clipSaved := ClipboardAll	; クリップボードの全内容を保存
-			Else If (strSub = "{C_Rstr}")
-			{
-				Clipboard := clipSaved		; クリップボードの内容を復元
-				clipSaved :=				; 保存用変数に使ったメモリを開放
-			}
-			Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
-				|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
-			{
-				out := strSub
-				If (postDelay < 10)
-					postDelay := 10
-			}
-			Else If (strSub != "{Null}" && strSub != "{UndoIME}")
-				out := strSub
 
 			; キー出力
 			If (out)
@@ -1262,12 +1256,12 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		; リピートなし
 		If (ctrlName == NR)
 		{
-			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendEachChar(out)
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
 		}
 		; リピート可能
 		Else If (ctrlName == R)
-			SendRepeatable(out)
+			SendEachChar(out)
 		; 特別出力(かな定義ファイルで操作)
 		Else
 		{
