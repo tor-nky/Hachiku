@@ -534,6 +534,7 @@ SettingLayout()	; () -> Void
 
 ExistNewMSIME()	; () -> Bool
 {
+	global osBuild
 ;	local build	; Int型
 
 	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
@@ -542,8 +543,7 @@ ExistNewMSIME()	; () -> Bool
 
 	; 参考: https://docs.microsoft.com/ja-jp/windows/release-health/supported-versions-windows-client
 	; [requires v1.1.20+]
-	build := SubStr(A_OSVersion, 6)	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
-	If (build <= 18363)	; Windows 10 1909 以前
+	If (osBuild <= 18363)	; Windows 10 1909 以前
 		Return False
 	Else
 		Return True
@@ -603,7 +603,7 @@ DetectIME()	; () -> String
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
 SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
+	global osBuild, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -643,7 +643,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	preDelay := postDelay := -2
 	If (class == "CabinetWClass" && delay < 10)
 		delay := 10	; エクスプローラーにはゆっくり出力する
-	Else If (class == "Notepad" && delay < 20)
+	Else If (osBuild >= 20000 && class == "Notepad" && delay < 20)	; Windows 11 以降のメモ帳
 		delay := 20	; メモ帳にはゆっくり出力する
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; 1文字目を必ずゆっくり出力する
@@ -1092,6 +1092,7 @@ SendKeyUp(str:="")	; (str: String) -> Void
 SplitKeyUpDown(str)	; (str: String) -> Bool
 {
 	global restStr	; まだ上げていないキー
+		, osBuild
 	static keyDowns := Object("{Space}", "{Space down}"
 			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
 			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
@@ -1100,7 +1101,12 @@ SplitKeyUpDown(str)	; (str: String) -> Bool
 			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
 								; keyDowns: [String : String]型定数
 								; keyUps: [String : String]型定数
-;	local ret, keyDown, keyUp	; String型
+;	local hwnd	; Int型
+;		, class	; String型
+;		, ret, keyDown, keyUp	; String型
+
+	WinGet, hwnd, ID, A
+	WinGetClass, class, ahk_id %hwnd%
 
 	; "+" から始まるか
 	inShifted := (Asc(str) == 43 ? True : False)
@@ -1134,36 +1140,63 @@ SplitKeyUpDown(str)	; (str: String) -> Bool
 		}
 	}
 	SendBlind(keyDown)
+
+	; Windows 11 以降のメモ帳
+	If (osBuild >= 20000 && class == "Notepad")
+		Sleep, 20
+
 	Return 0
 }
 
 ; 矢印系キーのリピートを注意しながら出力
 SendRepeatable(str)	; (strIn: String) -> Void
 {
-	global repeatCount, lastSendTime
-;	local hwnd						; Int型
-;		, class, process			; String型
-;		, interval, count, count1	; Int型
-;		, arrow						; String型
+	global osBuild, repeatCount, lastSendTime, vertical
+;	local hwnd				; Int型
+;		, class, process	; String型
+;		, count, count1		; Int型
+;		, arrow				; String型	矢印系キーだったらそのキー名
+;		, moveLines			; Bool型	行移動があるか
+
+	; リピート時の行移動は最大〇打
+	MAX_MOVE_LINES := 5		; Int型定数
 
 	WinGet, hwnd, ID, A
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 
-	; 矢印系キーの検出
+	; 矢印系キーの検出と、行移動の判定
 	arrow := ""
 	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
-		arrow := "{Up"
+	{
+		arrow := "{Up}"
+		moveLines := !vertical
+	}
 	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
-		arrow := "{Down"
-	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
-		arrow := "{Right"
+	{
+		arrow := "{Down}"
+		moveLines := !vertical
+	}
 	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
-		arrow := "{Left"
+	{
+		arrow := "{Left}"
+		moveLines := vertical
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
+	{
+		arrow := "{Right}"
+		moveLines := vertical
+	}
 	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
-		arrow := "{PgUp"
+	{
+		arrow := "{PgUp}"
+		moveLines := True
+	}
 	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
-		arrow := "{PgDn"
+	{
+		arrow := "{PgDn}"
+		moveLines := True
+	}
 
 	; 矢印系キーがなければ普通に出力して退出
 	If (!arrow)
@@ -1172,41 +1205,37 @@ SendRepeatable(str)	; (strIn: String) -> Void
 		SendEachChar(str)
 		Return
 	}
-	; 矢印系キーの単打を出力して退出
-	; (矢印系キーの上げ下げをエミュレートしない方が良いジャストシステム製品を除く)
-	Else If (!count1 && SubStr(class, 1, 3) != "js:")
+
+	; "+" から始まるか
+	If (Asc(str) == 43)
+		arrow := "+" . arrow
+
+	; リピート時
+	If (repeatCount)
 	{
-		SplitKeyUpDown(str)	; キーの上げ下げを模倣して出力
-		Return
+		If (process == "WINWORD.EXE")	; Word
+			count1 := 1	; リピート中は1個ずつ
+		; 秀丸エディタとジャストシステム製品の行移動
+		Else If (moveLines
+		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
+			count1 := 1	; リピート中は1行ずつ
+		; ジャストシステム製品の文字移動
+		Else If (SubStr(class, 1, 3) == "js:")
+			count1 := 2	; リピート中は2字ずつ
+		; Windows 11 以降のメモ帳ではリピート中の文字移動は最大4字
+		Else If (osBuild >= 20000 && class == "Notepad" && !moveLines && count1 > 4)
+			count1 := 4
+		; リピート時の行移動は最大〇打
+		Else If (moveLines && count1 > MAX_MOVE_LINES)
+			count1 := MAX_MOVE_LINES
 	}
 
-	; 出力間隔を設定
-	If (SubStr(class, 1, 3) == "js:")	; ジャストシステム製品
-		interval := 25 * count1
-	Else
-		interval := count1
-
-	; WORD と秀丸エディタ
-	; 初回は矢印キーを連打して押したままにし、リピート時は1回押すだけ
-	If (count1 > 1
-	 && (process == "WINWORD.EXE" || class == "Hidemaru32Class"))
+	Loop % count1 - 1
 	{
-		If (Asc(str) == 43)
-			arrow := "+" . arrow
-		If (!repeatCount)
-		{
-			SendKeyUp()		; 押し下げ出力中のキーを上げる
-			SendEachChar(arrow . " " . count1 - 1 . "}")	; 1回少なく押す
-		}
-		SplitKeyUpDown(arrow . "}")	; キーの上げ下げを模倣
+		SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
+		SendKeyUp()				; 押し下げ出力中のキーを上げる
 	}
-	; 他のソフトウェア
-	; 間隔を空けて出力
-	Else If (!repeatCount || lastSendTime + interval <= QPC())
-	{
-		SendKeyUp()		; 押し下げ出力中のキーを上げる
-		SendEachChar(str)
-	}
+	SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
 }
 
 ; 仮出力バッファの先頭から i 個出力する
@@ -2077,12 +2106,6 @@ sc34::	; .
 sc35::	; /
 sc73::	; (JIS)_
 sc39::	; Space
-Left::
-Right::
-Home::
-End::
-PgUp::
-PgDn::
 +sc02::	; 1
 +sc03::	; 2
 +sc04::	; 3
@@ -2132,17 +2155,15 @@ PgDn::
 +sc35::	; /
 +sc73::	; (JIS)_
 +sc39::	; Space
-+Left::
-+Right::
-+Home::
-+End::
-+PgUp::
-+PgDn::
-; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
-; UpキーとDownキーを取得する
 #If (spc || ent)
 Up::	; ※小文字にしてはいけない
 Down::
+Left::
+Right::
+Home::
+End::
+PgUp::
+PgDn::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter::
@@ -2221,12 +2242,6 @@ sc34 up::	; .
 sc35 up::	; /
 sc73 up::	; (JIS)_
 sc39 up::	; Space
-Left up::
-Right up::
-Home up::
-End up::
-PgUp up::
-PgDn up::
 +sc02 up::	; 1
 +sc03 up::	; 2
 +sc04 up::	; 3
@@ -2276,17 +2291,17 @@ PgDn up::
 +sc35 up::	; /
 +sc73 up::	; (JIS)_
 +sc39 up::	; Space
-+Left up::
-+Right up::
-+Home up::
-+End up::
-+PgUp up::
-+PgDn up::
 ; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
 ; UpキーとDownキーを取得する
 #If (spc || ent)
 Up up::	; ※小文字にしてはいけない
 Down up::
+Left up::
+Right up::
+Home up::
+End up::
+PgUp up::
+PgDn up::
 ; エンター同時押しをシフトとして扱う場合
 #If (EnterShift)
 Enter up::
