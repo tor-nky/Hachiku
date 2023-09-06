@@ -758,7 +758,8 @@ SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	If (!arrow)
 	{
 		SendKeyUp()		; 押し下げ出力中のキーを上げる
-		SetKeyDelay, delay, -1
+		If (delay > -1)
+			SetKeyDelay, delay, -1
 		Send, % str
 		SetKeyDelay, -1, -1
 		Return
