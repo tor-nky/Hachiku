@@ -598,6 +598,209 @@ DetectIME()	; () -> String
 	Return (imeName := nowIME)
 }
 
+SendBlind(str)	; (str: String) -> Void
+{
+	global lastSendTime
+
+	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+;	SetKeyDelay, -1, -1
+
+	; Microsoft OneNote 対策
+	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
+	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
+	IfWinActive, ahk_class Framework::CFrame	; Process: ONENOTE.EXE
+	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
+		If (str = "{Up down}")
+			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
+		Else If (str = "{Down down}")
+			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
+		Else If (str = "{Up up}")
+			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 3, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+		Else If (str = "{Down up}")
+			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 3, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+		Else
+			Send, % "{Blind}" . str
+	}
+	Else
+		Send, % "{Blind}" . str
+
+	lastSendTime := QPC()	; 最後に出力した時間を記録
+}
+
+; 押したままのキーを上げ、保存していた変数を更新
+SendKeyUp(str:="")	; (str: String) -> Void
+{
+	global restStr
+
+	If (restStr != "")
+	{
+		; Shift は押し下げ中
+		If (SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
+		{
+			; "{ShiftUp}" より左を出力
+			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))
+			; 更新後は {ShiftUp} がないとき
+			If (SubStr(str, StrLen(str) - 8, 9) != "{ShiftUp}")
+				SendBlind("{ShiftUp}")
+		}
+		Else
+			SendBlind(restStr)
+	}
+	restStr := str
+}
+
+; 矢印系キーの上げ下げを模倣して出力
+;	返り値	0: 成功, 1: 失敗
+;	restStr: 後で上げるキー
+SplitKeyUpDown(str)	; (str: String) -> Bool
+{
+	global restStr	; まだ上げていないキー
+		, osBuild
+	static keyDowns := Object("{Space}", "{Space down}"
+			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
+			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
+		, keyUps := Object("{Space}", "{Space up}"
+			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}"
+			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
+								; keyDowns: [String : String]型定数
+								; keyUps: [String : String]型定数
+;	local hwnd	; Int型
+;		, class	; String型
+;		, ret, keyDown, keyUp	; String型
+
+	WinGet, hwnd, ID, A
+	WinGetClass, class, ahk_id %hwnd%
+
+	; "+" から始まるか
+	inShifted := (Asc(str) == 43 ? True : False)
+
+	; 先頭の "+" は消去
+	ret := (inShifted ? SubStr(str, 2) : str)
+	; キー下げを取り出し
+	keyDown := keyDowns[ret]
+	; 上げ下げの模倣をしないキーだったら退出
+	If (keyDown == "")
+	{
+		SendKeyUp()	; 押したままだったキーを上げる
+		Return 1
+	}
+
+	; キー上げを取り出し
+	keyUp := keyUps[ret]
+	If (inShifted)
+		keyUp .= "{ShiftUp}"
+	; 前回と変わっていたら
+	If (restStr != keyUp)
+	{
+		; Shift あり→あり
+		If (inShifted && SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
+			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
+		Else
+		{
+			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
+			If (inShifted)
+				SendBlind("{ShiftDown}")
+		}
+	}
+	SendBlind(keyDown)
+
+	; Windows 11 以降のメモ帳
+	If (osBuild >= 20000 && class == "Notepad")
+		Sleep, 20
+
+	Return 0
+}
+
+; 矢印系キーのリピートを注意しながら出力
+SendRepeatable(str)	; (strIn: String) -> Void
+{
+	global osBuild, repeatCount, lastSendTime, vertical
+;	local hwnd				; Int型
+;		, class, process	; String型
+;		, count, count1		; Int型
+;		, arrow				; String型	矢印系キーだったらそのキー名
+;		, moveLines			; Bool型	行移動があるか
+
+	; リピート時の行移動は最大〇打
+	MAX_MOVE_LINES := 5		; Int型定数
+
+	WinGet, hwnd, ID, A
+	WinGetClass, class, ahk_id %hwnd%
+	WinGet, process, ProcessName, ahk_id %hwnd%
+
+	; 矢印系キーの検出と、行移動の判定
+	arrow := ""
+	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+	{
+		arrow := "{Up}"
+		moveLines := !vertical
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
+	{
+		arrow := "{Down}"
+		moveLines := !vertical
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
+	{
+		arrow := "{Left}"
+		moveLines := vertical
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
+	{
+		arrow := "{Right}"
+		moveLines := vertical
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
+	{
+		arrow := "{PgUp}"
+		moveLines := True
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
+	{
+		arrow := "{PgDn}"
+		moveLines := True
+	}
+
+	; 矢印系キーがなければ普通に出力して退出
+	If (!arrow)
+	{
+		SendKeyUp()		; 押し下げ出力中のキーを上げる
+		SendEachChar(str)
+		Return
+	}
+
+	; "+" から始まるか
+	If (Asc(str) == 43)
+		arrow := "+" . arrow
+
+	; リピート時
+	If (repeatCount)
+	{
+		If (process == "WINWORD.EXE")	; Word
+			count1 := 1	; リピート中は1個ずつ
+		; 秀丸エディタとジャストシステム製品の行移動
+		Else If (moveLines
+		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
+			count1 := 1	; リピート中は1行ずつ
+		; ジャストシステム製品の文字移動
+		Else If (SubStr(class, 1, 3) == "js:")
+			count1 := 2	; リピート中は2字ずつ
+		; Windows 11 以降のメモ帳ではリピート中の文字移動は最大4字
+		Else If (osBuild >= 20000 && class == "Notepad" && !moveLines && count1 > 4)
+			count1 := 4
+		; リピート時の行移動は最大〇打
+		Else If (moveLines && count1 > MAX_MOVE_LINES)
+			count1 := MAX_MOVE_LINES
+	}
+
+	Loop % count1 - 1
+	{
+		SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
+		SendKeyUp()				; 押し下げ出力中のキーを上げる
+	}
+	SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
+}
+
 ; 文字列 str を適宜スリープを入れながら出力する
 ;	delay:	-1未満	Sleep をなるべく入れない
 ;			ほか	Sleep, % delay が基本的に1文字ごとに入る
@@ -1033,209 +1236,6 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 			strSubLength := 0
 		}
 	}
-}
-
-SendBlind(str)	; (str: String) -> Void
-{
-	global lastSendTime
-
-	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
-;	SetKeyDelay, -1, -1
-
-	; Microsoft OneNote 対策
-	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
-	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
-	IfWinActive, ahk_class Framework::CFrame	; Process: ONENOTE.EXE
-	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
-		If (str = "{Up down}")
-			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
-		Else If (str = "{Down down}")
-			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
-		Else If (str = "{Up up}")
-			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 3, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
-		Else If (str = "{Down up}")
-			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 3, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
-		Else
-			Send, % "{Blind}" . str
-	}
-	Else
-		Send, % "{Blind}" . str
-
-	lastSendTime := QPC()	; 最後に出力した時間を記録
-}
-
-; 押したままのキーを上げ、保存していた変数を更新
-SendKeyUp(str:="")	; (str: String) -> Void
-{
-	global restStr
-
-	If (restStr != "")
-	{
-		; Shift は押し下げ中
-		If (SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
-		{
-			; "{ShiftUp}" より左を出力
-			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))
-			; 更新後は {ShiftUp} がないとき
-			If (SubStr(str, StrLen(str) - 8, 9) != "{ShiftUp}")
-				SendBlind("{ShiftUp}")
-		}
-		Else
-			SendBlind(restStr)
-	}
-	restStr := str
-}
-
-; 矢印系キーの上げ下げを模倣して出力
-;	返り値	0: 成功, 1: 失敗
-;	restStr: 後で上げるキー
-SplitKeyUpDown(str)	; (str: String) -> Bool
-{
-	global restStr	; まだ上げていないキー
-		, osBuild
-	static keyDowns := Object("{Space}", "{Space down}"
-			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
-			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
-		, keyUps := Object("{Space}", "{Space up}"
-			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}"
-			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
-								; keyDowns: [String : String]型定数
-								; keyUps: [String : String]型定数
-;	local hwnd	; Int型
-;		, class	; String型
-;		, ret, keyDown, keyUp	; String型
-
-	WinGet, hwnd, ID, A
-	WinGetClass, class, ahk_id %hwnd%
-
-	; "+" から始まるか
-	inShifted := (Asc(str) == 43 ? True : False)
-
-	; 先頭の "+" は消去
-	ret := (inShifted ? SubStr(str, 2) : str)
-	; キー下げを取り出し
-	keyDown := keyDowns[ret]
-	; 上げ下げの模倣をしないキーだったら退出
-	If (keyDown == "")
-	{
-		SendKeyUp()	; 押したままだったキーを上げる
-		Return 1
-	}
-
-	; キー上げを取り出し
-	keyUp := keyUps[ret]
-	If (inShifted)
-		keyUp .= "{ShiftUp}"
-	; 前回と変わっていたら
-	If (restStr != keyUp)
-	{
-		; Shift あり→あり
-		If (inShifted && SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
-			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
-		Else
-		{
-			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
-			If (inShifted)
-				SendBlind("{ShiftDown}")
-		}
-	}
-	SendBlind(keyDown)
-
-	; Windows 11 以降のメモ帳
-	If (osBuild >= 20000 && class == "Notepad")
-		Sleep, 20
-
-	Return 0
-}
-
-; 矢印系キーのリピートを注意しながら出力
-SendRepeatable(str)	; (strIn: String) -> Void
-{
-	global osBuild, repeatCount, lastSendTime, vertical
-;	local hwnd				; Int型
-;		, class, process	; String型
-;		, count, count1		; Int型
-;		, arrow				; String型	矢印系キーだったらそのキー名
-;		, moveLines			; Bool型	行移動があるか
-
-	; リピート時の行移動は最大〇打
-	MAX_MOVE_LINES := 5		; Int型定数
-
-	WinGet, hwnd, ID, A
-	WinGetClass, class, ahk_id %hwnd%
-	WinGet, process, ProcessName, ahk_id %hwnd%
-
-	; 矢印系キーの検出と、行移動の判定
-	arrow := ""
-	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
-	{
-		arrow := "{Up}"
-		moveLines := !vertical
-	}
-	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
-	{
-		arrow := "{Down}"
-		moveLines := !vertical
-	}
-	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
-	{
-		arrow := "{Left}"
-		moveLines := vertical
-	}
-	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
-	{
-		arrow := "{Right}"
-		moveLines := vertical
-	}
-	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
-	{
-		arrow := "{PgUp}"
-		moveLines := True
-	}
-	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
-	{
-		arrow := "{PgDn}"
-		moveLines := True
-	}
-
-	; 矢印系キーがなければ普通に出力して退出
-	If (!arrow)
-	{
-		SendKeyUp()		; 押し下げ出力中のキーを上げる
-		SendEachChar(str)
-		Return
-	}
-
-	; "+" から始まるか
-	If (Asc(str) == 43)
-		arrow := "+" . arrow
-
-	; リピート時
-	If (repeatCount)
-	{
-		If (process == "WINWORD.EXE")	; Word
-			count1 := 1	; リピート中は1個ずつ
-		; 秀丸エディタとジャストシステム製品の行移動
-		Else If (moveLines
-		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
-			count1 := 1	; リピート中は1行ずつ
-		; ジャストシステム製品の文字移動
-		Else If (SubStr(class, 1, 3) == "js:")
-			count1 := 2	; リピート中は2字ずつ
-		; Windows 11 以降のメモ帳ではリピート中の文字移動は最大4字
-		Else If (osBuild >= 20000 && class == "Notepad" && !moveLines && count1 > 4)
-			count1 := 4
-		; リピート時の行移動は最大〇打
-		Else If (moveLines && count1 > MAX_MOVE_LINES)
-			count1 := MAX_MOVE_LINES
-	}
-
-	Loop % count1 - 1
-	{
-		SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
-		SendKeyUp()				; 押し下げ出力中のキーを上げる
-	}
-	SplitKeyUpDown(arrow)	; キーの上げ下げを模倣
 }
 
 ; 仮出力バッファの先頭から i 個出力する
