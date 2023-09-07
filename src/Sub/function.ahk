@@ -600,9 +600,6 @@ DetectIME()	; () -> String
 
 SendBlind(str)	; (str: String) -> Void
 {
-	global lastSendTime
-
-	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 ;	SetKeyDelay, -1, -1
 
 	; Microsoft OneNote 対策
@@ -623,95 +620,80 @@ SendBlind(str)	; (str: String) -> Void
 	}
 	Else
 		Send, % "{Blind}" . str
-
-	lastSendTime := QPC()	; 最後に出力した時間を記録
 }
 
-; 押したままのキーを上げ、保存していた変数を更新
-SendKeyUp(str:="")	; (str: String) -> Void
+; 下げたままのキーを上げる
+SendKeyUp()	; () -> Void
 {
-	global restStr
+	global restStr	; 今まで下げていたキー 例: +{Up}
 
-	If (restStr != "")
+	If (restStr == "")
+		Return
+
+	; "+" から始まっていた
+	If (Asc(restStr) == 43)
 	{
-		; Shift は押し下げ中
-		If (SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
-		{
-			; "{ShiftUp}" より左を出力
-			SendBlind(SubStr(restStr, 1, StrLen(restStr) - 9))
-			; 更新後は {ShiftUp} がないとき
-			If (SubStr(str, StrLen(str) - 8, 9) != "{ShiftUp}")
-				SendBlind("{ShiftUp}")
-		}
-		Else
-			SendBlind(restStr)
+		; まず "+" より後に書かれたキーを上げる
+		SendBlind(SubStr(restStr, 2, StrLen(restStr) - 2) . " up}")
+		; シフトを上げる
+		Send, {ShiftUp}
 	}
-	restStr := str
+	Else
+		SendBlind(SubStr(restStr, 1, StrLen(restStr) - 1) . " up}")
+
+	; 変数更新
+	restStr := ""
 }
 
-; 矢印系キーとスペースキーの上げ下げを模倣して出力
-;	返り値	0: 成功, 1: 失敗
-;	restStr: 後で上げるキー
-SplitKeyUpDown(str, delay:=-2)	; (str: String, delay: Int) -> Bool
+; キーを下げたままにする
+; 下げたままのキーは上げる
+SendKeyDown(newStr:="", delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global restStr	; まだ上げていないキー
-	static keyDowns := Object("{Space}", "{Space down}"
-			, "{Up}", "{Up down}", "{Left}", "{Left down}", "{Right}", "{Right down}", "{Down}", "{Down down}"
-			, "{PgUp}", "{PgUp down}", "{PgDn}", "{PgDn down}")
-		, keyUps := Object("{Space}", "{Space up}"
-			, "{Up}", "{Up up}", "{Left}", "{Left up}", "{Right}", "{Right up}", "{Down}", "{Down up}"
-			, "{PgUp}", "{PgUp up}", "{PgDn}", "{PgDn up}")
-								; keyDowns: [String : String]型定数
-								; keyUps: [String : String]型定数
-;	local ret, keyDown, keyUp	; String型
+	global restStr	; 今まで下げていたキー 例: +{Up}
+		, lastSendTime
+;	local oldShifted, newShifted	; Bool型
+;		, oldKey, newKey			; String型
 
 	; "+" から始まるか
-	inShifted := (Asc(str) == 43 ? True : False)
+	oldShifted := (Asc(restStr) == 43 ? True : False)
+	newShifted := (Asc(newStr) == 43 ? True : False)
+	; "+" 抜き
+	oldKey := (oldShifted ? SubStr(restStr, 2) : restStr)
+	newKey := (newShifted ? SubStr(newStr, 2) : newStr)
 
-	; 先頭の "+" は消去
-	ret := (inShifted ? SubStr(str, 2) : str)
-	; キー下げを取り出し
-	keyDown := keyDowns[ret]
-	; 上げ下げの模倣をしないキーだったら退出
-	If (keyDown == "")
+	; 下げたままのキーとは別のキーに変わる
+	If (oldKey != "" && oldKey != newKey)
+		SendBlind(SubStr(oldKey, 1, StrLen(oldKey) - 1) . " up}")
+	; シフト あり→なし
+	If (oldShifted && !newShifted)
+		; シフトを上げる
+		Send, {ShiftUp}
+	; シフト なし→あり
+	Else If (!oldShifted && newShifted)
+		Send, {ShiftDown}
+
+	If (newKey != "")
 	{
-		SendKeyUp()	; 押したままだったキーを上げる
-		Return 1
+		; キーを下げる
+		SendBlind(SubStr(newKey, 1, StrLen(newKey) - 1) . " down}")
+		lastSendTime := QPC()	; 最後に出力した時間を記録
+		; ディレイ
+		If (delay > -2)
+			Sleep, % delay
 	}
 
-	; キー上げを取り出し
-	keyUp := keyUps[ret]
-	If (inShifted)
-		keyUp .= "{ShiftUp}"
-	; 前回と変わっていたら
-	If (restStr != keyUp)
-	{
-		; Shift あり→あり
-		If (inShifted && SubStr(restStr, StrLen(restStr) - 8, 9) = "{ShiftUp}")
-			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
-		Else
-		{
-			SendKeyUp(keyUp)	; 押したままだったキーを上げ、変数を更新する
-			If (inShifted)
-				SendBlind("{ShiftDown}")
-		}
-	}
-	SendBlind(keyDown)
-
-	If (delay > -2)
-		Sleep, % delay
-
-	Return 0
+	; 変数更新
+	restStr := newStr
 }
 
-; 矢印系キーを注意しながら出力
-SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
+; スペースキー、矢印系キーを上げ下げを模倣して出力
+EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global osBuild, repeatCount, lastSendTime, vertical
+	global osBuild, repeatCount, repeatStyle, vertical
 ;	local hwnd				; Int型
 ;		, class, process	; String型
 ;		, count, count1		; Int型
-;		, arrow				; String型	矢印系キーだったらそのキー名
+;		, key				; String型	矢印系キーだったらそのキー名
 ;		, moveLines			; Bool型	行移動があるか
 
 	; リピート時の行移動は最大〇打
@@ -721,41 +703,46 @@ SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 
-	; 矢印系キーの回数検出と、行移動の判定
-	arrow := ""
-	If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+	; スペースキー、矢印系キーの回数検出と、行移動の判定
+	key := ""
+	If (RegExMatch(str, "i)^\+?\{Space\}$|^\+?\{Space\s(\d+)\}$", count))
 	{
-		arrow := "{Up}"
+		key := "{Space}"
+		moveLines := False
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+	{
+		key := "{Up}"
 		moveLines := !vertical
 	}
 	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
 	{
-		arrow := "{Down}"
+		key := "{Down}"
 		moveLines := !vertical
 	}
 	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
 	{
-		arrow := "{Left}"
+		key := "{Left}"
 		moveLines := vertical
 	}
 	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
 	{
-		arrow := "{Right}"
+		key := "{Right}"
 		moveLines := vertical
 	}
 	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
 	{
-		arrow := "{PgUp}"
+		key := "{PgUp}"
 		moveLines := True
 	}
 	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
 	{
-		arrow := "{PgDn}"
+		key := "{PgDn}"
 		moveLines := True
 	}
 
 	; 矢印系キーがなければ普通に出力して退出
-	If (!arrow)
+	If (!key)
 	{
 		SendKeyUp()		; 押し下げ出力中のキーを上げる
 		If (delay > -1)
@@ -765,15 +752,15 @@ SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		Return
 	}
 
-	; "+" から始まるか
-	If (Asc(str) == 43)
-		arrow := "+" . arrow
-
-	; リピート時
-	If (repeatCount)
+	; リピート時はキー押しの回数を制限する（全てリピートする設定の時は、制限しない）
+	If (repeatCount && repeatStyle)
 	{
-		If (process == "WINWORD.EXE")	; Word
+		; Word
+		If (process == "WINWORD.EXE")
 			count1 := 1	; リピート中は1個ずつ
+		; Windows 11 以降のメモ帳ではリピート中の移動は最大3個ずつ
+		Else If (osBuild >= 20000 && class == "Notepad" && count1 > 3)
+			count1 := 3
 		; 秀丸エディタとジャストシステム製品の行移動
 		Else If (moveLines
 		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
@@ -781,20 +768,21 @@ SendArrowKeys(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		; ジャストシステム製品の文字移動
 		Else If (SubStr(class, 1, 3) == "js:")
 			count1 := 2	; リピート中は2字ずつ
-		; Windows 11 以降のメモ帳ではリピート中の文字移動は最大4字
-		Else If (osBuild >= 20000 && class == "Notepad" && !moveLines && count1 > 4)
-			count1 := 4
 		; リピート時の行移動は最大〇打
 		Else If (moveLines && count1 > MAX_MOVE_LINES)
 			count1 := MAX_MOVE_LINES
 	}
 
+	; "+" から始まるか
+	If (Asc(str) == 43)
+		key := "+" . key
+	; 出力
 	Loop % count1 - 1
 	{
-		SplitKeyUpDown(arrow, delay)	; キーの上げ下げを模倣
+		SendKeyDown(key, delay)	; キーを下げる
 		SendKeyUp()	; 押し下げ出力中のキーを上げる
 	}
-	SplitKeyUpDown(arrow, delay)	; キーの上げ下げを模倣
+	SendKeyDown(key, delay)	; キーを下げる
 }
 
 ; 文字列 str を適宜スリープを入れながら出力する
@@ -867,21 +855,16 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		If (!(bracket || c == "+" || c == "^" || c == "!" || c == "#")
 			|| i > strLength)
 		{
-			; 矢印系キーの上げ下げを模倣して出力
-			If (SubStr(strSub, 1, 3) = "{Up" || SubStr(strSub, 1, 4) = "+{Up"
+			; スペースキー、矢印系キーの上げ下げを模倣して出力
+			If (SubStr(strSub, 1, 6) = "{Space" || SubStr(strSub, 1, 7) = "+{Space"
+				|| SubStr(strSub, 1, 3) = "{Up" || SubStr(strSub, 1, 4) = "+{Up"
 				|| SubStr(strSub, 1, 5) = "{Down" || SubStr(strSub, 1, 6) = "+{Down"
 				|| SubStr(strSub, 1, 5) = "{Left" || SubStr(strSub, 1, 6) = "+{Left"
 				|| SubStr(strSub, 1, 6) = "{Right" || SubStr(strSub, 1, 7) = "+{Right"
 				|| SubStr(strSub, 1, 5) = "{PgUp" || SubStr(strSub, 1, 6) = "+{PgUp"
 				|| SubStr(strSub, 1, 5) = "{PgDn" || SubStr(strSub, 1, 6) = "+{PgDn")
 			{
-				SendArrowKeys(strSub, delay)	; 矢印系キーを出力
-				lastDelay := delay
-			}
-			; スペースキーの上げ下げを模倣して出力
-			Else If (strSub = "{Space}" || strSub = "+{Space}")
-			{
-				SplitKeyUpDown(strSub, delay)	; 矢印系キーを出力
+				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
 				lastDelay := delay
 			}
 			; その他のキー
@@ -1180,7 +1163,7 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 					; IME窓の検出が当てにできるか判定
 					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
-						&& (out = "{vk20}" || out = "{Space down}") && romanChar && i > strLength)
+						&& (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
 					{
 						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
 							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
@@ -1266,8 +1249,8 @@ OutBuf(i:=2)	; (i: Int) -> Void
 		; 特別出力(かな定義ファイルで操作)
 		Else
 		{
-			SendKeyUp()		; 押し下げ出力中のキーを上げる
 			SendSP(out, ctrlName)
+			SendKeyUp()		; 押し下げ出力中のキーを上げる
 		}
 
 		outStrs[1] := outStrs[2]
@@ -1544,7 +1527,7 @@ Convert()	; () -> Void
 			If (ent == 1)
 				ent := 2	; 単独エンターではない
 			OutBuf()
-			SendBlind("{ShiftDown}")
+			Send, {ShiftDown}
 			nowKey := "sc39"	; センターシフト押す
 		}
 		Else If (nowKey == "~LShift up")
@@ -1553,7 +1536,7 @@ Convert()	; () -> Void
 			; 右シフトは離されていない
 			If (rsft)
 			{
-				SendBlind("{ShiftDown}")
+				Send, {ShiftDown}
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
 			}
@@ -1571,7 +1554,7 @@ Convert()	; () -> Void
 			rsft := 0
 			; 左シフトも離されている
 			If (!sft)
-				SendBlind("{ShiftUp}")
+				Send, {ShiftUp}
 			; 他のシフトを押している時
 			If (sft || spc || ent)
 			{

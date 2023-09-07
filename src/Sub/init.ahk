@@ -131,7 +131,7 @@ inBufRest := 31		; Int型
 outStrs := []		; [String]型
 outCtrlNames := []	; [String]型
 outStrsLength := 0	; Int型			保存されている個数
-restStr := ""		; [String]型
+restStr := ""		; [String]型	下げたままのキー 例: +{Up}
 ; シフト用キーの状態
 spc		:= 0		; Int型	スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3, 5: リピート中(3: かなを押すと変換取消→シフト側文字)
 ent		:= 0		; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中

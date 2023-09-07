@@ -7,6 +7,8 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 ;	SetKeyDelay, -1, -1
 
+	SendKeyUp()		; 押し下げ出力中のキーを上げる
+
 	If (ctrlName == "ESCx3")
 		SendESCx3()
 	Else If (ctrlName == "そのまま")
