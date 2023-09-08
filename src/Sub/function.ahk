@@ -534,7 +534,6 @@ SettingLayout()	; () -> Void
 
 ExistNewMSIME()	; () -> Bool
 {
-	global osBuild
 ;	local build	; Int型
 
 	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
@@ -543,7 +542,9 @@ ExistNewMSIME()	; () -> Bool
 
 	; 参考: https://docs.microsoft.com/ja-jp/windows/release-health/supported-versions-windows-client
 	; [requires v1.1.20+]
-	If (osBuild <= 18363)	; Windows 10 1909 以前
+	build := SubStr(A_OSVersion, 6)	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
+		; 備考：スタティック変数の初期化で呼び出された時、グローバル変数の osBuild はまだ初期化前
+	If (build <= 18363)	; Windows 10 1909 以前
 		Return False
 	Else
 		Return True
