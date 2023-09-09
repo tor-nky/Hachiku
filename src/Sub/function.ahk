@@ -1797,10 +1797,11 @@ Convert()	; () -> Void
 			realBitAndKC_SPC := realBit & KC_SPC	; スペースを押していれば 0以外
 
 			; 文字キーによるシフトの適用範囲
-			shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
 			; 英数入力時に判定期限ありなら、文字キーシフトは「同グループのみ継続」か「1回のみ」
 			If (combLimitE && !kanaMode && shiftStyle < 2)
 				shiftStyle := 2
+			Else
+				shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 前に押したキーと同時押しにならない
@@ -2134,6 +2135,8 @@ sc39::	; Space
 +sc35::	; /
 +sc73::	; (JIS)_
 +sc39::	; Space
+; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
+; UpキーとDownキーを取得する
 #If (spc || ent)
 Up::	; ※小文字にしてはいけない
 Down::
