@@ -787,9 +787,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 }
 
 ; 文字列 str を適宜スリープを入れながら出力する
-;	delay:	-1未満	Sleep をなるべく入れない
-;			ほか	Sleep, % delay が基本的に1文字ごとに入る
-SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
+SendEachChar(str)	; (str: String) -> Void
 {
 	global osBuild, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
@@ -824,17 +822,17 @@ SendEachChar(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	IME_Get_Interval := 40
 
 	; ディレイの初期値
-	If (delay < -1)
-		delay := -2
-	Else If (delay > 500)
-		TrayTip, , SendEachCharのディレイが長すぎです
-	preDelay := postDelay := -2
-	If (class == "CabinetWClass" && delay < 10)
-		delay := 10	; エクスプローラーにはゆっくり出力する
-	Else If (osBuild >= 20000 && class == "Notepad" && delay < 20)	; Windows 11 以降のメモ帳
-		delay := 20	; メモ帳にはゆっくり出力する
+	;	-1未満	Sleep をなるべく入れない
+	;	ほか	Sleep, % delay が基本的に1文字ごとに入る
+	delay := preDelay := postDelay := -2
+	If (class == "CabinetWClass")	; エクスプローラー
+		delay := 10
+	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
+		delay := 20
+	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
+		delay := 0
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
-		postDelay := 30	; 1文字目を必ずゆっくり出力する
+		postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
 
 	; 文字列を細切れにして出力
