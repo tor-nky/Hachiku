@@ -55,13 +55,12 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 
 SendESCx3()	; () -> Void
 {
-	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver
+	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver, imeNeedDelay
 ;	local hwnd		; Int型
 ;		, class		; String型
 ;		, process	; String型
 ;		, imeName	; String型
 ;		, delay		; Int型
-;		, IME_Get_Interval				; Int型
 ;		, IME_GetConverting_Interval	; Int型
 
 	WinGet, hwnd, ID, A
@@ -81,13 +80,11 @@ SendESCx3()	; () -> Void
 	; IME窓検出が当てになる時(入力中のかながないのと変換1回目の区別がつく)
 	Else If (hwnd == goodHwnd)
 	{
-		; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
-		IME_Get_Interval := 40
 		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
 		IME_GetConverting_Interval := (imeName == "Google" ? 30
 			: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
 
-		delay := IME_Get_Interval - Floor(QPC() - lastSendTime)
+		delay := imeNeedDelay - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
 		If (delay > 0)
 			Sleep, % delay

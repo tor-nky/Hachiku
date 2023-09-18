@@ -789,7 +789,8 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ; 文字列 str を適宜スリープを入れながら出力する
 SendEachChar(str)	; (str: String) -> Void
 {
-	global osBuild, usingKeyConfig, goodHwnd, badHwnd, lastSendTime, kanaMode
+	global osBuild, usingKeyConfig, imeNeedDelay
+		, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -806,7 +807,6 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, lastDelay				; Int型		前回出力時のディレイの値
 ;		, clipSaved				; Any?型
 ;		, imeName				; String型
-;		, IME_Get_Interval		; Int型
 ;		, count, wait			; Int?型
 ;		, inShifted				; Bool型
 
@@ -817,9 +817,6 @@ SendEachChar(str)	; (str: String) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 	imeName := DetectIME()
-
-	; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
-	IME_Get_Interval := 40
 
 	; ディレイの初期値
 	;	-1未満	Sleep をなるべく入れない
@@ -901,10 +898,10 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 					{
 						; IME_GET() の前に一定時間空ける
-						If (lastDelay < IME_Get_Interval)
+						If (lastDelay < imeNeedDelay)
 						{
-							Sleep, % IME_Get_Interval - lastDelay
-							lastDelay := IME_Get_Interval
+							Sleep, % imeNeedDelay - lastDelay
+							lastDelay := imeNeedDelay
 						}
 						; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
 						If (IME_GET() && IME_GetSentenceMode())
@@ -920,8 +917,8 @@ SendEachChar(str)	; (str: String) -> Void
 							Else If (imeConvMode & 1)
 							{
 								Send, {vkF3}	; 半角/全角
-								Sleep, % IME_Get_Interval + 20	; Win11 + NewMSIME への対策
-								lastDelay := IME_Get_Interval
+								Sleep, % imeNeedDelay
+								lastDelay := imeNeedDelay
 								; 「半角/全角」でIMEオンのままだったら未変換文字あり
 								If (IME_GET())
 								{
@@ -958,7 +955,7 @@ SendEachChar(str)	; (str: String) -> Void
 								Else
 								{
 									out := "{vkF3}"
-									postDelay := IME_Get_Interval
+									postDelay := imeNeedDelay
 								}
 							}
 							; 未変換文字があるか不明
@@ -981,17 +978,17 @@ SendEachChar(str)	; (str: String) -> Void
 				}
 				Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
 				{
-					If (lastDelay < IME_Get_Interval)
+					If (lastDelay < imeNeedDelay)
 					{
 						; 前回の出力から一定時間空けて IME_GET() へ
-						Sleep, % IME_Get_Interval - lastDelay
-						lastDelay := IME_Get_Interval
+						Sleep, % imeNeedDelay - lastDelay
+						lastDelay := imeNeedDelay
 					}
 					If (IME_GET())
 					{
 						noIME := True
 						out := "{vkF3}"		; 半角/全角
-						postDelay := IME_Get_Interval
+						postDelay := imeNeedDelay
 					}
 				}
 				Else If (strSub = "{IMEOFF}")
@@ -1001,13 +998,13 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 					IME_SET(kanaMode := 0)	; IMEオフ
-					lastDelay := IME_Get_Interval
+					lastDelay := imeNeedDelay
 				}
 				Else If (strSub = "{IMEON}")
 				{
 					noIME := False
 					IME_SET(1)		; IMEオン
-					lastDelay := IME_Get_Interval
+					lastDelay := imeNeedDelay
 				}
 				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
 					|| strSub = "{vk19}"							; 漢字	Alt+`
@@ -1015,7 +1012,7 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					out := strSub
-					postDelay := IME_Get_Interval
+					postDelay := imeNeedDelay
 					kanaMode := kanaMode ^ 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
@@ -1026,7 +1023,7 @@ SendEachChar(str)	; (str: String) -> Void
 					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
 					IME_SetConvMode(25)	; IME 入力モード	ひらがな
 					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
-					postDelay := IME_Get_Interval
+					postDelay := imeNeedDelay
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
@@ -1038,14 +1035,14 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 						Send, {vkF2}
 					out := "{vkF1}"		; カタカナ
-					postDelay := IME_Get_Interval
+					postDelay := imeNeedDelay
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
 				{
 					noIME := False
 					out := strSub
-					postDelay := IME_Get_Interval
+					postDelay := imeNeedDelay
 					kanaMode := 0
 				}
 				Else If (strSub == "{全英}")
@@ -1055,7 +1052,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(24)	; IME 入力モード	全英数
-						lastDelay := IME_Get_Interval
+						lastDelay := imeNeedDelay
 					}
 					Else
 					{
@@ -1064,7 +1061,7 @@ SendEachChar(str)	; (str: String) -> Void
 						Else
 							Send, {vkF2}
 						out := "+{vk1D}"	; シフト+無変換
-						postDelay := IME_Get_Interval
+						postDelay := imeNeedDelay
 					}
 					kanaMode := 0
 				}
@@ -1079,7 +1076,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-						lastDelay := IME_Get_Interval
+						lastDelay := imeNeedDelay
 						kanaMode := 1
 					}
 				}
@@ -1204,7 +1201,7 @@ SendEachChar(str)	; (str: String) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
-				lastDelay := IME_Get_Interval
+				lastDelay := imeNeedDelay
 				romanCharForNoIME := False
 			}
 
