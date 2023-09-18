@@ -969,12 +969,20 @@ SendEachChar(str)	; (str: String) -> Void
 									Sleep, 90
 								out := "{BS}"
 							}
+
+							; "{Enter}" を送るときは適宜ディレイを入れる
+							If (out == "{Enter}")
+							{
+								; 新MS-IMEでWindows 11 以降のメモ帳
+								If (imeName == "NewMSIME" && osBuild >= 20000 && class == "Notepad")
+									postDelay := 60
+								; 旧MS-IMEで秀丸エディタ
+								Else If (class == "Hidemaru32Class"
+								 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
+									postDelay := 110
+							}
 						}
 					}
-					; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
-					If (class == "Hidemaru32Class" && out == "{Enter}"
-					 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
-						postDelay := 110
 				}
 				Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
 				{
