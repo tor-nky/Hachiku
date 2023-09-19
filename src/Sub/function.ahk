@@ -1126,8 +1126,7 @@ SendEachChar(str)	; (str: String) -> Void
 					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
 				{
 					out := strSub
-					If (postDelay < 10)
-						postDelay := 10
+					postDelay := 10
 				}
 				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 					out := strSub
