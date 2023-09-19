@@ -1787,11 +1787,15 @@ Convert()	; () -> Void
 		; リピート中のキー
 		Else If (repeatFlg && repeatCount && lastToBuf != "")
 		{
-			; 前回の文字列を出力
-			If (!outStrsLength)
-				StoreBuf(lastToBuf, 0, ctrlName)
-			OutBuf()
-			DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
+			; 入力バッファが空の時
+			If (inBufRest == 31)
+			{
+				; 前回の文字列を出力
+				If (!outStrsLength)
+					StoreBuf(lastToBuf, 0, ctrlName)
+				OutBuf()
+				DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
+			}
 		}
 		; 押されていなかったキー、sc**以外のキー
 		Else If !(realBit & nowBit)
