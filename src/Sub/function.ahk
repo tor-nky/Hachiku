@@ -825,7 +825,7 @@ SendEachChar(str)	; (str: String) -> Void
 	If (class == "CabinetWClass")	; エクスプローラー
 		delay := 10
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
-		delay := 20
+		delay := (imeName == "NewMSIME" ? 30 : 20)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := 0
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
@@ -970,17 +970,10 @@ SendEachChar(str)	; (str: String) -> Void
 								out := "{BS}"
 							}
 
-							; "{Enter}" を送るときは適宜ディレイを入れる
-							If (out == "{Enter}")
-							{
-								; 新MS-IMEでWindows 11 以降のメモ帳
-								If (imeName == "NewMSIME" && osBuild >= 20000 && class == "Notepad")
-									postDelay := 60
-								; 旧MS-IMEで秀丸エディタ
-								Else If (class == "Hidemaru32Class"
-								 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
-									postDelay := 110
-							}
+							; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
+							If (class == "Hidemaru32Class" && out == "{Enter}"
+							 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
+								postDelay := 110
 						}
 					}
 				}
