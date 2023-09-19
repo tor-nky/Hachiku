@@ -825,7 +825,7 @@ SendEachChar(str)	; (str: String) -> Void
 	If (class == "CabinetWClass")	; エクスプローラー
 		delay := 10
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
-		delay := (imeName == "NewMSIME" ? 30 : 20)
+		delay := (!usingKeyConfig || imeName == "NewMSIME" || imeName == "OldMSIME" ? 30 : 20)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := 0
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
