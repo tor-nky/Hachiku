@@ -192,7 +192,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	strLength := StrLen(str)
 
 	; アルファベットかハイフンだけなら、{? down}{? up} 形式に変換
-	If (RegExMatch(str, "^[a-z\-]+$"))
+	If (RegExMatch(str, "^[a-z\d\-]+$"))
 	{
 		While (i <= strLength)
 		{
@@ -213,6 +213,22 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 				ret .= "{" . c . " up}"
 			i++
 		}
+		Return ret
+	}
+	; "{sc○○}" を "{sc○○ down}{sc○○ up}" の形式へ
+	Else If (RegExMatch(str, "i)^\{sc[\da-f]+\}$|^\+\{sc[\da-f]+\}$"))
+	{
+		If (Asc(str) == 43)
+		{
+			strSub := SubStr(str, 2, strLength - 2)	; "+{sc○○}" の "{sc○○ を取り出し
+			ret := "+"
+		}
+		Else
+		{
+			strSub := SubStr(str, 1, strLength - 1)	; "{sc○○}" の "{sc○○" を取り出し
+			ret := ""
+		}
+		ret .= strSub . " down}" . strSub . " up}"
 		Return ret
 	}
 
@@ -1697,25 +1713,25 @@ Convert()	; () -> Void
 		}
 		Else
 		{
+			; スペースキーが押されていたら、toBuf にシフトを加える(SandSの実装)
+			toBuf := (realBit & KC_SPC ? "+" : "")
+
 			; sc** で入力
 			If (SubStr(nowKey, 1, 2) == "sc")
 			{
 			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
 			; 行が変われば十六進数の数値として扱える
 				nowBit := "0x" . term
-				; toBuf に "{sc○○}" の形式で入れる
-				toBuf := "{sc" . term . "}"
+				; toBuf に "{sc○○ down}{sc○○ up}" の形式で入れる
+				toBuf .= "{sc" . term . " down}{sc" . term . " up}"
 			}
 			; sc** 以外で入力
 			Else
 			{
 				nowBit := searchBit := 0
-				toBuf := "{" . nowKey . "}"
+				toBuf .= "{" . nowKey . "}"
 				keyCount := -1	; かな定義の検索は不要
 			}
-			; スペースキーが押されていたら、toBuf にシフトを加える(SandSの実装)
-			If (realBit & KC_SPC)
-				toBuf := "+" . toBuf
 		}
 
 		; ビットに変換
