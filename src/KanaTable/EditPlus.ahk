@@ -172,8 +172,8 @@ kanaGroup := "2R"
 	SetKana( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
 	SetKana( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
 	SetKana( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetKana( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, NR)	; +→20
-	SetKana( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, NR)	; +←20
+	SetKana( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, R)	; +→20
+	SetKana( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, R)	; +←20
 
 	SetEisu( KC_C | KC_V | KC_Y		,"+{Home}"	, NR)	; +Home
 	SetEisu( KC_C | KC_V | KC_H		,"^c"		, NR)	; Copy
@@ -188,8 +188,8 @@ kanaGroup := "2R"
 	SetEisu( KC_C | KC_V | KC_L		,"+{→ 5}"	, R)	; +→5
 	SetEisu( KC_C | KC_V | KC_DOT	,"+{← 5}"	, R)	; +←5
 	SetEisu( KC_C | KC_V | KC_P		,"^z"		)		; Undo
-	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, NR)	; +→20
-	SetEisu( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, NR)	; +←20
+	SetEisu( KC_C | KC_V | KC_SCLN	,"+{→ 20}"	, R)	; +→20
+	SetEisu( KC_C | KC_V | KC_SLSH	,"+{← 20}"	, R)	; +←20
 
 ; 左手
 kanaGroup := "2L"
