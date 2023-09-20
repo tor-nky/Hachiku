@@ -797,7 +797,11 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	Loop % count1 - 1
 	{
 		SendKeyDown(key, delay)	; キーを下げる
-		SendKeyUp()	; 押し下げ出力中のキーを上げる
+		; "+" から始まるか
+		If (Asc(str) == 43)
+			SendKeyDown("+")	; 押し下げ出力中のシフト以外のキーを上げる
+		Else
+			SendKeyUp()	; 押し下げ出力中のキーを上げる
 	}
 	SendKeyDown(key, delay)	; キーを下げる
 }
