@@ -191,7 +191,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	i := 1
 	strLength := StrLen(str)
 
-	; アルファベットかハイフンだけなら、{? down}{? up} 形式に変換
+	; アルファベット、数字、ハイフンだけなら、"{? down}{? up}" 形式に変換
 	If (RegExMatch(str, "^[a-z\d\-]+$"))
 	{
 		While (i <= strLength)
@@ -220,7 +220,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	{
 		If (Asc(str) == 43)
 		{
-			strSub := SubStr(str, 2, strLength - 2)	; "+{sc○○}" の "{sc○○ を取り出し
+			strSub := SubStr(str, 2, strLength - 2)	; "+{sc○○}" の "{sc○○" を取り出し
 			ret := "+"
 		}
 		Else
@@ -1167,7 +1167,7 @@ SendEachChar(str)	; (str: String) -> Void
 				; ローマ字の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
 				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
-				 || SubStr(strSub, 3, 6) = " down}" && RegExMatch(strSub, "^\{[a-z\-]\s"))
+				 || SubStr(strSub, 3, 6) = " down}" && RegExMatch(strSub, "^\{[a-z\d\-]\s"))
 				{
 					romanChar := True
 					If (noIME)
