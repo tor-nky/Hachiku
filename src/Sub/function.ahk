@@ -215,24 +215,13 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 		}
 		Return ret
 	}
-/*
 	; "{sc○○}" を "{sc○○ down}{sc○○ up}" の形式へ
-	Else If (RegExMatch(str, "i)^\{sc[\da-f]+\}$|^\+\{sc[\da-f]+\}$"))
+	Else If (RegExMatch(str, "i)^\{sc[\da-f]+\}$"))
 	{
-		If (Asc(str) == 43)
-		{
-			strSub := SubStr(str, 2, strLength - 2)	; "+{sc○○}" の "{sc○○" を取り出し
-			ret := "+"
-		}
-		Else
-		{
-			strSub := SubStr(str, 1, strLength - 1)	; "{sc○○}" の "{sc○○" を取り出し
-			ret := ""
-		}
-		ret .= strSub . " down}" . strSub . " up}"
+		strSub := SubStr(str, 1, strLength - 1)	; "{sc○○}" の "{sc○○" を取り出し
+		ret := strSub . " down}" . strSub . " up}"
 		Return ret
 	}
-*/
 
 	kakutei := noIME := False
 	strSub := ""
@@ -1728,12 +1717,14 @@ Convert()	; () -> Void
 			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
 			; 行が変われば十六進数の数値として扱える
 				nowBit := "0x" . term
-				; toBuf に "{sc○○}" の形式で入れる
-				toBuf .= "{sc" . term . "}"
-/*
-				; toBuf に "{sc○○ down}{sc○○ up}" の形式で入れる
-				toBuf .= "{sc" . term . " down}{sc" . term . " up}"
-*/
+				; スペースキーが押されていたら
+				If (realBit & KC_SPC)
+					; toBuf に "{sc○○}" の形式で入れる
+					toBuf .= "{sc" . term . "}"
+				; スペースキーが押されていない
+				Else
+					; toBuf に "{sc○○ down}{sc○○ up}" の形式で入れる
+					toBuf .= "{sc" . term . " down}{sc" . term . " up}"
 			}
 			; sc** 以外で入力
 			Else
