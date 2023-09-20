@@ -253,7 +253,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	IniRead, testMode, %iniFilePath%, Advanced, TestMode
 	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
 		testMode := 0	; 初期値
-; リピートの好み	0: 全てする, 1: 基本する, 2: 基本しない, 3: 全くしない
+; リピートの好み	0: 常に無制限, 1: 基本する, 2: 基本しない, 3: 全くしない
 		IniRead, repeatStyle, %iniFilePath%, Advanced, RepeatStyle
 		If (repeatStyle != Floor(repeatStyle) || repeatStyle < 0 || repeatStyle > 3)
 			repeatStyle := 2	; 初期値
@@ -495,7 +495,7 @@ PrefMenu:
 				GuiControl, , testMode3, 1
 			; リピートの好み
 			Gui, Add, Text, xm y+8, リピートの好み
-			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 全てする
+			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 常に無制限
 			Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
 			Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
 			Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない

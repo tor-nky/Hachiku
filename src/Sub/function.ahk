@@ -409,7 +409,7 @@ RepeatStyleToCtrlName(ctrlName:="")	; (ctrlName: String) -> String
 {
 	global NR, R, repeatStyle
 
-	; リピート 全てする
+	; リピート 常に無制限
 	If (!repeatStyle)
 		Return (ctrlName && ctrlName != NR ? ctrlName : R)
 	; リピート 基本する
@@ -1780,7 +1780,7 @@ Convert()	; () -> Void
 		Else If (repeatFlg && repeatCount && lastToBuf != "")
 		{
 			; 入力バッファが空の時
-			If (inBufRest == 31)
+			If (inBufRest == 31 || !repeatStyle)
 			{
 				; 前回の文字列を出力
 				If (!outStrsLength)
