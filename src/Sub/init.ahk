@@ -260,7 +260,7 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 ; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
 	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval
 	If (imeGetInterval < 0 || imeGetInterval > 2000)
-		imeGetInterval := 50	; 初期値
+		imeGetInterval := 70	; 初期値
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
