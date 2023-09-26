@@ -61,7 +61,7 @@ SendESCx3()	; () -> Void
 ;		, process	; String型
 ;		, imeName	; String型
 ;		, delay		; Int型
-;		, IME_GetConverting_Interval	; Int型
+;		, imeGetConvertingInterval	; Int型
 
 	WinGet, hwnd, ID, A
 	WinGetClass, class, ahk_id %hwnd%
@@ -81,8 +81,8 @@ SendESCx3()	; () -> Void
 	Else If (hwnd == goodHwnd)
 	{
 		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
-		IME_GetConverting_Interval := (imeName == "Google" ? 30
-			: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
+		imeGetConvertingInterval := (imeName == "NewMSIME" ? 120 : IME_GetConverting_Interval())
+			; ※ 新MS-IME の予測候補窓は消えにくいので時間をかける
 
 		delay := imeNeedDelay - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
@@ -92,7 +92,7 @@ SendESCx3()	; () -> Void
 		If (IME_GET() && IME_GetSentenceMode())
 		{
 			; 時間を空けてIME窓検出へ
-			delay := IME_GetConverting_Interval - Floor(QPC() - lastSendTime)
+			delay := imeGetConvertingInterval - Floor(QPC() - lastSendTime)
 			If (delay > 0)
 				Sleep, % delay
 			Loop, 5 {
@@ -101,7 +101,7 @@ SendESCx3()	; () -> Void
 					Break
 				Send, {Esc}
 				lastSendTime := QPC()	; 出力した時間を記録
-				Sleep, % IME_GetConverting_Interval
+				Sleep, % imeGetConvertingInterval
 			}
 		}
 	}

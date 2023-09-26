@@ -606,6 +606,15 @@ DetectIME()	; () -> String
 	Return (imeName := nowIME)
 }
 
+; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
+IME_GetConverting_Interval()	; () -> Int
+{
+	imeName := DetectIME()
+
+	Return (imeName == "Google" ? 30
+		: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
+}
+
 SendBlind(str)	; (str: String) -> Void
 {
 ;	SetKeyDelay, -1, -1
@@ -921,7 +930,7 @@ SendEachChar(str)	; (str: String) -> Void
 							; この関数が アスキー文字→{確定} で呼ばれたとき
 							; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
 							If ((romanChar && i > 5)
-							 || (lastDelay >= (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)) && IME_GetConverting()))
+							 || (lastDelay >= IME_GetConverting_Interval() && IME_GetConverting()))
 								; 確定のためのエンター
 								out := "{Enter}"
 							; かな入力中
@@ -970,7 +979,7 @@ SendEachChar(str)	; (str: String) -> Void
 								}
 							}
 							; 未変換文字があるか不明
-							Else If (hwnd != goodHwnd || lastDelay < (imeName == "Google" ? 30 : (imeName == "ATOK" ? 90 : 70)))
+							Else If (hwnd != goodHwnd || lastDelay < IME_GetConverting_Interval())
 							{
 								Send, _
 								Send, {Enter}
@@ -1011,12 +1020,14 @@ SendEachChar(str)	; (str: String) -> Void
 						Sleep, % preDelay - lastDelay
 					IME_SET(kanaMode := 0)	; IMEオフ
 					lastDelay := imeNeedDelay
+					lastSendTime := 0.0
 				}
 				Else If (strSub = "{IMEON}")
 				{
 					noIME := False
 					IME_SET(1)		; IMEオン
 					lastDelay := imeNeedDelay
+					lastSendTime := 0.0
 				}
 				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
 					|| strSub = "{vk19}"							; 漢字	Alt+`
@@ -1026,6 +1037,7 @@ SendEachChar(str)	; (str: String) -> Void
 					out := strSub
 					postDelay := imeNeedDelay
 					kanaMode := kanaMode ^ 1
+						; 英数→英数 もありうるが……ひらがなキーに続く使い方をするのでこうしておく
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
 					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
@@ -1065,6 +1077,7 @@ SendEachChar(str)	; (str: String) -> Void
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(24)	; IME 入力モード	全英数
 						lastDelay := imeNeedDelay
+						lastSendTime := 0.0
 					}
 					Else
 					{
@@ -1089,6 +1102,7 @@ SendEachChar(str)	; (str: String) -> Void
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
 						lastDelay := imeNeedDelay
+						lastSendTime := 0.0
 						kanaMode := 1
 					}
 				}
@@ -1172,8 +1186,7 @@ SendEachChar(str)	; (str: String) -> Void
 					If (hwnd != goodHwnd && hwnd != badHwnd
 						&& (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
 					{
-						SetTimer, JudgeHwnd, % (imeName == "Google" ? -30
-							: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? -100 : -70))
+						SetTimer, JudgeHwnd, % - IME_GetConverting_Interval()
 					}
 					romanChar := False
 				}
@@ -1213,6 +1226,7 @@ SendEachChar(str)	; (str: String) -> Void
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
 				lastDelay := imeNeedDelay
+				lastSendTime := 0.0
 				romanCharForNoIME := False
 			}
 
