@@ -1609,7 +1609,8 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2) && repeatCount)
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2)
+				&& repeatCount && !(lastBit & KC_SPC))
 			{
 				spc := 5	; 空白をリピート中
 				StoreBuf("{Space}", 0, R)
@@ -1618,7 +1619,7 @@ Convert()	; () -> Void
 				Continue
 			}
 			; スペースキーの長押し
-			Else If (spaceKeyRepeat && repeatCount)
+			Else If (spaceKeyRepeat && (spc & 1))
 			{
 				; 空白キャンセル
 				If (spaceKeyRepeat == 1)
@@ -1663,7 +1664,8 @@ Convert()	; () -> Void
 			{
 				nowKey := "sc39"	; センターシフト押す
 				; 英数単打のリピート
-				If ((!kanaMode && eisuRepeat || !repeatStyle) && repeatCount)
+				If ((!kanaMode && eisuRepeat || !repeatStyle)
+					&& repeatCount && !(lastBit & KC_SPC))
 				{
 					ent := 5	; エンターをリピート中
 					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
@@ -1798,7 +1800,7 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
-		Else If (nowBit == KC_SPC && !repeatCount
+		Else If (nowBit == KC_SPC && !(realBit & nowBit)
 			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
 		{
 			OutBuf()
