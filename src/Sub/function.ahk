@@ -847,7 +847,7 @@ SendEachChar(str)	; (str: String) -> Void
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
 		delay := (!usingKeyConfig || imeName == "NewMSIME" || imeName == "OldMSIME" ? 30 : 20)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
-		delay := -1
+		delay := 0
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
@@ -990,11 +990,6 @@ SendEachChar(str)	; (str: String) -> Void
 									Sleep, 90
 								out := "{BS}"
 							}
-
-							; 旧MS-IMEで秀丸エディタに "{Enter}" を送るときはディレイが必要
-							If (class == "Hidemaru32Class" && out == "{Enter}"
-							 && (imeName == "CustomMSIME" || imeName == "OldMSIME"))
-								postDelay := 110
 						}
 					}
 				}

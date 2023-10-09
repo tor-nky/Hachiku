@@ -104,7 +104,7 @@ NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
 ; IME操作の後に必要な Sleep 時間
-imeNeedDelay := 50	; Int型定数
+imeNeedDelay := 70	; Int型定数
 
 ; ----------------------------------------------------------------------
 ; 共用変数(メニュー用は別途)
