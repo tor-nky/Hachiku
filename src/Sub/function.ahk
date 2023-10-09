@@ -1037,8 +1037,6 @@ SendEachChar(str)	; (str: String) -> Void
 					noIME := False
 					out := strSub
 					postDelay := imeNeedDelay
-					kanaMode := kanaMode ^ 1
-						; 英数→英数 もありうるが……ひらがなキーに続く使い方をするのでこうしておく
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
 					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
@@ -1048,10 +1046,19 @@ SendEachChar(str)	; (str: String) -> Void
 					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
 					IME_SetConvMode(25)	; IME 入力モード	ひらがな
 					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
-					If (SubStr(str, i, 6) != "{vkF3}" && SubStr(str, i, 6) != "{vkF4}"
-					 && SubStr(str, i, 6) != "{vk19}")
-						postDelay := imeNeedDelay
-					kanaMode := 1
+
+					; 直後の定義が「半角/全角」「漢字」だったら、それも出力してカウンタを進める
+					If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
+						|| SubStr(str, i, 6) = "{vk19}")
+					{
+						Send, % out
+						out := SubStr(str, i, 6)
+						i += 6
+						kanaMode := 0
+					}
+					Else
+						kanaMode := 1
+					postDelay := imeNeedDelay
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
