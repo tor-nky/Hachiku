@@ -809,7 +809,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ; 文字列 str を適宜スリープを入れながら出力する
 SendEachChar(str)	; (str: String) -> Void
 {
-	global osBuild, usingKeyConfig, imeNeedDelay
+	global osBuild, usingKeyConfig, sideShift, imeNeedDelay
 		, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
@@ -933,8 +933,9 @@ SendEachChar(str)	; (str: String) -> Void
 							 || (lastDelay >= IME_GetConverting_Interval() && IME_GetConverting()))
 								; 確定のためのエンター
 								out := "{Enter}"
-							; かな入力中
-							Else If (imeConvMode & 1)
+							; かな入力中か、Google 日本語入力以外で「左右シフトかな」設定の時
+							; ※ Shift+英数 を押して一時英数になったのは除外する
+							Else If ((imeConvMode & 1) || (sideShift == 2 && imeName != "Google"))
 							{
 								Send, {vkF3}	; 半角/全角
 								Sleep, % imeNeedDelay
@@ -1047,7 +1048,9 @@ SendEachChar(str)	; (str: String) -> Void
 					; IME_GetConvMode() の戻り値が変わらないことがあるのを対策
 					IME_SetConvMode(25)	; IME 入力モード	ひらがな
 					out := (imeName == "NewMSIME" ? "{vk16}" : "{vkF2 2}")
-					postDelay := imeNeedDelay
+					If (SubStr(str, i, 6) != "{vkF3}" && SubStr(str, i, 6) != "{vkF4}"
+					 && SubStr(str, i, 6) != "{vk19}")
+						postDelay := imeNeedDelay
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
