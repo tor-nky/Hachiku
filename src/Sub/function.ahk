@@ -563,7 +563,7 @@ ExistNewMSIME()	; () -> Bool
 ;			"ATOK": ATOK
 DetectIME()	; () -> String
 {
-	global imeSelect, goodHwnd, badHwnd
+	global imeSelect, goodHwnd, badHwnd, imeGetInterval, imeGetConvertingInterval
 	static existNewMSIME := ExistNewMSIME()
 		, imeName := "", lastSearchTime := 0
 ;	local value, nowIME	; String型
@@ -602,17 +602,16 @@ DetectIME()	; () -> String
 		Return imeName
 
 	If (nowIME != imeName)
+	{
+		imeName := nowIME
 		goodHwnd := badHwnd := 0
-	Return (imeName := nowIME)
-}
-
-; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
-IME_GetConverting_Interval()	; () -> Int
-{
-	imeName := DetectIME()
-
-	Return (imeName == "Google" ? 30
-		: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
+		; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
+		imeGetInterval := (imeName == "Google" || imeName == "ATOK" ? 30 : 70)
+		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
+		imeGetConvertingInterval := (imeName == "Google" ? 30
+			: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
+	}
+	Return imeName
 }
 
 SendBlind(str)	; (str: String) -> Void
@@ -809,7 +808,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ; 文字列 str を適宜スリープを入れながら出力する
 SendEachChar(str)	; (str: String) -> Void
 {
-	global osBuild, usingKeyConfig, sideShift, imeNeedDelay
+	global osBuild, usingKeyConfig, sideShift, imeGetInterval, imeGetConvertingInterval
 		, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
@@ -910,18 +909,20 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						out := "+^{vk1C}"
+/* 無くても問題ないかテスト中
 						; 誤動作防止
 						If (imeName == "CustomMSIME")
 							postDelay := 120
+*/
 					}
 					; 未変換文字があったらエンターを押す
 					Else
 					{
 						; IME_GET() の前に一定時間空ける
-						If (lastDelay < imeNeedDelay)
+						If (lastDelay < imeGetInterval)
 						{
-							Sleep, % imeNeedDelay - lastDelay
-							lastDelay := imeNeedDelay
+							Sleep, % imeGetInterval - lastDelay
+							lastDelay := imeGetInterval
 						}
 						; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
 						If (IME_GET() && IME_GetSentenceMode())
@@ -930,7 +931,7 @@ SendEachChar(str)	; (str: String) -> Void
 							; この関数が アスキー文字→{確定} で呼ばれたとき
 							; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
 							If ((romanChar && i > 5)
-							 || (lastDelay >= IME_GetConverting_Interval() && IME_GetConverting()))
+							 || (lastDelay >= imeGetConvertingInterval && IME_GetConverting()))
 								; 確定のためのエンター
 								out := "{Enter}"
 							; かな入力中か、Google 日本語入力以外で「左右シフトかな」設定の時
@@ -938,8 +939,8 @@ SendEachChar(str)	; (str: String) -> Void
 							Else If ((imeConvMode & 1) || (sideShift == 2 && imeName != "Google"))
 							{
 								Send, {vkF3}	; 半角/全角
-								Sleep, % imeNeedDelay
-								lastDelay := imeNeedDelay
+								Sleep, % imeGetInterval
+								lastDelay := imeGetInterval
 								; 「半角/全角」でIMEオンのままだったら未変換文字あり
 								If (IME_GET())
 								{
@@ -976,11 +977,11 @@ SendEachChar(str)	; (str: String) -> Void
 								Else
 								{
 									out := "{vkF3}"
-									postDelay := imeNeedDelay
+									postDelay := imeGetInterval
 								}
 							}
 							; 未変換文字があるか不明
-							Else If (hwnd != goodHwnd || lastDelay < IME_GetConverting_Interval())
+							Else If (hwnd != goodHwnd || lastDelay < imeGetConvertingInterval)
 							{
 								Send, _
 								Send, {Enter}
@@ -995,17 +996,17 @@ SendEachChar(str)	; (str: String) -> Void
 				}
 				Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
 				{
-					If (lastDelay < imeNeedDelay)
+					If (lastDelay < imeGetInterval)
 					{
 						; 前回の出力から一定時間空けて IME_GET() へ
-						Sleep, % imeNeedDelay - lastDelay
-						lastDelay := imeNeedDelay
+						Sleep, % imeGetInterval - lastDelay
+						lastDelay := imeGetInterval
 					}
 					If (IME_GET())
 					{
 						noIME := True
 						out := "{vkF3}"		; 半角/全角
-						postDelay := imeNeedDelay
+						postDelay := imeGetInterval
 					}
 				}
 				Else If (strSub = "{IMEOFF}")
@@ -1015,14 +1016,14 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 					IME_SET(kanaMode := 0)	; IMEオフ
-					lastDelay := imeNeedDelay
+					lastDelay := imeGetInterval
 					lastSendTime := 0.0
 				}
 				Else If (strSub = "{IMEON}")
 				{
 					noIME := False
 					IME_SET(1)		; IMEオン
-					lastDelay := imeNeedDelay
+					lastDelay := imeGetInterval
 					lastSendTime := 0.0
 				}
 				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
@@ -1031,7 +1032,7 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeNeedDelay
+					postDelay := imeGetInterval
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
 					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
@@ -1053,7 +1054,7 @@ SendEachChar(str)	; (str: String) -> Void
 					}
 					Else
 						kanaMode := 1
-					postDelay := imeNeedDelay
+					postDelay := imeGetInterval
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
@@ -1064,14 +1065,14 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 						Send, {vkF2}
 					out := "{vkF1}"		; カタカナ
-					postDelay := imeNeedDelay
+					postDelay := imeGetInterval
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeNeedDelay
+					postDelay := imeGetInterval
 					kanaMode := 0
 				}
 				Else If (strSub == "{全英}")
@@ -1081,7 +1082,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(24)	; IME 入力モード	全英数
-						lastDelay := imeNeedDelay
+						lastDelay := imeGetInterval
 						lastSendTime := 0.0
 					}
 					Else
@@ -1091,7 +1092,7 @@ SendEachChar(str)	; (str: String) -> Void
 						Else
 							Send, {vkF2}
 						out := "+{vk1D}"	; シフト+無変換
-						postDelay := imeNeedDelay
+						postDelay := imeGetInterval
 					}
 					kanaMode := 0
 				}
@@ -1106,7 +1107,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-						lastDelay := imeNeedDelay
+						lastDelay := imeGetInterval
 						lastSendTime := 0.0
 						kanaMode := 1
 					}
@@ -1189,10 +1190,8 @@ SendEachChar(str)	; (str: String) -> Void
 					; IME窓の検出が当てにできるか判定
 					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
-						&& (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
-					{
-						SetTimer, JudgeHwnd, % - IME_GetConverting_Interval()
-					}
+					 && (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
+						SetTimer, JudgeHwnd, % - imeGetConvertingInterval
 					romanChar := False
 				}
 				; キーを上げただけの時
@@ -1230,7 +1229,7 @@ SendEachChar(str)	; (str: String) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
-				lastDelay := imeNeedDelay
+				lastDelay := imeGetInterval
 				lastSendTime := 0.0
 				romanCharForNoIME := False
 			}

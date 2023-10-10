@@ -103,8 +103,10 @@ KC_SPC	:= 1 << 0x39
 NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
-; IME操作の後に必要な Sleep 時間
-imeNeedDelay := 70	; Int型定数
+; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
+;imeGetInterval		; Int型定数
+; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
+;imeGetConvertingInterval	; Int型定数
 
 ; ----------------------------------------------------------------------
 ; 共用変数(メニュー用は別途)

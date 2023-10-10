@@ -55,13 +55,14 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 
 SendESCx3()	; () -> Void
 {
-	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver, imeNeedDelay
+	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver
+		, imeGetInterval, imeGetConvertingInterval
 ;	local hwnd		; Int型
 ;		, class		; String型
 ;		, process	; String型
 ;		, imeName	; String型
 ;		, delay		; Int型
-;		, imeGetConvertingInterval	; Int型
+;		, escInterval ; Int型
 
 	WinGet, hwnd, ID, A
 	WinGetClass, class, ahk_id %hwnd%
@@ -77,31 +78,30 @@ SendESCx3()	; () -> Void
 		Send, +^{vk1D 2}	; ※ Shift+Ctrl+無変換
 		lastSendTime := QPC()	; 出力した時間を記録
 	}
-	; IME窓検出が当てになる時(入力中のかながないのと変換1回目の区別がつく)
+	; IME窓検出が当てになる(入力中のかながないのと変換1回目の区別がつく)なら
+	; IME窓が出ていたらEscを出力、を5回まで繰り返す
 	Else If (hwnd == goodHwnd)
 	{
-		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
-		imeGetConvertingInterval := (imeName == "NewMSIME" ? 120 : IME_GetConverting_Interval())
-			; ※ 新MS-IME の予測候補窓は消えにくいので時間をかける
-
-		delay := imeNeedDelay - Floor(QPC() - lastSendTime)
+		delay := imeGetInterval - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
 		If (delay > 0)
 			Sleep, % delay
 		;　IME ONだが、無変換ではない
 		If (IME_GET() && IME_GetSentenceMode())
 		{
+			; Escを出力する間隔 ※ 新MS-IME の予測候補窓は消えにくいので時間をかける
+			escInterval := (imeName == "NewMSIME" ? 120 : imeGetConvertingInterval)
 			; 時間を空けてIME窓検出へ
 			delay := imeGetConvertingInterval - Floor(QPC() - lastSendTime)
 			If (delay > 0)
 				Sleep, % delay
 			Loop, 5 {
+				; IME窓がなければループ終了
 				If (!IME_GetConverting())
-					; IME窓がなければループ終了
 					Break
 				Send, {Esc}
 				lastSendTime := QPC()	; 出力した時間を記録
-				Sleep, % imeGetConvertingInterval
+				Sleep, % escInterval
 			}
 		}
 	}
