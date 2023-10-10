@@ -104,7 +104,7 @@ NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
 ; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
-;imeGetInterval		; Int型定数
+;imeNeedDelay		; Int型定数
 ; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
 ;imeGetConvertingInterval	; Int型定数
 

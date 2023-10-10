@@ -56,7 +56,7 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 SendESCx3()	; () -> Void
 {
 	global	usingKeyConfig, goodHwnd, lastSendTime, keyDriver
-		, imeGetInterval, imeGetConvertingInterval
+		, imeNeedDelay, imeGetConvertingInterval
 ;	local hwnd		; Int型
 ;		, class		; String型
 ;		, process	; String型
@@ -82,7 +82,7 @@ SendESCx3()	; () -> Void
 	; IME窓が出ていたらEscを出力、を5回まで繰り返す
 	Else If (hwnd == goodHwnd)
 	{
-		delay := imeGetInterval - Floor(QPC() - lastSendTime)
+		delay := imeNeedDelay - Floor(QPC() - lastSendTime)
 		; 時間を空けてIME検出へ
 		If (delay > 0)
 			Sleep, % delay

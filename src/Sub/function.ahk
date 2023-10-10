@@ -563,7 +563,7 @@ ExistNewMSIME()	; () -> Bool
 ;			"ATOK": ATOK
 DetectIME()	; () -> String
 {
-	global imeSelect, goodHwnd, badHwnd, imeGetInterval, imeGetConvertingInterval
+	global imeSelect, goodHwnd, badHwnd, imeNeedDelay, imeGetConvertingInterval
 	static existNewMSIME := ExistNewMSIME()
 		, imeName := "", lastSearchTime := 0
 ;	local value, nowIME	; String型
@@ -606,7 +606,7 @@ DetectIME()	; () -> String
 		imeName := nowIME
 		goodHwnd := badHwnd := 0
 		; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
-		imeGetInterval := (imeName == "Google" || imeName == "ATOK" ? 30 : 70)
+		imeNeedDelay := (imeName == "Google" || imeName == "ATOK" ? 30 : 70)
 		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
 		imeGetConvertingInterval := (imeName == "Google" ? 30
 			: (imeName == "OldMSIME" || imeName == "CustomMSIME" ? 100 : 70))
@@ -808,7 +808,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ; 文字列 str を適宜スリープを入れながら出力する
 SendEachChar(str)	; (str: String) -> Void
 {
-	global osBuild, usingKeyConfig, sideShift, imeGetInterval, imeGetConvertingInterval
+	global osBuild, usingKeyConfig, sideShift, imeNeedDelay, imeGetConvertingInterval
 		, goodHwnd, badHwnd, lastSendTime, kanaMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
@@ -909,18 +909,22 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						out := "+^{vk1C}"
+/*
 						; 誤動作防止(JK+F のリピート対策)
 						If (imeName == "CustomMSIME")
 							postDelay := 120
+						Else If (imeName == "Google")
+							postDelay := 90
+*/
 					}
 					; 未変換文字があったらエンターを押す
 					Else
 					{
 						; IME_GET() の前に一定時間空ける
-						If (lastDelay < imeGetInterval)
+						If (lastDelay < imeNeedDelay)
 						{
-							Sleep, % imeGetInterval - lastDelay
-							lastDelay := imeGetInterval
+							Sleep, % imeNeedDelay - lastDelay
+							lastDelay := imeNeedDelay
 						}
 						; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
 						If (IME_GET() && IME_GetSentenceMode())
@@ -937,8 +941,8 @@ SendEachChar(str)	; (str: String) -> Void
 							Else If ((imeConvMode & 1) || (sideShift == 2 && imeName != "Google"))
 							{
 								Send, {vkF3}	; 半角/全角
-								Sleep, % imeGetInterval
-								lastDelay := imeGetInterval
+								Sleep, % imeNeedDelay
+								lastDelay := imeNeedDelay
 								; 「半角/全角」でIMEオンのままだったら未変換文字あり
 								If (IME_GET())
 								{
@@ -975,7 +979,7 @@ SendEachChar(str)	; (str: String) -> Void
 								Else
 								{
 									out := "{vkF3}"
-									postDelay := imeGetInterval
+									postDelay := imeNeedDelay
 								}
 							}
 							; 未変換文字があるか不明
@@ -989,22 +993,27 @@ SendEachChar(str)	; (str: String) -> Void
 									Sleep, 90
 								out := "{BS}"
 							}
+/*
+							; 秀丸エディタに "{Enter}" を送るときはディレイが必要
+							If (class == "Hidemaru32Class" && out == "{Enter}")
+								postDelay := 110
+*/
 						}
 					}
 				}
 				Else If (strSub = "{NoIME}")	; IMEをオフにするが後で元に戻せるようにしておく
 				{
-					If (lastDelay < imeGetInterval)
+					If (lastDelay < imeNeedDelay)
 					{
 						; 前回の出力から一定時間空けて IME_GET() へ
-						Sleep, % imeGetInterval - lastDelay
-						lastDelay := imeGetInterval
+						Sleep, % imeNeedDelay - lastDelay
+						lastDelay := imeNeedDelay
 					}
 					If (IME_GET())
 					{
 						noIME := True
 						out := "{vkF3}"		; 半角/全角
-						postDelay := imeGetInterval
+						postDelay := imeNeedDelay
 					}
 				}
 				Else If (strSub = "{IMEOFF}")
@@ -1014,14 +1023,14 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 					IME_SET(kanaMode := 0)	; IMEオフ
-					lastDelay := imeGetInterval
+					lastDelay := imeNeedDelay
 					lastSendTime := 0.0
 				}
 				Else If (strSub = "{IMEON}")
 				{
 					noIME := False
 					IME_SET(1)		; IMEオン
-					lastDelay := imeGetInterval
+					lastDelay := imeNeedDelay
 					lastSendTime := 0.0
 				}
 				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
@@ -1030,7 +1039,7 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeGetInterval
+					postDelay := imeNeedDelay
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
 					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
@@ -1052,7 +1061,7 @@ SendEachChar(str)	; (str: String) -> Void
 					}
 					Else
 						kanaMode := 1
-					postDelay := imeGetInterval
+					postDelay := imeNeedDelay
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
@@ -1063,14 +1072,14 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 						Send, {vkF2}
 					out := "{vkF1}"		; カタカナ
-					postDelay := imeGetInterval
+					postDelay := imeNeedDelay
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeGetInterval
+					postDelay := imeNeedDelay
 					kanaMode := 0
 				}
 				Else If (strSub == "{全英}")
@@ -1080,7 +1089,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(24)	; IME 入力モード	全英数
-						lastDelay := imeGetInterval
+						lastDelay := imeNeedDelay
 						lastSendTime := 0.0
 					}
 					Else
@@ -1090,7 +1099,7 @@ SendEachChar(str)	; (str: String) -> Void
 						Else
 							Send, {vkF2}
 						out := "+{vk1D}"	; シフト+無変換
-						postDelay := imeGetInterval
+						postDelay := imeNeedDelay
 					}
 					kanaMode := 0
 				}
@@ -1105,7 +1114,7 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						IME_SET(1)			; IMEオン
 						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-						lastDelay := imeGetInterval
+						lastDelay := imeNeedDelay
 						lastSendTime := 0.0
 						kanaMode := 1
 					}
@@ -1227,7 +1236,7 @@ SendEachChar(str)	; (str: String) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 				IME_SET(1)			; IMEオン
-				lastDelay := imeGetInterval
+				lastDelay := imeNeedDelay
 				lastSendTime := 0.0
 				romanCharForNoIME := False
 			}
