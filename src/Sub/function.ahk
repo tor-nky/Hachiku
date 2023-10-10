@@ -909,11 +909,9 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						out := "+^{vk1C}"
-/* 無くても問題ないかテスト中
-						; 誤動作防止
+						; 誤動作防止(JK+F のリピート対策)
 						If (imeName == "CustomMSIME")
 							postDelay := 120
-*/
 					}
 					; 未変換文字があったらエンターを押す
 					Else
