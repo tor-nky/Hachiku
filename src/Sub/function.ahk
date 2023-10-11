@@ -809,7 +809,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 SendEachChar(str)	; (str: String) -> Void
 {
 	global osBuild, usingKeyConfig, sideShift, imeNeedDelay, imeGetConvertingInterval
-		, goodHwnd, badHwnd, lastSendTime, kanaMode
+		, goodHwnd, badHwnd, lastSendTime, kanaMode, repeatCount
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -881,6 +881,9 @@ SendEachChar(str)	; (str: String) -> Void
 			{
 				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
 				lastDelay := delay
+				; スペースキー、矢印系キーだけの定義でなかったら
+				If (strSubLength != strLength)
+					SendKeyUp()		; 押し下げ出力中のキーを上げる
 			}
 			; その他のキー
 			Else
@@ -909,13 +912,6 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						out := "+^{vk1C}"
-/*
-						; 誤動作防止(JK+F のリピート対策)
-						If (imeName == "CustomMSIME")
-							postDelay := 120
-						Else If (imeName == "Google")
-							postDelay := 90
-*/
 					}
 					; 未変換文字があったらエンターを押す
 					Else
@@ -993,11 +989,6 @@ SendEachChar(str)	; (str: String) -> Void
 									Sleep, 90
 								out := "{BS}"
 							}
-/*
-							; 秀丸エディタに "{Enter}" を送るときはディレイが必要
-							If (class == "Hidemaru32Class" && out == "{Enter}")
-								postDelay := 110
-*/
 						}
 					}
 				}
