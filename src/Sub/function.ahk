@@ -1215,7 +1215,7 @@ SendEachChar(str)	; (str: String) -> Void
 					preDelay := 80
 				; SendRawだったか、または一時IMEをオフにした間にローマ字(アスキー文字)を出力していない
 				Else If (!romanCharForNoIME)
-				 	preDelay := 20
+				 	preDelay := (imeName == "CustomMSIME" || imeName == "OldMSIME" ? 40 : 20)
 				Else If (imeName == "NewMSIME")
 					preDelay := 60
 				Else If (imeName == "Google")
