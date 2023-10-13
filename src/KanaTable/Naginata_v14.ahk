@@ -472,37 +472,37 @@ kanaGroup := "1R"
 
 ; 左手
 kanaGroup := "2L"
-	SetKana( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						)	; カッコ外し
-	SetKana( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)	; 《》
-	SetKana( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
-	SetKana( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				)	; +『』
-	SetKana( KC_M | KC_COMM | KC_S	,"^x(^v){確定}{C_Clr}"					)	; +（）
-	SetKana( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				)	; +【】
-	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)	; 行頭□□□挿入
-	SetKana( KC_M | KC_COMM | KC_D	,"　　　"								)	; □□□
-	SetKana( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)	; 行頭□□□戻し
-	SetKana( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)	; 行頭□挿入
-	SetKana( KC_M | KC_COMM | KC_F	,"^x[^v]{確定}{C_Clr}"					)	; +「」
-	SetKana( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)	; 行頭□戻し
-	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"								)	; ○
-	SetKana( KC_M | KC_COMM | KC_G	,"／{確定}"								)	; ／
-	SetKana( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
+	SetKana( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						, NR)	; カッコ外し
+	SetKana( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)		; 《》
+	SetKana( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	, NR)	; ｜《》
+	SetKana( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				, NR)	; +『』
+	SetKana( KC_M | KC_COMM | KC_S	,"^x(^v){確定}{C_Clr}"					, NR)	; +（）
+	SetKana( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				, NR)	; +【】
+	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)		; 行頭□□□挿入
+	SetKana( KC_M | KC_COMM | KC_D	,"　　　"								)		; □□□
+	SetKana( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)		; 行頭□□□戻し
+	SetKana( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)		; 行頭□挿入
+	SetKana( KC_M | KC_COMM | KC_F	,"^x[^v]{確定}{C_Clr}"					, NR)	; +「」
+	SetKana( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)		; 行頭□戻し
+	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"								)		; ○
+	SetKana( KC_M | KC_COMM | KC_G	,"／{確定}"								)		; ／
+	SetKana( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)		; x   x   x
 
-	SetEisu( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						)	; カッコ外し
-	SetEisu( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)	; 《》
-	SetEisu( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	)	; ｜《》
-	SetEisu( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				)	; +『』
-	SetEisu( KC_M | KC_COMM | KC_S	,"^x(^v){確定}{C_Clr}"					)	; +（）
-	SetEisu( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				)	; +【】
-	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)	; 行頭□□□挿入
-	SetEisu( KC_M | KC_COMM | KC_D	,"　　　"								)	; □□□
-	SetEisu( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)	; 行頭□□□戻し
-	SetEisu( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)	; 行頭□挿入
-	SetEisu( KC_M | KC_COMM | KC_F	,"^x「^v」{確定}{C_Clr}"				)	; +「」
-	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)	; 行頭□戻し
-	SetEisu( KC_M | KC_COMM | KC_T	,"〇{確定}"								)	; ○
-	SetEisu( KC_M | KC_COMM | KC_G	,"／{確定}"								)	; ／
-	SetEisu( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)	; x   x   x
+	SetEisu( KC_M | KC_COMM | KC_Q	,"^x{BS}{Del}^v"						, NR)	; カッコ外し
+	SetEisu( KC_M | KC_COMM | KC_A	,"《》{確定}{↑}"						)		; 《》
+	SetEisu( KC_M | KC_COMM | KC_Z	,"^x｜{確定}^v《》{確定}{↑}{C_Clr}"	, NR)	; ｜《》
+	SetEisu( KC_M | KC_COMM | KC_W	,"^x『^v』{確定}{C_Clr}"				, NR)	; +『』
+	SetEisu( KC_M | KC_COMM | KC_S	,"^x(^v){確定}{C_Clr}"					, NR)	; +（）
+	SetEisu( KC_M | KC_COMM | KC_X	,"^x【^v】{確定}{C_Clr}"				, NR)	; +【】
+	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{End}"				)		; 行頭□□□挿入
+	SetEisu( KC_M | KC_COMM | KC_D	,"　　　"								)		; □□□
+	SetEisu( KC_M | KC_COMM | KC_C	,"{Home}{BS}{Del 3}{End}"				)		; 行頭□□□戻し
+	SetEisu( KC_M | KC_COMM | KC_R	,"{Home}{改行}　{End}"					)		; 行頭□挿入
+	SetEisu( KC_M | KC_COMM | KC_F	,"^x「^v」{確定}{C_Clr}"				, NR)	; +「」
+	SetEisu( KC_M | KC_COMM | KC_V	,"{Home}{BS}{Del 1}{End}"				)		; 行頭□戻し
+	SetEisu( KC_M | KC_COMM | KC_T	,"〇{確定}"								)		; ○
+	SetEisu( KC_M | KC_COMM | KC_G	,"／{確定}"								)		; ／
+	SetEisu( KC_M | KC_COMM | KC_B	,"　　　×　　　×　　　×{確定}{改行}"	)		; x   x   x
 
 ; 右手
 kanaGroup := "2R"

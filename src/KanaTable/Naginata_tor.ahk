@@ -498,37 +498,37 @@ kanaGroup := "2R"
 
 ; 左手
 kanaGroup := "2L"
-	SetKana( KC_M | KC_COMM | KC_Q	,"{Home}{→}{End}{Del 4}{←}"					)	; 前行につける(ト書き)
-	SetKana( KC_M | KC_COMM | KC_A	,"{Home}{→}{End}{Del 2}{←}"					)	; 前行につける(セリフ)
-	SetKana( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
-	SetKana( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				)	; +『』
-	SetKana( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x(^v){確定}{C_Rstr}"					)	; +（）
-	SetKana( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
-	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; 行頭そろえ(ト書き)
-	SetKana( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; 行頭そろえ(セリフ)
-	SetKana( KC_M | KC_COMM | KC_C	,"／{確定}"										)	; ／
-	SetKana( KC_M | KC_COMM | KC_R	,"　　　"										)	; □□□
-	SetKana( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					)	; +「」
-	SetKana( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}[]{確定}{↑}"				)	; 確定「」
-	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"										)	; ○
-	SetKana( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetKana( KC_M | KC_COMM | KC_B	,"{確定}{End}{改行}　"							)	; 確定□
+	SetKana( KC_M | KC_COMM | KC_Q	,"{Home}{→}{End}{Del 4}{←}"					)		; 前行につける(ト書き)
+	SetKana( KC_M | KC_COMM | KC_A	,"{Home}{→}{End}{Del 2}{←}"					)		; 前行につける(セリフ)
+	SetKana( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)		; x   x   x
+	SetKana( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				, NR)	; +『』
+	SetKana( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x(^v){確定}{C_Rstr}"					, NR)	; +（）
+	SetKana( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				, NR)	; +【】
+	SetKana( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)		; 行頭そろえ(ト書き)
+	SetKana( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)		; 行頭そろえ(セリフ)
+	SetKana( KC_M | KC_COMM | KC_C	,"／{確定}"										)		; ／
+	SetKana( KC_M | KC_COMM | KC_R	,"　　　"										)		; □□□
+	SetKana( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x[^v]{確定}{C_Rstr}"					, NR)	; +「」
+	SetKana( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}[]{確定}{↑}"				)		; 確定「」
+	SetKana( KC_M | KC_COMM | KC_T	,"〇{確定}"										)		; ○
+	SetKana( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	, NR)	; +｜《》
+	SetKana( KC_M | KC_COMM | KC_B	,"{確定}{End}{改行}　"							)		; 確定□
 
-	SetEisu( KC_M | KC_COMM | KC_Q	,"{Home}{→}{End}{Del 4}{←}"					)	; 前行につける(ト書き)
-	SetEisu( KC_M | KC_COMM | KC_A	,"{Home}{→}{End}{Del 2}{←}"					)	; 前行につける(セリフ)
-	SetEisu( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)	; x   x   x
-	SetEisu( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				)	; +『』
-	SetEisu( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"				)	; +（）
-	SetEisu( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				)	; +【】
-	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)	; 行頭そろえ(ト書き)
-	SetEisu( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)	; 行頭そろえ(セリフ)
-	SetEisu( KC_M | KC_COMM | KC_C	,"／{確定}"										)	; ／
-	SetEisu( KC_M | KC_COMM | KC_R	,"　　　"										)	; □□□
-	SetEisu( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x「^v」{確定}{C_Rstr}"				)	; +「」
-	SetEisu( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}「」{確定}{↑}"				)	; 確定「」
-	SetEisu( KC_M | KC_COMM | KC_T	,"〇{確定}"										)	; ○
-	SetEisu( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	)	; +｜《》
-	SetEisu( KC_M | KC_COMM | KC_B	,"{確定}{End}{改行}　"							)	; 確定□
+	SetEisu( KC_M | KC_COMM | KC_Q	,"{Home}{→}{End}{Del 4}{←}"					)		; 前行につける(ト書き)
+	SetEisu( KC_M | KC_COMM | KC_A	,"{Home}{→}{End}{Del 2}{←}"					)		; 前行につける(セリフ)
+	SetEisu( KC_M | KC_COMM | KC_Z	,"　　　×　　　×　　　×{確定}{改行}"			)		; x   x   x
+	SetEisu( KC_M | KC_COMM | KC_W	,"{C_Bkup}^x『^v』{確定}{C_Rstr}"				, NR)	; +『』
+	SetEisu( KC_M | KC_COMM | KC_S	,"{C_Bkup}^x（^v）{確定}{C_Rstr}"				, NR)	; +（）
+	SetEisu( KC_M | KC_COMM | KC_X	,"{C_Bkup}^x【^v】{確定}{C_Rstr}"				, NR)	; +【】
+	SetEisu( KC_M | KC_COMM | KC_E	,"{Home}{改行}　　　{←}"						)		; 行頭そろえ(ト書き)
+	SetEisu( KC_M | KC_COMM | KC_D	,"{Home}{改行}　{←}"							)		; 行頭そろえ(セリフ)
+	SetEisu( KC_M | KC_COMM | KC_C	,"／{確定}"										)		; ／
+	SetEisu( KC_M | KC_COMM | KC_R	,"　　　"										)		; □□□
+	SetEisu( KC_M | KC_COMM | KC_F	,"{C_Bkup}^x「^v」{確定}{C_Rstr}"				, NR)	; +「」
+	SetEisu( KC_M | KC_COMM | KC_V	,"{確定}{End}{改行}「」{確定}{↑}"				)		; 確定「」
+	SetEisu( KC_M | KC_COMM | KC_T	,"〇{確定}"										)		; ○
+	SetEisu( KC_M | KC_COMM | KC_G	,"{C_Bkup}^x｜{確定}^v《》{確定}{↑}{C_Rstr}"	, NR)	; +｜《》
+	SetEisu( KC_M | KC_COMM | KC_B	,"{確定}{End}{改行}　"							)		; 確定□
 
 
 kanaGroup := ""	; グループなし
