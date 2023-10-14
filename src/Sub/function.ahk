@@ -926,7 +926,6 @@ SendEachChar(str)	; (str: String) -> Void
 								i += 7
 								noIME := True
 								out := "{vkF3}"		; 半角/全角
-								postDelay := imeNeedDelay
 							}
 						}
 					}
@@ -990,10 +989,7 @@ SendEachChar(str)	; (str: String) -> Void
 								}
 								; 「半角/全角」で元に戻す
 								Else
-								{
 									out := "{vkF3}"
-									postDelay := imeNeedDelay
-								}
 							}
 							; 未変換文字があるか不明
 							Else If (hwnd != goodHwnd || lastDelay < imeGetConvertingInterval)
@@ -1002,6 +998,16 @@ SendEachChar(str)	; (str: String) -> Void
 								Sleep, 30
 								Send, {Enter}
 								out := "{BS}"
+							}
+
+							; 直後の定義によってはそれも処理してカウンタを進める
+							If (out == "{Enter}" && SubStr(str, i, 7) = "{NoIME}")
+							{
+								Send, % out
+								; IMEをオフにするが後で元に戻せるようにしておく
+								i += 7
+								noIME := True
+								out := "{vkF3}"		; 半角/全角
 							}
 						}
 					}
@@ -1018,7 +1024,6 @@ SendEachChar(str)	; (str: String) -> Void
 					{
 						noIME := True
 						out := "{vkF3}"		; 半角/全角
-						postDelay := imeNeedDelay
 					}
 				}
 				Else If (strSub = "{IMEOFF}")
@@ -1044,7 +1049,6 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeNeedDelay
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
 					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
@@ -1066,7 +1070,6 @@ SendEachChar(str)	; (str: String) -> Void
 					}
 					Else
 						kanaMode := 1
-					postDelay := imeNeedDelay
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
 					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
@@ -1077,14 +1080,12 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 						Send, {vkF2}
 					out := "{vkF1}"		; カタカナ
-					postDelay := imeNeedDelay
 					kanaMode := 1
 				}
 				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
 				{
 					noIME := False
 					out := strSub
-					postDelay := imeNeedDelay
 					kanaMode := 0
 				}
 				Else If (strSub == "{全英}")
@@ -1104,7 +1105,6 @@ SendEachChar(str)	; (str: String) -> Void
 						Else
 							Send, {vkF2}
 						out := "+{vk1D}"	; シフト+無変換
-						postDelay := imeNeedDelay
 					}
 					kanaMode := 0
 				}
