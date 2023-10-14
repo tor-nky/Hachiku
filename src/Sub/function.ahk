@@ -1124,19 +1124,30 @@ SendEachChar(str)	; (str: String) -> Void
 						kanaMode := 1
 					}
 				}
-				; 秀丸エディタでエンターを押した
-				; ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
-				Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter"
-				 && class == "Hidemaru32Class")
+				; エンター ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
+				Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter")
 				{
 					out := strSub
-					If (imeName == "Google" || imeName == "ATOK")
+					; 秀丸エディタ
+					If (class == "Hidemaru32Class")
 					{
-						preDelay := 10
-						postDelay := 60
+						If (imeName == "Google" || imeName == "ATOK")
+						{
+							preDelay := 10
+							postDelay := 60
+						}
+						Else If (imeName != "NewMSIME")
+							postDelay := 60
 					}
-					Else If (imeName != "NewMSIME")
-						postDelay := 60
+					; ブラウザか Visual Studio Code で 新MS-IME を使う場合
+					; ※ "{確定}{End}{改行}[]{確定}{↑}" M+Comma+V？ が対象で
+					; ※ "{確定}{End}{改行}　" M+Comma+B？ は対象としない
+					Else If ((class == "Chrome_WidgetWin_1" || class == "MozillaWindowClass")
+						&& imeName == "NewMSIME"
+						&& noIME == False && SubStr(str, i, 7) != "{NoIME}")
+					{
+						postDelay := 100
+					}
 				}
 				Else If (strSub = "^x")
 				{
