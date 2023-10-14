@@ -984,11 +984,8 @@ SendEachChar(str)	; (str: String) -> Void
 							Else If (hwnd != goodHwnd || lastDelay < imeGetConvertingInterval)
 							{
 								Send, _
+								Sleep, 30
 								Send, {Enter}
-								If (imeName != "Google")
-									; ブラウザのフィールド対策
-									; 次行「」 "{確定}{End}{改行}[]{確定}{←}" が失敗しやすい
-									Sleep, 90
 								out := "{BS}"
 							}
 						}
