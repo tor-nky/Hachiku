@@ -911,7 +911,9 @@ SendEachChar(str)	; (str: String) -> Void
 					If (usingKeyConfig
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
-						out := "+^{vk1C}"
+						; IME_GET() には早すぎる、またはIMEオンで変換モードが無変換ではない時
+						If (lastDelay < imeNeedDelay || (IME_GET() && IME_GetSentenceMode()))
+							out := "+^{vk1C}"
 					}
 					; 未変換文字があったらエンターを押す
 					Else
@@ -922,7 +924,7 @@ SendEachChar(str)	; (str: String) -> Void
 							Sleep, % imeNeedDelay - lastDelay
 							lastDelay := imeNeedDelay
 						}
-						; IMEオンで、変換モード(無変換)ではない時 (逆は未変換文字がない)
+						; IMEオンで変換モードが無変換ではない時
 						If (IME_GET() && IME_GetSentenceMode())
 						{
 							imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
