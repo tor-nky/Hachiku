@@ -369,7 +369,7 @@ kanaGroup := "DA"
 kanaGroup := ""	; グループなし
 	SetKana( KC_H | KC_J			,"{ひらがな}"				, NR)	; IME ON
 	SetEisu( KC_H | KC_J			,"{ひらがな}"				, NR)
-	SetKana( KC_F | KC_G			,"{確定}{全角}"				, NR)	; IME OFF
+	SetKana( KC_F | KC_G			,"{確定}{ひらがな}{全角}"	, NR)	; IME OFF
 	SetEisu( KC_F | KC_G			,"{確定}{ひらがな}{全角}"	, NR)	; (ATOK)英語入力ON は "{ひらがな}{英数}")
 ;	SetKana( KC_H | KC_J | KC_SPC	,"{カタカナ}"	, NR)	; カタカナ入力
 ;	SetEisu( KC_H | KC_J | KC_SPC	,"{カタカナ}"	, NR)
