@@ -98,7 +98,6 @@ ATOK プロパティ → キー･ローマ字･色 → キーカスタマイ�
 それでも直らないときは、ファイルに保存してソフトを一度終了してください。
 * (Google 日本語入力) 左右シフト英数に設定していると、左右シフトを離した後の英字がローマ字  
 Google 日本語入力 が一時的に英数入力になっていることを検出できないからです。
-* ブラウザで GitHub 上のファイルを直接編集すると、誤動作する編集モードがある  
 [Issue #28](https://github.com/tor-nky/Hachiku/issues/28)
 # 動作確認
 * Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.01) U64 Unicode 64-bit.bin  
