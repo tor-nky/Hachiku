@@ -810,6 +810,7 @@ SendEachChar(str)	; (str: String) -> Void
 {
 	global osBuild, usingKeyConfig, sideShift, imeNeedDelay, imeGetConvertingInterval
 		, goodHwnd, badHwnd, lastSendTime, kanaMode, repeatCount
+		, imeState, imeConvMode, imeSentenceMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -821,7 +822,6 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, i, bracket			; Int型
 ;		, c						; String型
 ;		, noIME					; Bool型	IME入力モードの保存、復元に関するフラグ
-;		, imeConvMode			; Int型		と変数
 ;		, preDelay, postDelay	; Int型		出力前後のディレイの値
 ;		, lastDelay				; Int型		前回出力時のディレイの値
 ;		, clipSaved				; Any?型
@@ -930,18 +930,19 @@ SendEachChar(str)	; (str: String) -> Void
 						}
 					}
 					; 未変換文字があったらエンターを押す
-					Else
+					Else If (imeState != 0 && imeSentenceMode != 0)
 					{
 						; IME_GET() の前に一定時間空ける
-						If (lastDelay < imeNeedDelay)
+						If (!(imeState && imeSentenceMode && romanChar && i > 5)
+							&& lastDelay < imeNeedDelay)
 						{
 							Sleep, % imeNeedDelay - lastDelay
 							lastDelay := imeNeedDelay
 						}
 						; IMEオンで変換モードが無変換ではない時
-						If (IME_GET() && IME_GetSentenceMode())
+						If (imeState && imeSentenceMode
+							|| IME_GET() && IME_GetSentenceMode())
 						{
-							imeConvMode := IME_GetConvMode()	; IME入力モードを保存する
 							; この関数が アスキー文字→{確定} で呼ばれたとき
 							; あるいは文字出力から一定時間経っていて、IME窓を検出できたとき
 							If ((romanChar && i > 5)
@@ -950,7 +951,8 @@ SendEachChar(str)	; (str: String) -> Void
 								out := "{Enter}"
 							; かな入力中か、Google 日本語入力以外で「左右シフトかな」設定の時
 							; ※ Shift+英数 を押して一時英数になったのは除外する
-							Else If ((imeConvMode & 1) || (sideShift == 2 && imeName != "Google"))
+							Else If (((imeConvMode := IME_GetConvMode()) & 1)	; IME入力モードを保存し、かな入力か
+								|| (sideShift == 2 && imeName != "Google"))
 							{
 								Send, {vkF3}	; 半角/全角
 								Sleep, % imeNeedDelay
@@ -1223,6 +1225,7 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
 						SetTimer, JudgeHwnd, % - imeGetConvertingInterval
 					romanChar := False
+					imeState := imeConvMode := imeSentenceMode := ""
 				}
 				; キーを上げただけの時
 				Else
@@ -1234,7 +1237,10 @@ SendEachChar(str)	; (str: String) -> Void
 				lastDelay := (postDelay < 0 ? 0 : postDelay)
 			}
 			Else
+			{
 				romanChar := False
+				imeState := imeConvMode := imeSentenceMode := ""
+			}
 
 			; 必要なら IME の状態を元に戻す
 			; ※IME_SET(1) を使う方法
@@ -1443,6 +1449,7 @@ Convert()	; () -> Void
 		, keyUpToOutputAll, eisuSandS, eisuRepeat
 		, repeatStyle, imeGetInterval
 		, spc, ent, repeatCount
+		, imeState, imeConvMode, imeSentenceMode
 	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""	; String型	次回送りのキー入力
 		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
@@ -1466,8 +1473,6 @@ Convert()	; () -> Void
 ;		, ent		:= 0	; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
 ;	local class				; String型
 ;		, keyTime			; Double型	キーを押した時間
-;		, imeState			; Bool?型
-;		, imeConvMode		; Int?型
 ;		, nowKey			; String型
 ;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
@@ -1537,16 +1542,14 @@ Convert()	; () -> Void
 		{
 			imeState := IME_GET()
 			imeConvMode := IME_GetConvMode()
+			imeSentenceMode := IME_GetSentenceMode()
 			; IME_GetConvMode() の値が 0 になった直後を英数モードに
 			If (imeConvMode == 0 && lastIMEConvMode)
 				kanaMode := 0
 			lastIMEConvMode := imeConvMode
 		}
 		Else
-		{
-			imeState := ""
-			imeConvMode := ""
-		}
+			imeState := imeConvMode := imeSentenceMode := ""
 
 		; コンテキストメニューが出ている時
 		IfWinExist, ahk_class #32768

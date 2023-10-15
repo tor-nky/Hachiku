@@ -103,6 +103,10 @@ KC_SPC	:= 1 << 0x39
 NR := "NonRepeat"	; String型定数
 R := "Repeat"		; String型定数
 
+;imeState			; Bool?型	IMEの状態		IME_GET()用
+;imeConvMode		; Int?型	IME 入力モード	IME_GetConvMode()用
+;imeSentenceMode	; Int?型	IME 変換モード	IME_GetSentenceMode()用
+
 ; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
 ;imeNeedDelay		; Int型定数
 ; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
