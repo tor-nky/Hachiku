@@ -997,22 +997,25 @@ SendEachChar(str)	; (str: String) -> Void
 							; ※ 左右シフト英数に設定時の全角英数モード
 							Else If (hwnd != goodHwnd || lastDelay < imeGetConvertingInterval)
 							{
-								Send, _
-
 								; Visual Studio Code で 新MS-IME を使い
 								; "{End}{Enter}" が続く場合
 								If (process == "Code.exe" && imeName == "NewMSIME"
 									&& SubStr(str, i, 12) = "{End}{Enter}")
 								{
+									Send, _
 									Sleep, 60
+									Send, {Enter}
 									preDelay := 30
+									out := "{BS}"
 									postDelay := 60
 								}
 								Else
+								{
+									Send, _
 									Sleep, 30
-
-								Send, {Enter}
-								out := "{BS}"
+									Send, {Enter}
+									out := "{BS}"
+								}
 							}
 
 							; 直後の定義によってはそれも処理してカウンタを進める
