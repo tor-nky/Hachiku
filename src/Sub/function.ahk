@@ -991,11 +991,24 @@ SendEachChar(str)	; (str: String) -> Void
 								Else
 									out := "{vkF3}"
 							}
-							; 未変換文字があるか不明
+							; 未変換文字があるか不明なら "_{Enter}{BS}" を出力する
+							; ※ 左右シフト英数に設定時の全角英数モード
 							Else If (hwnd != goodHwnd || lastDelay < imeGetConvertingInterval)
 							{
 								Send, _
-								Sleep, 30
+
+								; Visual Studio Code で 新MS-IME を使い
+								; "{End}{Enter}" が続く場合
+								If (process == "Code.exe" && imeName == "NewMSIME"
+									&& SubStr(str, i, 12) = "{End}{Enter}")
+								{
+									Sleep, 60
+									preDelay := 30
+									postDelay := 60
+								}
+								Else
+									Sleep, 30
+
 								Send, {Enter}
 								out := "{BS}"
 							}
@@ -1139,15 +1152,9 @@ SendEachChar(str)	; (str: String) -> Void
 						Else If (imeName != "NewMSIME")
 							postDelay := 60
 					}
-					; ブラウザか Visual Studio Code で 新MS-IME を使う場合
-					; ※ "{確定}{End}{改行}[]{確定}{↑}" M+Comma+V？ が対象で
-					; ※ "{確定}{End}{改行}　" M+Comma+B？ は対象としない
-					Else If ((class == "Chrome_WidgetWin_1" || class == "MozillaWindowClass")
-						&& imeName == "NewMSIME"
-						&& noIME == False && SubStr(str, i, 7) != "{NoIME}")
-					{
-						postDelay := 100
-					}
+					; Visual Studio Code で 新MS-IME を使う場合
+					Else If (process == "Code.exe" && imeName == "NewMSIME")
+						postDelay := 0
 				}
 				Else If (strSub = "^x")
 				{
