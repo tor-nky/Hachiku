@@ -933,8 +933,8 @@ SendEachChar(str)	; (str: String) -> Void
 					Else If (imeState != 0 && imeSentenceMode != 0)
 					{
 						; IME_GET() の前に一定時間空ける
-						If (!(imeState && imeSentenceMode && romanChar && i > 5)
-							&& lastDelay < imeNeedDelay)
+						If (lastDelay < imeNeedDelay
+							&& !(imeState && imeSentenceMode && romanChar && i > 5))
 						{
 							Sleep, % imeNeedDelay - lastDelay
 							lastDelay := imeNeedDelay
