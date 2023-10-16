@@ -36,7 +36,7 @@ JudgeHwnd:
 	; 原理は、変換1回目でIME窓が検出できれば良しというもの
 	SetTimer, JudgeHwnd, Off
 	WinGet, hwnd, ID, A			; hwnd: Int型
-	If (IME_GET())
+	If (IME_GET() && (IME_GetConvMode() & 1))
 	{
 		If (IME_GetConverting())
 			goodHwnd := hwnd
@@ -1213,14 +1213,14 @@ SendEachChar(str)	; (str: String) -> Void
 				; ローマ字の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
 				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
-				 || SubStr(strSub, 3, 6) = " down}" && RegExMatch(strSub, "^\{[a-z\d\-]\s"))
+				 || RegExMatch(strSub, "^\{[a-z\d\-] down\}$"))
 				{
 					romanChar := True
 					If (noIME)
 						romanCharForNoIME := True
 				}
 				; キーを上げたのではなく、ローマ字の文字を押したのでもない時
-				Else If (SubStr(strSub, 3, 4) != " up}")
+				Else If (SubStr(strSub, strSubLength - 3, 4) != " up}")
 				{
 					; IME窓の検出が当てにできるか判定
 					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
