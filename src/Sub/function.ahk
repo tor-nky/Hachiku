@@ -1559,10 +1559,18 @@ Convert()	; () -> Void
 		; コンテキストメニューが出ている時
 		IfWinExist, ahk_class #32768
 			kanaMode := 0	; 英数モード
-		Else If ((imeConvMode && imeState == 0)		; ※ 約22行前のコメントを参照のこと
-			|| ((sft || rsft) && sideShift <= 1))	; 左右シフト英数で左右シフトを押している
+		Else If (imeConvMode && imeState == 0)	; ※ 約22行前のコメントを参照のこと
 		{
 			kanaMode := 0	; 英数モード
+		}
+		Else If ((sft || rsft) && sideShift <= 1)	; 左右シフト英数で左右シフトを押している
+		{
+			kanaMode := 0	; 英数モード
+			If (DetectIME() == "Google" && imeState && (imeConvMode & 1) == 1)
+			{
+				Send, {vkF3}	; 半角/全角 ※ 半角英数に入力切替
+				imeState := imeConvMode := ""
+			}
 		}
 		; 検出したものを反映する
 		Else If (imeState == 1)
