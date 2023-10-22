@@ -1431,15 +1431,32 @@ DispStoredStr()	; () -> Void
 RepeatCount(nowKey)	; (nowKey: String) -> Void
 {
 	global repeatCount
-	static lastKey := ""	; String型	前回押したキー入力
+	static lastKey := ""	; String型	最後に押したキー
+;	local key	; [String]型
 
-	If (nowKey == lastKey)
-		repeatCount++
-	Else
+	; nowKey をスペースで分割して配列 key に入れる
+	key := StrSplit(nowKey, A_Space)
+
+	; 最後に押したキーが
+	If (key[1] == lastKey)
 	{
-		lastKey := nowKey
-		repeatCount := 0
+		; 離れた時
+		If (key[2] == "up")
+		{
+			repeatCount := 0
+			lastKey := ""
+		}
+		; リピート
+		Else
+			repeatCount++
 	}
+	; 別のキーが押された時
+	Else If (key[2] != "up")
+	{
+		repeatCount := 0
+		lastKey := nowKey
+	}
+	; なお最後に押したキーと別のキーが離れた時は何もしない
 }
 
 ; 変換、出力
