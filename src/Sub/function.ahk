@@ -1455,21 +1455,21 @@ Convert()	; () -> Void
 		, repeatStyle, imeGetInterval
 		, spc, ent, repeatCount
 		, imeState, imeConvMode, imeSentenceMode
-	static convRest	:= 0	; Int型		入力バッファに積んだ数/多重起動防止フラグ
-		, nextKey	:= ""	; String型	次回送りのキー入力
-		, realBit	:= 0	; Int64型	今押している全部のキービットの集合
-		, lastBit	:= 0	; Int64型	前回のキービット
-		, last2Bit	:= 0	; Int64型	前々回のキービット
-		, reuseBit	:= 0	; Int64型	復活したキービット
-		, lastKeyTime := 0	; Double型	有効なキーを押した時間
-		, timeLimit := 0.0	; Double型	タイマーを止めたい時間
-		, lastToBuf	:= ""	; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
-		, lastKeyCount := 0	; Int型		前回、何キー同時押しだったか？
-		, lastGroup	:= ""	; String型	前回、何グループだったか？ 0または空はグループなし
-		, repeatFlg	:= False ; Bool型	リピート中か
-		, ctrlName	:= NR	; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
-		, combinableBit := -1 ; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
-		, lastIMEConvMode	; Int型
+	static convRest	:= 0		; Int型		入力バッファに積んだ数/多重起動防止フラグ
+		, nextKey	:= ""		; String型	次回送りのキー入力
+		, realBit	:= 0		; Int64型	今押している全部のキービットの集合
+		, lastBit	:= 0		; Int64型	前回のキービット
+		, last2Bit	:= 0		; Int64型	前々回のキービット
+		, reuseBit	:= 0		; Int64型	復活したキービット
+		, lastPushedTime := 0.0	; Double型	有効なキーを押した時間
+		, timeLimit := 0.0		; Double型	タイマーを止めたい時間
+		, lastToBuf	:= ""		; String型	前回、出力バッファに送った文字列(リピート、後置シフト用)
+		, lastKeyCount := 0		; Int型		前回、何キー同時押しだったか？
+		, lastGroup	:= ""		; String型	前回、何グループだったか？ 0または空はグループなし
+		, repeatFlg	:= False	; Bool型	リピート中か
+		, ctrlName	:= NR		; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
+		, combinableBit := -1	; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
+		, lastIMEConvMode		; Int型
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
@@ -1519,7 +1519,7 @@ Convert()	; () -> Void
 				If (keyTime > timeLimit)
 				{
 					OutBuf()
-					DispTime(lastKeyTime, "`n判定期限")	; キー変化からの経過時間を表示
+					DispTime(lastPushedTime, "`n判定期限")	; キー変化からの経過時間を表示
 				}
 				Else
 					; 10ミリ秒後に再判定
@@ -1560,9 +1560,7 @@ Convert()	; () -> Void
 		IfWinExist, ahk_class #32768
 			kanaMode := 0	; 英数モード
 		Else If (imeConvMode && imeState == 0)	; ※ 約22行前のコメントを参照のこと
-		{
 			kanaMode := 0	; 英数モード
-		}
 		Else If ((sft || rsft) && sideShift <= 1)	; 左右シフト英数で左右シフトを押している
 		{
 			kanaMode := 0	; 英数モード
@@ -1851,7 +1849,7 @@ Convert()	; () -> Void
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
 		Else If (nowBit == KC_SPC && !(realBit & nowBit)
-			&& (!outStrsLength || lastKeyTime + shiftDelay < keyTime))
+			&& (!outStrsLength || lastPushedTime + shiftDelay < keyTime))
 		{
 			OutBuf()
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
@@ -1889,7 +1887,7 @@ Convert()	; () -> Void
 			; 前に押したキーと同時押しにならない
 			; または同時押しの判定期限到来
 			If (outStrsLength
-			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastKeyTime + combDelay < keyTime
+			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastPushedTime + combDelay < keyTime
 			 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)) )))
 				OutBuf()
 			; 前に押したキーが出力確定していなければ同グループ優先で検索しない
@@ -2042,7 +2040,7 @@ Convert()	; () -> Void
 
 			; 次回の検索用に変数を更新(グループの保存は後で)
 			lastToBuf := toBuf			; 今回の文字列を保存
-			lastKeyTime := keyTime		; 有効なキーを押した時間を保存
+			lastPushedTime := keyTime	; 有効なキーを押した時間を保存
 			lastKeyCount := keyCount	; 何キー同時押しだったかを保存
 			reuseBit := 0				; 復活したキービットを消去
 			; キービットを保存
