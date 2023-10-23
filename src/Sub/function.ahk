@@ -621,7 +621,7 @@ SendBlind(str)	; (str: String) -> Void
 	; Microsoft OneNote 対策
 	; 参考: http://chaboneko.wp.xdomain.jp/?p=583
 	; 参考: https://benizara.hatenablog.com/entry/2023/07/08/101901
-	IfWinActive, ahk_class Framework::CFrame	; Process: ONENOTE.EXE
+	If (WinActive("ahk_class Framework::CFrame"))	; Process: ONENOTE.EXE
 	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
 		If (str = "{Up down}")
 			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
@@ -1565,7 +1565,7 @@ Convert()	; () -> Void
 			imeState := IME_GET()
 			imeConvMode := IME_GetConvMode()
 			imeSentenceMode := IME_GetSentenceMode()
-			; IME_GetConvMode() の値が 0 になった直後を英数モードに
+			; IME_GetConvMode() の値が 0 になった直後を英数モードに	※ 9行前を参照
 			If (imeConvMode == 0 && lastIMEConvMode)
 				kanaMode := 0
 			lastIMEConvMode := imeConvMode
@@ -1574,10 +1574,15 @@ Convert()	; () -> Void
 			imeState := imeConvMode := imeSentenceMode := ""
 
 		; コンテキストメニューが出ている時
-		IfWinExist, ahk_class #32768
+		; または IMEオフ状態を検出	※ 18行前を参照
+		If (WinExist("ahk_class #32768")
+		 || imeConvMode && imeState == 0)
+		{
 			kanaMode := 0	; 英数モード
-		Else If (imeConvMode && imeState == 0)	; ※ 約22行前のコメントを参照のこと
-			kanaMode := 0	; 英数モード
+		}
+		; Win+X キーで出てくるメニュー
+;		Else If (imeState && WinExist("ahk_class Xaml_WindowedPopupClass"))
+;			IME_SET(kanaMode := 0)	; IMEオフ
 		Else If ((sft || rsft) && sideShift <= 1)	; 左右シフト英数で左右シフトを押している
 		{
 			kanaMode := 0	; 英数モード
