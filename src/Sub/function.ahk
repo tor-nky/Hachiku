@@ -31,6 +31,21 @@ KeyTimer:
 	Convert()	; 変換ルーチン
 	Return
 
+; ウォッチドッグタイマー
+; OSがスリープしていたらリフレッシュさせる
+WDT:
+	; タイマー呼び出しが2秒以上遅れた
+	If (QPC() >= wdtStartTime + 2500.0)
+	{
+		; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
+		inBufsKey[inBufWritePos] := "Refresh", inBufsTime[inBufWritePos] := QPC()
+			, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)
+			, (inBufRest ? inBufRest-- : )
+		Convert()	; 変換ルーチン
+	}
+	wdtStartTime := QPC()
+	Return
+
 ; IME窓検出タイマー
 JudgeHwnd:
 	; 原理は、変換1回目でIME窓が検出できれば良しというもの
@@ -1472,6 +1487,7 @@ Convert()	; () -> Void
 		, repeatStyle, imeGetInterval
 		, spc, ent, repeatCount
 		, imeState, imeConvMode, imeSentenceMode
+		, wdtStartTime, restStr
 	static convRest	:= 0		; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""		; String型	次回送りのキー入力
 		, realBit	:= 0		; Int64型	今押している全部のキービットの集合
@@ -1519,6 +1535,10 @@ Convert()	; () -> Void
 	; 入力バッファが空になるまで
 	While (convRest := 31 - inBufRest || nextKey != "")
 	{
+		; ウォッチドッグタイマーでOSがスリープしていたか監視する
+		wdtStartTime := QPC()
+		SetTimer, WDT, 500
+
 		If (nextKey == "")
 		{
 			; 入力バッファから読み出し
@@ -1541,6 +1561,22 @@ Convert()	; () -> Void
 				Else
 					; 10ミリ秒後に再判定
 					SetTimer, KeyTimer, -10
+				Continue
+			}
+			; OSがスリープしていたので押したままかもしれない矢印キー、左シフトキーを押し上げ、
+			; 他のキーも押していないことにする
+			Else If (nowKey == "Refresh")
+			{
+				; 押し下げ出力中のキーを上げる
+				SendKeyUp()
+				; 左右どちらのシフトも押されていなければシフトを上げる
+				If !(GetKeyState("LShift", "P") || GetKeyState("RShift", "P"))
+					Send, {ShiftUp}
+				; 変数を初期化
+				realBit := last2Bit := lastBit := reuseBit := 0
+				lastGroup := lastToBuf := ""
+				sft := rsft := spc := ent := 0
+
 				Continue
 			}
 
@@ -2125,6 +2161,11 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 	}
+
+	; 押しているキーも、押し下げ出力中のキーもなく、シフト類を押していないなら
+	If !(realBit || restStr || sft || rsft || spc || ent)
+		; ウォッチドッグタイマーを停止
+		SetTimer, WDT, Off
 }
 
 
