@@ -1596,8 +1596,8 @@ Convert()	; () -> Void
 		Else If (imeState == 1)
 			kanaMode := imeConvMode & 1
 
-		; 先頭の "+" を消去
-		If (Asc(nowKey) == 43)
+		; 先頭の "+" と "^" を消去
+		While (Asc(nowKey) == 43 || Asc(nowKey) == 94)
 			nowKey := SubStr(nowKey, 2)
 		; 左右シフト処理
 		If (nowKey == "~LShift")
@@ -2138,6 +2138,9 @@ Convert()	; () -> Void
 ~LShift::
 RShift::
 +RShift::
+^~LShift::
+^RShift::
+^+RShift::
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02::	; 1
 sc03::	; 2
@@ -2276,6 +2279,9 @@ sc29::	; (JIS)半角/全角	(US)`
 ~LShift up::
 RShift up::
 +RShift up::
+^~LShift up::
+^RShift up::
+^+RShift up::
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02 up::	; 1
 sc03 up::	; 2
