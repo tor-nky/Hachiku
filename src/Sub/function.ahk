@@ -1597,7 +1597,7 @@ Convert()	; () -> Void
 			kanaMode := imeConvMode & 1
 
 		; 先頭の "+" と "^" を消去
-		While (Asc(nowKey) == 43 || Asc(nowKey) == 94)
+		If (Asc(nowKey) == 43)
 			nowKey := SubStr(nowKey, 2)
 		; 左右シフト処理
 		If (nowKey == "~LShift")
@@ -1610,7 +1610,7 @@ Convert()	; () -> Void
 			OutBuf()
 			nowKey := "sc39"	; センターシフト押す
 		}
-		Else If (nowKey == "RShift")
+		Else If (nowKey == "*RShift")
 		{
 			rsft := 1
 			If (spc == 1)
@@ -1640,7 +1640,7 @@ Convert()	; () -> Void
 			Else
 				nowKey := "sc39 up"	; センターシフト上げ
 		}
-		Else If (nowKey == "RShift up")
+		Else If (nowKey == "*RShift up")
 		{
 			rsft := 0
 			; 左シフトも離されている
@@ -2136,11 +2136,7 @@ Convert()	; () -> Void
 
 ; キー入力部
 ~LShift::
-RShift::
-+RShift::		; LShift+RShift時と、RShift長押し時
-;^~LShift::		; 無くてよさそう
-^RShift::		; up側は無くてよさそう
-^+RShift::		; down側は無くてよさそう
+*RShift::
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02::	; 1
 sc03::	; 2
@@ -2277,11 +2273,7 @@ sc29::	; (JIS)半角/全角	(US)`
 
 ; キー押上げ
 ~LShift up::
-RShift up::
-+RShift up::
-;^~LShift up::	; 無くてよさそう
-^RShift up::	; up側は無くてよさそう
-^+RShift up::	; Ctrl押す、右Shift長押し、右Shift離す でShiftが押しっぱなしになるのを阻止
+*RShift up::
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02 up::	; 1
 sc03 up::	; 2
