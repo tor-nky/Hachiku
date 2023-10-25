@@ -2137,10 +2137,10 @@ Convert()	; () -> Void
 ; キー入力部
 ~LShift::
 RShift::
-+RShift::
-^~LShift::
-^RShift::
-^+RShift::
++RShift::		; LShift+RShift時と、RShift長押し時
+;^~LShift::		; 無くてよさそう
+^RShift::		; up側は無くてよさそう
+^+RShift::		; down側は無くてよさそう
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02::	; 1
 sc03::	; 2
@@ -2279,9 +2279,9 @@ sc29::	; (JIS)半角/全角	(US)`
 ~LShift up::
 RShift up::
 +RShift up::
-^~LShift up::
-^RShift up::
-^+RShift up::
+;^~LShift up::	; 無くてよさそう
+^RShift up::	; up側は無くてよさそう
+^+RShift up::	; Ctrl押す、右Shift長押し、右Shift離す でShiftが押しっぱなしになるのを阻止
 	Suspend, Permit	; ここまではSuspendの対象でないことを示す
 sc02 up::	; 1
 sc03 up::	; 2
