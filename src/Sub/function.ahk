@@ -1670,7 +1670,7 @@ Convert()	; () -> Void
 			}
 			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
 			; またはSandSなしの設定をした英数入力中
-			Else If (!imeConvMode && class == "MozillaWindowClass"
+			Else If (imeConvMode == 0 && class == "MozillaWindowClass"
 				|| !eisuSandS && !kanaMode)
 			{
 				StoreBuf("{Space}", 0, R)
