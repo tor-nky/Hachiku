@@ -890,7 +890,8 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 				}
-				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
+				EmulateKeyDownUp(strSub, (delay < 10 ? delay : 10))	; 矢印系キーを出力
+																	; ※ ここでは10超のディレイを入れない
 				lastDelay := delay
 				; スペースキー、矢印系キーだけの定義でなかったら
 				If (strSubLength != strLength)
