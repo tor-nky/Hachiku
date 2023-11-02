@@ -844,7 +844,8 @@ SendEachChar(str)	; (str: String) -> Void
 	If (class == "CabinetWClass")	; エクスプローラー
 		delay := 10
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
-		delay := (!usingKeyConfig || imeName == "NewMSIME" || imeName == "OldMSIME" ? 30 : 20)
+		delay := (imeName == "NewMSIME" ? 40 : 10)
+			; ↑ 新MS-IMEで30とすると、定義"(){確定}{↑}"で "９" などと入力されることがあるため
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := -1	; 文末の [EOF] の表示が乱れるのを防止
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
@@ -879,6 +880,16 @@ SendEachChar(str)	; (str: String) -> Void
 				|| SubStr(strSub, 1, 5) = "{PgUp" || SubStr(strSub, 1, 6) = "+{PgUp"
 				|| SubStr(strSub, 1, 5) = "{PgDn" || SubStr(strSub, 1, 6) = "+{PgDn")
 			{
+				; Windows 11 以降のメモ帳、"{確定}"の直後、キー設定使用の旧MS-IME
+				; には間を空けてから
+				If (osBuild >= 20000 && class == "Notepad"
+				 && SubStr(str, i - strSubLength - 4, 4) = "{確定}"
+				 && usingKeyConfig && imeName == "CustomMSIME")
+				{
+					preDelay := 70
+					If (lastDelay < preDelay)
+						Sleep, % preDelay - lastDelay
+				}
 				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
 				lastDelay := delay
 				; スペースキー、矢印系キーだけの定義でなかったら
@@ -893,7 +904,13 @@ SendEachChar(str)	; (str: String) -> Void
 				; "{Raw}"からの残りは全部出力する
 				If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 				{
-					postDelay := (delay < 10 ? 10 : delay)
+					; Windows 11 以降のメモ帳へはゆっくりと
+					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
+						postDelay := 30
+					Else
+						postDelay := 10
+					postDelay := (postDelay > delay ? postDelay : delay)
+
 					While (i <= strLength)
 					{
 						SendRaw, % SubStr(str, i++, 1)
@@ -1197,6 +1214,9 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					out := strSub
 					postDelay := 10
+					; Windows 11 以降のメモ帳へはゆっくりと
+					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
+						postDelay := 30
 				}
 				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 					out := strSub
