@@ -897,6 +897,8 @@ SendEachChar(str)	; (str: String) -> Void
 					While (i <= strLength)
 					{
 						SendRaw, % SubStr(str, i++, 1)
+						If (i > strLength)
+							lastSendTime := QPC()	; 出力した時間を記録
 						; 出力直後のディレイ
 						Sleep, % postDelay
 					}
