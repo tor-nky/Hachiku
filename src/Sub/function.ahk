@@ -67,10 +67,11 @@ QPC() {	; () -> Double	ミリ秒単位
 }
 
 ; str をツールチップに表示し、time ミリ秒後に消す(デバッグ用)
-ToolTip2(str, time:=0)	; (str: String, time: Int) -> Void
+ToolTip2(str, time:=1000)	; (str: String, time: Int) -> Void
 {
 	ToolTip, %str%
-	If (time != 0)
+	; str が空でなく、time が0でないとき
+	If (str && time != 0)
 		SetTimer, RemoveToolTip, %time%
 }
 
