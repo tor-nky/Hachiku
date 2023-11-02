@@ -161,10 +161,10 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
 	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
 	SetKana( AL_を | KC_SPC		,"wo"		)		; を
-	SetKana( AL_、 | KC_SPC		,",{Enter}"	)		; 、
+	SetKana( AL_、 | KC_SPC		,",{確定}"	)		; 、
 	SetKana( AL_み | KC_SPC		,"mi"		)		; み
 	SetKana( AL_お | KC_SPC		,"o"		)		; お
-	SetKana( AL_。 | KC_SPC		,".{Enter}"	)		; 。
+	SetKana( AL_。 | KC_SPC		,".{確定}"	)		; 。
 	SetKana( AL_む | KC_SPC		,"mu"		)		; む
 	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
 	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
