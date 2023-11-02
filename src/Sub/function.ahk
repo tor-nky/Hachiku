@@ -846,7 +846,7 @@ SendEachChar(str)	; (str: String) -> Void
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
 		delay := (!usingKeyConfig || imeName == "NewMSIME" || imeName == "OldMSIME" ? 30 : 20)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
-		delay := 0	; 文末の [EOF] の表示が乱れるのを防止。願わくばIMEキャンセルを使ったときに不正終了になることをなくしたい
+		delay := -1	; 文末の [EOF] の表示が乱れるのを防止
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
@@ -893,12 +893,12 @@ SendEachChar(str)	; (str: String) -> Void
 				; "{Raw}"からの残りは全部出力する
 				If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 				{
-					lastDelay := (delay < 10 ? 10 : delay)
+					postDelay := (delay < 10 ? 10 : delay)
 					While (i <= strLength)
 					{
 						SendRaw, % SubStr(str, i++, 1)
 						; 出力直後のディレイ
-						Sleep, % lastDelay
+						Sleep, % postDelay
 					}
 					; 後で誤作動しないように消去
 					strSub := ""
@@ -1147,8 +1147,12 @@ SendEachChar(str)	; (str: String) -> Void
 				Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter")
 				{
 					out := strSub
+					; Visual Studio Code で 新MS-IME を使う場合
+					; ※ 定義 "　　　×　　　×　　　×" への対策
+					If (process == "Code.exe" && imeName == "NewMSIME")
+						postDelay := 0
 					; 秀丸エディタ
-					If (class == "Hidemaru32Class")
+					Else If (class == "Hidemaru32Class")
 					{
 						If (imeName == "Google" || imeName == "ATOK")
 						{
@@ -1158,10 +1162,6 @@ SendEachChar(str)	; (str: String) -> Void
 						Else If (imeName != "NewMSIME")
 							postDelay := 60
 					}
-					; Visual Studio Code で 新MS-IME を使う場合
-					; ※ 定義 "　　　×　　　×　　　×" への対策
-					Else If (process == "Code.exe" && imeName == "NewMSIME")
-						postDelay := 0
 				}
 				Else If (strSub = "^x")
 				{
@@ -1210,7 +1210,7 @@ SendEachChar(str)	; (str: String) -> Void
 				Send, % out
 				If (!noIME && i > strLength)
 					lastSendTime := QPC()	; 出力した時間を記録
-				postDelay := (postDelay < delay ? delay : postDelay)
+				postDelay := (postDelay > delay ? postDelay : delay)
 
 				; ローマ字入力の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
