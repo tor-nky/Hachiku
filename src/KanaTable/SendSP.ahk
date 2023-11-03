@@ -93,7 +93,7 @@ SendESCx3()	; () -> Void
 			If (imeName != "NewMSIME")	; 新MS-IME以外
 				escInterval := imeGetConvertingInterval
 			Else If (osBuild >= 20000 && class == "Notepad")	; Win11メモ帳+新MS-IME
-				escInterval := 140
+				escInterval := 150
 			Else	; 新MS-IME
 				escInterval := 120
 			; 時間を空けてIME窓検出へ

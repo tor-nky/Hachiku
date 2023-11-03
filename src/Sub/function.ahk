@@ -793,7 +793,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	; "+" から始まるか
 	If (Asc(str) == 43)
 		key := "+" . key
-	; 出力
+	; ループして出力
 	Loop % count1 - 1
 	{
 		SendKeyDown(key, delay)	; キーを下げる
@@ -803,6 +803,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		Else
 			SendKeyUp()	; 押し下げ出力中のキーを上げる
 	}
+	; 最後の1回の出力
 	SendKeyDown(key, delay)	; キーを下げる
 }
 
@@ -847,8 +848,7 @@ SendEachChar(str)	; (str: String) -> Void
 	If (class == "CabinetWClass")	; エクスプローラー
 		delay := 10
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
-		delay := (imeName == "NewMSIME" ? 40 : 10)
-			; ↑ 新MS-IMEで30とすると、定義"(){確定}{↑}"で "９" などと入力されることがあるため
+		delay := (imeName == "NewMSIME" ? 30 : 10)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := -1	; 文末の [EOF] の表示が乱れるのを防止
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
@@ -893,8 +893,7 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 				}
-				EmulateKeyDownUp(strSub, (delay < 10 ? delay : 10))	; 矢印系キーを出力
-																	; ※ ここでは10超のディレイを入れない
+				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
 				lastDelay := delay
 				; スペースキー、矢印系キーだけの定義でなかったら
 				If (strSubLength != strLength)
@@ -1229,7 +1228,13 @@ SendEachChar(str)	; (str: String) -> Void
 						postDelay := 30
 				}
 				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
+				{
 					out := strSub
+					; Win11メモ帳+新MS-IME
+					If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+						postDelay := (RegExMatch(strSub, "^\{[a-z\d\-] down\}$")
+								   || RegExMatch(strSub, "i)^\{sc[0-9a-f]+ down\}$") ? 30 : 40)
+				}
 			}
 
 			; キー出力
@@ -1238,6 +1243,8 @@ SendEachChar(str)	; (str: String) -> Void
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
+				; 後置ディレイの値を決定
+				postDelay := (postDelay > delay ? postDelay : delay)
 
 				; 文字と回数を分離
 				If (RegExMatch(out, "i)^(\+?\{sc[0-9a-f]+)\s(\d+)\}$", outSub))
@@ -1245,21 +1252,16 @@ SendEachChar(str)	; (str: String) -> Void
 					out := outSub1 . "}"	; outSub1 に文字が
 					count := outSub2		; outSub2 に回数が入る
 				}
-				Else
-					count := 1
-				; ディレイの値を決定
-				postDelay := (postDelay > delay ? postDelay : delay)
-				; 回数分ループして出力
-				Loop, % count
+				; ループして出力
+				Loop, % count - 1
 				{
 					Send, % out
-					; 最後のループなら退出
-					If (count == A_Index)
-						Break
 					; 出力直後のディレイ
 					If (postDelay > -2)
 						Sleep, % postDelay
 				}
+				; 最後の1回の出力
+				Send, % out
 
 				; 必要に応じて出力した時間を記録
 				If (!noIME && i > strLength)
