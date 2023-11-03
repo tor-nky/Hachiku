@@ -820,6 +820,8 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, strSub				; String型	細切れにした文字列
 ;		, strSubLength			; Int型 	と、その長さを入れる変数
 ;		, out					; String型
+;		, outSub, outSub1		; String?型
+;		, outSub2				; Int?型
 ;		, i, bracket			; Int型
 ;		, c						; String型
 ;		, noIME					; Bool型	IME入力モードの保存、復元に関するフラグ
@@ -1237,10 +1239,31 @@ SendEachChar(str)	; (str: String) -> Void
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
 
-				Send, % out
-				If (!noIME && i > strLength)
-					lastSendTime := QPC()	; 出力した時間を記録
+				; 文字と回数を分離
+				If (RegExMatch(out, "i)^(\+?\{sc[0-9a-f]+)\s(\d+)\}$", outSub))
+				{
+					out := outSub1 . "}"	; outSub1 に文字が
+					count := outSub2		; outSub2 に回数が入る
+				}
+				Else
+					count := 1
+				; ディレイの値を決定
 				postDelay := (postDelay > delay ? postDelay : delay)
+				; 回数分ループして出力
+				Loop, % count
+				{
+					Send, % out
+					; 最後のループなら退出
+					If (count == A_Index)
+						Break
+					; 出力直後のディレイ
+					If (postDelay > -2)
+						Sleep, % postDelay
+				}
+
+				; 必要に応じて出力した時間を記録
+				If (!noIME && i > strLength)
+					lastSendTime := QPC()
 
 				; ローマ字入力の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"

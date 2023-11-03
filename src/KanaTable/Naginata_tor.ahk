@@ -799,23 +799,23 @@ KoyuRegist()	; () -> Void
 #If (DetectIME() == "NewMSIME")
 sc79::
 	; 変換 → 変換x9
-	StoreBuf("{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}", 0, NR)
+	StoreBuf("{sc79 9}", 0, NR)
 	OutBuf()
 	Return
 +sc79::
 	; Shift+変換 → Shift+変換x9
-	StoreBuf("+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}", 0, NR)
+	StoreBuf("+{sc79 9}", 0, NR)
 	OutBuf()
 	Return
 #If (DetectIME() == "NewMSIME" && kanaMode)
 ^sc35::
 	; Ctrl+Slash → 変換x9
-	StoreBuf("{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}", 0, NR)
+	StoreBuf("{sc79 9}", 0, NR)
 	OutBuf()
 	Return
 +^sc35::
 	; Shift+Ctrl+Slash → Shift+変換x9
-	StoreBuf("+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}", 0, NR)
+	StoreBuf("+{sc79 9}", 0, NR)
 	OutBuf()
 	Return
 
