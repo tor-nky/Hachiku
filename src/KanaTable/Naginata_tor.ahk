@@ -797,11 +797,27 @@ KoyuRegist()	; () -> Void
 
 ; 新MS-IME用
 #If (DetectIME() == "NewMSIME")
-sc79::Send, {sc79 9}	; 変換 → 変換x9
-+sc79::Send, +{sc79 9}	; Shift+変換 → Shift+変換x9
+sc79::
+	; 変換 → 変換x9
+	StoreBuf("{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}", 0, NR)
+	OutBuf()
+	Return
++sc79::
+	; Shift+変換 → Shift+変換x9
+	StoreBuf("+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}", 0, NR)
+	OutBuf()
+	Return
 #If (DetectIME() == "NewMSIME" && kanaMode)
-^sc35::Send, {sc79 9}	; Ctrl+Slash → 変換x9
-+^sc35::Send, +{sc79 9}	; Shift+Ctrl+Slash → Shift+変換x9
+^sc35::
+	; Ctrl+Slash → 変換x9
+	StoreBuf("{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}{sc79}", 0, NR)
+	OutBuf()
+	Return
++^sc35::
+	; Shift+Ctrl+Slash → Shift+変換x9
+	StoreBuf("+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}+{sc79}", 0, NR)
+	OutBuf()
+	Return
 
 ; 新MS-IME以外用
 #If (DetectIME() != "NewMSIME" && kanaMode)
