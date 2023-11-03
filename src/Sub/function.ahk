@@ -720,7 +720,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	WinGetClass, class, ahk_id %hwnd%
 	WinGet, process, ProcessName, ahk_id %hwnd%
 
-	; スペースキー、矢印系キーの回数検出と、行移動の判定
+	; スペースキー、矢印系キーの回数検出(count1 に入る)と、行移動の判定
 	key := ""
 	If (RegExMatch(str, "i)^\+?\{Space\}$|^\+?\{Space\s(\d+)\}$", count))
 	{
@@ -887,7 +887,7 @@ SendEachChar(str)	; (str: String) -> Void
 				 && SubStr(str, i - strSubLength - 4, 4) = "{確定}"
 				 && usingKeyConfig && imeName == "CustomMSIME")
 				{
-					preDelay := 70
+					preDelay := imeNeedDelay
 					If (lastDelay < preDelay)
 						Sleep, % preDelay - lastDelay
 				}
@@ -1040,14 +1040,20 @@ SendEachChar(str)	; (str: String) -> Void
 								}
 							}
 
-							; 直後の定義によってはそれも処理してカウンタを進める
-							If (out == "{Enter}" && SubStr(str, i, 7) = "{NoIME}")
+							If (out == "{Enter}")
 							{
-								Send, % out
-								; IMEをオフにするが後で元に戻せるようにしておく
-								i += 7
-								noIME := True
-								out := "{vkF3}"		; 半角/全角
+								; 直後の定義によってはそれも処理してカウンタを進める
+								If (SubStr(str, i, 7) = "{NoIME}")
+								{
+									Send, % out
+									; IMEをオフにするが後で元に戻せるようにしておく
+									i += 7
+									noIME := True
+									out := "{vkF3}"		; 半角/全角
+								}
+								; Windows 11 以降のメモ帳に新MS-IME
+								Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+									preDelay := 60
 							}
 						}
 					}

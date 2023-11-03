@@ -90,7 +90,12 @@ SendESCx3()	; () -> Void
 		If (IME_GET() && IME_GetSentenceMode())
 		{
 			; Escを出力する間隔 ※ 新MS-IME の予測候補窓は消えにくいので時間をかける
-			escInterval := (imeName == "NewMSIME" ? 120 : imeGetConvertingInterval)
+			If (imeName != "NewMSIME")	; 新MS-IME以外
+				escInterval := imeGetConvertingInterval
+			Else If (osBuild >= 20000 && class == "Notepad")	; Win11メモ帳+新MS-IME
+				escInterval := 140
+			Else	; 新MS-IME
+				escInterval := 120
 			; 時間を空けてIME窓検出へ
 			delay := imeGetConvertingInterval - Floor(QPC() - lastSendTime)
 			If (delay > 0)
