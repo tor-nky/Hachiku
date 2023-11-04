@@ -1232,8 +1232,14 @@ SendEachChar(str)	; (str: String) -> Void
 					out := strSub
 					; Win11メモ帳+新MS-IME
 					If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
-						postDelay := (RegExMatch(strSub, "^\{[a-z\d\-] down\}$")
-								   || RegExMatch(strSub, "i)^\{sc[0-9a-f]+ down\}$") ? 30 : 40)
+					{
+						; "{? down}{? up}" に変換後のアルファベット、数字、ハイフンだけの定義
+						; "{sc○○ down}{sc○○ up}" に変換後の "{sc○○}" 形式の定義
+						; はディレイ30、他は40
+						; {? up} はあとでディレイなし(-2)にされる
+						postDelay := (RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$")
+								   || RegExMatch(strSub, "i)^\{sc[0-9a-f]+\sdown\}$") ? 30 : 40)
+					}
 				}
 			}
 
@@ -1270,7 +1276,7 @@ SendEachChar(str)	; (str: String) -> Void
 				; ローマ字入力の文字を押した時
 				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
 				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
-				 || RegExMatch(strSub, "^\{[a-z\d\-] down\}$"))
+				 || RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$"))
 				{
 					romanChar := True
 					If (noIME)
