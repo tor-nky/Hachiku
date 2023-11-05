@@ -1253,7 +1253,7 @@ SendEachChar(str)	; (str: String) -> Void
 				postDelay := (postDelay > delay ? postDelay : delay)
 
 				; 文字と回数を分離
-				If (RegExMatch(out, "i)^(\+?\{sc[0-9a-f]+)\s(\d+)\}$", outSub))
+				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", outSub))
 				{
 					out := outSub1 . "}"	; outSub1 に文字が
 					count := outSub2		; outSub2 に回数が入る

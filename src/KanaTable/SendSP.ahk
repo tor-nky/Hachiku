@@ -75,8 +75,8 @@ SendESCx3()	; () -> Void
 	 && imeName != "OldMSIME" && imeName != "NewMSIME"
 	 && class != "Hidemaru32Class" && keyDriver != "kbdnec.dll")
 	{
-		Send, +^{vk1D 2}	; ※ Shift+Ctrl+無変換
-		lastSendTime := QPC()	; 出力した時間を記録
+		SendEachChar("+^{vk1D 2}")	; ※ Shift+Ctrl+無変換
+		lastSendTime := QPC()		; 出力した時間を記録
 	}
 	; IME窓検出が当てになる(入力中のかながないのと変換1回目の区別がつく)なら
 	; IME窓が出ていたらEscを出力、を5回まで繰り返す
@@ -113,7 +113,7 @@ SendESCx3()	; () -> Void
 	; その他
 	Else
 	{
-		Send, {Esc 5}
+		SendEachChar("{Esc 5}")
 		; 一太郎のメニューを消す
 		If (SubStr(process, 1, 4) = "Taro")
 		{
