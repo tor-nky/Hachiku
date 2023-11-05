@@ -1621,12 +1621,13 @@ Convert()	; () -> Void
 		;		例外1: IME のアイコンが "×" になっているとき。ただし Google Chrome と Edge の入力欄でないところは別
 		;		例外2: Excel と PowerPoint のコメント。でも IME のアイコンは "×" になっていない
 		;		例外3: IME_SetConvMode(0) を実行したとき
+		;		例外4: Firefox と Thunderbird を新MS-IMEで使い、左右シフトで一時英数入力にしているとき
 		If (lastSendTime + imeGetInterval <= QPC())
 		{
 			imeState := IME_GET()
 			imeConvMode := IME_GetConvMode()
 			imeSentenceMode := IME_GetSentenceMode()
-			; IME_GetConvMode() の値が 0 になった直後を英数モードに	※ 9行前を参照
+			; IME_GetConvMode() の値が 0 になった直後を英数モードに	※ 10行前を参照
 			If (imeConvMode == 0 && lastIMEConvMode)
 				kanaMode := 0
 			lastIMEConvMode := imeConvMode
@@ -1729,10 +1730,10 @@ Convert()	; () -> Void
 				OutBuf()
 				DispTime(keyTime, "`nシフト+スペース")	; キー変化からの経過時間を表示
 			}
-			; 新MS-IMEでなく、かな入力中でない時(Firefox と Thunderbird のスクロール対応)
+			; Firefox と Thunderbird のスペースキーでのスクロール
 			; またはSandSなしの設定をした英数入力中
 			Else If (imeConvMode == 0 && class == "MozillaWindowClass"
-				&& !(DetectIME() == "NewMSIME" && imeSentenceMode)
+				&& !(DetectIME() == "NewMSIME" && imeSentenceMode != 0)
 				|| !eisuSandS && !kanaMode)
 			{
 				StoreBuf("{Space}", 0, R)
