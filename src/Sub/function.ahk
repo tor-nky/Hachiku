@@ -1032,6 +1032,15 @@ SendEachChar(str)	; (str: String) -> Void
 									out := "{BS}"
 									postDelay := 60
 								}
+								; Win11メモ帳+新MS-IME
+								Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+								{
+									Send, _
+									Sleep, 30
+									Send, {Enter}
+									Sleep, 30
+									out := "{BS}"
+								}
 								Else
 								{
 									Send, _
@@ -1052,7 +1061,7 @@ SendEachChar(str)	; (str: String) -> Void
 									noIME := True
 									out := "{vkF3}"		; 半角/全角
 								}
-								; Windows 11 以降のメモ帳に新MS-IME
+								; Win11メモ帳+新MS-IME
 								Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
 									preDelay := 60
 							}
@@ -1179,6 +1188,9 @@ SendEachChar(str)	; (str: String) -> Void
 					; ※ 定義 "　　　×　　　×　　　×" への対策
 					If (process == "Code.exe" && imeName == "NewMSIME")
 						postDelay := 0
+					; Win11メモ帳+新MS-IME
+					Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+						postDelay := 50
 					; 秀丸エディタ
 					Else If (class == "Hidemaru32Class")
 					{
@@ -1231,14 +1243,14 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					out := strSub
 					; Win11メモ帳+新MS-IME
-					If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+					If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME"
+						&& (RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$")
+							|| RegExMatch(strSub, "i)^\{sc[0-9a-f]+\sdown\}$")))
 					{
 						; "{? down}{? up}" に変換後のアルファベット、数字、ハイフンだけの定義
 						; "{sc○○ down}{sc○○ up}" に変換後の "{sc○○}" 形式の定義
-						; はディレイ30、他は40
-						; {? up} はあとでディレイなし(-2)にされる
-						postDelay := (RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$")
-								   || RegExMatch(strSub, "i)^\{sc[0-9a-f]+\sdown\}$") ? 30 : 40)
+						; はディレイ30
+						postDelay := 30
 					}
 				}
 			}
@@ -1249,8 +1261,14 @@ SendEachChar(str)	; (str: String) -> Void
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
 					Sleep, % preDelay - lastDelay
-				; 後置ディレイの値を決定
-				postDelay := (postDelay > delay ? postDelay : delay)
+				; 後置ディレイの値を決定	{? up} はあとでディレイなし(-2)にされる
+				If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME"
+				 && postDelay < delay)	; Win11メモ帳+新MS-IME は postDelay が決まっていなかったら 40 を
+				{
+					postDelay := 40
+				}
+				Else If (postDelay < delay)
+					postDelay := delay
 
 				; 文字と回数を分離
 				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", outSub))
