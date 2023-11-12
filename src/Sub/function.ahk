@@ -1063,7 +1063,9 @@ SendEachChar(str)	; (str: String) -> Void
 								}
 								; 新MS-IME
 								Else If (imeName == "NewMSIME")
-									preDelay := (osBuild >= 20000 && class == "Notepad" ? 60 : 10)
+									; Win11メモ帳へは確実に文字確定するため
+									; 他へは入力予測窓を残さないため
+									preDelay := (osBuild >= 20000 && class == "Notepad" ? 60 : 30)
 							}
 						}
 					}
