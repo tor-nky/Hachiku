@@ -1061,9 +1061,9 @@ SendEachChar(str)	; (str: String) -> Void
 									noIME := True
 									out := "{vkF3}"		; 半角/全角
 								}
-								; Win11メモ帳+新MS-IME
-								Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
-									preDelay := 60
+								; 新MS-IME
+								Else If (imeName == "NewMSIME")
+									preDelay := (osBuild >= 20000 && class == "Notepad" ? 60 : 10)
 							}
 						}
 					}
