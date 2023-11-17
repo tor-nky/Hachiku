@@ -929,8 +929,10 @@ SendEachChar(str)	; (str: String) -> Void
 				; 出力するキーを変換
 				Else If (strSub == "{確定}")
 				{
+					; アスキー文字→{確定} のような定義でなく
 					; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
-					If (usingKeyConfig
+					If (!(imeSentenceMode && romanChar && i > 5)
+					 && usingKeyConfig
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						; IME_GET() には早すぎるか、通常 0 にならない IME_GetConvMode() の値が 0 の時
@@ -1568,6 +1570,7 @@ Convert()	; () -> Void
 		, ctrlName	:= NR		; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1	; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
 		, lastIMEConvMode		; Int型
+		, lastIMESentenceMode	; Int型
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
@@ -1650,15 +1653,23 @@ Convert()	; () -> Void
 			; IME_GetConvMode() の値が 0 になった直後を英数モードに	※ 10行前を参照
 			If (imeConvMode == 0 && lastIMEConvMode)
 				kanaMode := 0
+			; 検出したものを保存
 			lastIMEConvMode := imeConvMode
+			lastIMESentenceMode := imeSentenceMode
 		}
 		Else
-			imeState := imeConvMode := imeSentenceMode := ""
+		{
+			; 検出できなかったことを示す
+			imeState := ""
+			; 保存していたものをコピー
+			imeConvMode := lastIMEConvMode
+			imeSentenceMode := lastIMESentenceMode
+		}
 
 		; コンテキストメニューが出ている時
 		; または IMEオフ状態を検出	※ 18行前を参照
 		If (WinExist("ahk_class #32768")
-		 || imeConvMode && imeState == 0)
+		 || imeState == 0 && imeConvMode)
 		{
 			kanaMode := 0	; 英数モード
 		}
@@ -1671,7 +1682,7 @@ Convert()	; () -> Void
 			If (DetectIME() == "Google" && imeState && (imeConvMode & 1) == 1)
 			{
 				Send, {vkF3}	; 半角/全角 ※ 半角英数に入力切替
-				imeState := imeConvMode := ""
+				imeState := ""
 			}
 		}
 		; 検出したものを反映する
