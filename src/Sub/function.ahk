@@ -1676,7 +1676,8 @@ Convert()	; () -> Void
 		; Win+X キーで出てくるメニュー
 ;		Else If (imeState && WinExist("ahk_class Xaml_WindowedPopupClass"))
 ;			IME_SET(kanaMode := 0)	; IMEオフ
-		Else If ((sft || rsft) && sideShift <= 1)	; 左右シフト英数で左右シフトを押している
+		Else If ((sft || rsft) && sideShift <= 1	; 左右シフト英数で左右シフトを押している
+			&& !InStr(nowKey, "sc39") && !InStr(nowKey, "Shift") && !InStr(nowKey, "Enter"))
 		{
 			kanaMode := 0	; 英数モード
 			If (DetectIME() == "Google" && imeState && (imeConvMode & 1) == 1)
@@ -1689,16 +1690,16 @@ Convert()	; () -> Void
 		Else If (imeState == 1)
 			kanaMode := imeConvMode & 1
 
-		; 先頭の "+" と "^" を消去
+		; 先頭の "+" を消去
 		If (Asc(nowKey) == 43)
 			nowKey := SubStr(nowKey, 2)
 		; 左右シフト処理
 		If (nowKey == "~LShift")
 		{
 			sft := 1
-			If (spc == 1)
+			If (spc)
 				spc := 2	; 単独スペースではない
-			If (ent == 1)
+			If (ent)
 				ent := 2	; 単独エンターではない
 			OutBuf()
 			nowKey := "sc39"	; センターシフト押す
@@ -1706,9 +1707,9 @@ Convert()	; () -> Void
 		Else If (nowKey == "*RShift")
 		{
 			rsft := 1
-			If (spc == 1)
+			If (spc)
 				spc := 2	; 単独スペースではない
-			If (ent == 1)
+			If (ent)
 				ent := 2	; 単独エンターではない
 			OutBuf()
 			Send, {ShiftDown}
@@ -1751,15 +1752,17 @@ Convert()	; () -> Void
 		; スペースキー処理
 		Else If (nowKey == "sc39")
 		{
-			If (ent == 1)
+			If (ent)
 				ent := 2	; 単独エンターではない
 
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
+				spc := (SpaceKeyRepeat == 2 ? 3 : 2)	; 他のシフトを離した後もリピートするか
 				StoreBuf("+{Space}", 0, R)
 				OutBuf()
 				DispTime(keyTime, "`nシフト+スペース")	; キー変化からの経過時間を表示
+				Continue
 			}
 			; Firefox と Thunderbird のスペースキーでのスクロール
 			; またはSandSなしの設定をした英数入力中
@@ -1797,8 +1800,10 @@ Convert()	; () -> Void
 				DispTime(keyTime, "`nスペース長押し")	; キー変化からの経過時間を表示
 				Continue
 			}
-			Else If (!spc)
-				spc := 1	; 単独押し
+			Else If (spc)
+				Continue
+
+			spc := 1	; 単独押し
 		}
 		Else If (nowKey == "sc39 up")
 		{
@@ -1806,14 +1811,9 @@ Convert()	; () -> Void
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
-				If (spc == 1)
-					nowKey := "vk20"	; スペース単独押しのみ
-				Else
-				{
-					spc := 0
-					DispTime(keyTime)	; キー変化からの経過時間を表示
-					Continue
-				}
+				spc := 0
+				DispTime(keyTime)	; キー変化からの経過時間を表示
+				Continue
 			}
 			Else If (spc == 1)
 				nextKey := "vk20"	; センターシフト上げ→スペース単独押し
@@ -1823,23 +1823,33 @@ Convert()	; () -> Void
 		Else If (nowKey == "Enter")
 ;		Else If (nowKey == "Enter" && (eisuSandS || kanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
-			; 他のシフトを押していない時
-			If !(sft || rsft || spc)
+			If (spc)
+				spc := 2	; 単独スペースではない
+
+			; 他のシフトを押している時
+			If (sft || rsft || spc)
 			{
-				nowKey := "sc39"	; センターシフト押す
-				; 英数単打のリピート
-				If ((!kanaMode && eisuRepeat || !repeatStyle)
-					&& repeatCount && !(lastBit & KC_SPC))
-				{
-					ent := 5	; エンターをリピート中
-					StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
-					OutBuf()
-					DispTime(keyTime, "`nエンター長押し")	; キー変化からの経過時間を表示
-					Continue
-				}
-				Else If (!ent)
-					ent := 1
+				ent := 2	; 他のシフトを離した後にリピートしない
+				StoreBuf("+{Enter}", 0, R)
+				OutBuf()
+				DispTime(keyTime, "`nシフト+エンター")	; キー変化からの経過時間を表示
+				Continue
 			}
+			; 英数単打のリピート
+			Else If ((!kanaMode && eisuRepeat || !repeatStyle)
+				&& repeatCount && !(lastBit & KC_SPC))
+			{
+				ent := 5	; エンターをリピート中
+				StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
+				OutBuf()
+				DispTime(keyTime, "`nエンター長押し")	; キー変化からの経過時間を表示
+				Continue
+			}
+			Else If (ent)
+				Continue
+
+			ent := 1
+			nowKey := "sc39"	; センターシフト押す
 		}
 		Else If (nowKey == "Enter up")
 		{
@@ -1848,14 +1858,9 @@ Convert()	; () -> Void
 			; 他のシフトを押している時
 			If (sft || rsft || spc)
 			{
-				If (ent == 1)
-					nowKey := "vk0D"	; Shiftが付け加えられるので Shift+Enter
-				Else
-				{
-					ent := 0
-					DispTime(keyTime)	; キー変化からの経過時間を表示
-					Continue
-				}
+				ent := 0
+				DispTime(keyTime)	; キー変化からの経過時間を表示
+				Continue
 			}
 			Else If (ent == 1)
 				nextKey := "vk0D"	; センターシフト上げ→エンター単独押し ※"Enter"としないこと
@@ -2129,9 +2134,9 @@ Convert()	; () -> Void
 					backCount := 1
 				}
 			}
-			If (spc == 1)
+			If (spc)
 				spc := 2	; 単独スペースではない
-			If (ent == 1)
+			If (ent)
 				ent := 2	; 単独エンターではない
 
 			; 仮出力する文字列を変数に入れる
