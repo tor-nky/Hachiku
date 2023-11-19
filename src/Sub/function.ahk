@@ -1999,10 +1999,9 @@ Convert()	; () -> Void
 
 			; 文字キーによるシフトの適用範囲
 			; 英数入力時に判定期限ありなら、文字キーシフトは「同グループのみ継続」か「1回のみ」
+			shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
 			If (combLimitE && !kanaMode && shiftStyle < 2)
 				shiftStyle := 2
-			Else
-				shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 前に押したキーと同時押しにならない
