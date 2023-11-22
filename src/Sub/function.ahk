@@ -1679,13 +1679,13 @@ Convert()	; () -> Void
 		Else If ((sft || rsft) && sideShift <= 1	; 左右シフト英数で左右シフトを押している
 			&& !InStr(nowKey, "sc39") && !InStr(nowKey, "Shift") && !InStr(nowKey, "Enter"))
 		{
-			kanaMode := 0	; 英数モード
-			imeConvMode := lastIMEConvMode := ""	; IME 入力モードは不明になる
 			If (DetectIME() == "Google" && imeState && (imeConvMode & 1) == 1)
 			{
 				Send, {vkF3}	; 半角/全角 ※ 半角英数に入力切替
 				imeState := ""
 			}
+			kanaMode := 0	; 英数モード
+			imeConvMode := lastIMEConvMode := ""	; IME 入力モードは不明になる
 		}
 		; 検出したものを反映する
 		Else If (imeState == 1)
