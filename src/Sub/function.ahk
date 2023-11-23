@@ -812,7 +812,7 @@ SendEachChar(str)	; (str: String) -> Void
 {
 	global osBuild, usingKeyConfig, sideShift, imeNeedDelay, imeGetConvertingInterval
 		, goodHwnd, badHwnd, lastSendTime, kanaMode, repeatCount
-		, imeState, imeConvMode, imeSentenceMode
+		, imeState, imeSentenceMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -832,6 +832,7 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, imeName				; String型
 ;		, count, wait			; Int?型
 ;		, inShifted				; Bool型
+;		, imeConvMode			; Int?型	IME 入力モード	IME_GetConvMode()用
 
 	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
 ;	SetKeyDelay, -1, -1
@@ -1313,7 +1314,7 @@ SendEachChar(str)	; (str: String) -> Void
 					 && (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
 						SetTimer, JudgeHwnd, % - imeGetConvertingInterval
 					romanChar := False
-					imeState := imeConvMode := imeSentenceMode := ""
+					imeState := imeSentenceMode := ""
 				}
 				; キーを上げただけの時
 				Else
@@ -1327,7 +1328,7 @@ SendEachChar(str)	; (str: String) -> Void
 			Else
 			{
 				romanChar := False
-				imeState := imeConvMode := imeSentenceMode := ""
+				imeState := imeSentenceMode := ""
 			}
 
 			; 必要なら IME の状態を元に戻す
@@ -1554,7 +1555,7 @@ Convert()	; () -> Void
 		, keyUpToOutputAll, eisuSandS, eisuRepeat
 		, repeatStyle, imeGetInterval
 		, spc, ent, repeatCount
-		, imeState, imeConvMode, imeSentenceMode
+		, imeState, imeSentenceMode
 	static convRest	:= 0		; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""		; String型	次回送りのキー入力
 		, realBit	:= 0		; Int64型	今押している全部のキービットの集合
@@ -1593,6 +1594,7 @@ Convert()	; () -> Void
 ;		, i, imax			; Int型		カウンタ用
 ;		, defKeyCopy		; Int64型
 ;		, interval			; Double型
+;		, imeConvMode		; Int?型	IME 入力モード	IME_GetConvMode()用
 
 	; 判定期限タイマー停止
 	SetTimer, KeyTimer, Off
