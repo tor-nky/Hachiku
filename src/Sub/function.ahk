@@ -504,7 +504,7 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 ;	local i, imax		; Int型		カウンタ用
 ;		, bit			; Int64型
 
-	bit := (keyCount > 1 ? 0 : KC_SPC)
+	bit := 0
 	i := defBegin[3]
 	imax := (!group && keyCount >= 1 && keyCount <= 3 ? defEnd[keyCount] : defEnd[1])
 	While (i < imax)
