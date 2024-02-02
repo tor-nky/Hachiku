@@ -23,7 +23,7 @@ SetKeyDelay, -1, -1			; キーストローク間のディレイを変更
 ;Process, Priority, , High	; スクリプトを実行するプロセスの優先度を上げる
 #MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
 #UseHook					; ホットキーはすべてフックを使用する
-Thread, Interrupt, 17, 11	; スレッド開始から17ミリ秒ないし11行以内の割り込みを禁止
+Thread, Interrupt, 33, 11	; スレッド開始から約33ミリ秒ないし11行以内の割り込みを禁止
 SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
 
 ;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
