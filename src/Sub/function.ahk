@@ -851,7 +851,7 @@ SendEachChar(str)	; (str: String) -> Void
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
 		delay := (imeName == "NewMSIME" ? 30 : 10)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
-		delay := 0	; 文末の [EOF] の表示が乱れるのを防止
+		delay := 1	; 文末の [EOF] の表示が乱れるのを防止
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
