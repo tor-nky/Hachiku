@@ -947,6 +947,8 @@ SendEachChar(str)	; (str: String) -> Void
 							If (SubStr(str, i, 7) = "{NoIME}")
 							{
 								Send, % out
+								If (imeName == "CustomMSIME")
+									Sleep, 30
 								; IMEをオフにするが後で元に戻せるようにしておく
 								i += 7
 								noIME := True
@@ -1059,6 +1061,8 @@ SendEachChar(str)	; (str: String) -> Void
 								If (SubStr(str, i, 7) = "{NoIME}")
 								{
 									Send, % out
+									If (imeName == "CustomMSIME" || imeName == "OldMSIME")
+										Sleep, 30
 									; IMEをオフにするが後で元に戻せるようにしておく
 									i += 7
 									noIME := True
