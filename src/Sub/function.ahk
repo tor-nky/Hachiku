@@ -947,7 +947,9 @@ SendEachChar(str)	; (str: String) -> Void
 							If (SubStr(str, i, 7) = "{NoIME}")
 							{
 								Send, % out
-								If (imeName == "CustomMSIME")
+								; 旧MS-IMEで左右シフトから一時英数入力中に編集モードの記号を押すと、
+								; IMEオフになったり変換未確定になったりするので抑制
+								If (imeName == "CustomMSIME" && (i > 5 || !kanaMode))
 									Sleep, 30
 								; IMEをオフにするが後で元に戻せるようにしておく
 								i += 7
@@ -984,7 +986,7 @@ SendEachChar(str)	; (str: String) -> Void
 								Send, {vkF3}	; 半角/全角
 								Sleep, % imeNeedDelay
 								lastDelay := imeNeedDelay
-								; 「半角/全角」でIMEオンのままだったら未変換文字あり
+								; 「半角/全角」を出力してもIMEオンのままだったら未変換文字あり
 								If (IME_GET())
 								{
 									; IME入力モードを元に戻す
@@ -1061,7 +1063,10 @@ SendEachChar(str)	; (str: String) -> Void
 								If (SubStr(str, i, 7) = "{NoIME}")
 								{
 									Send, % out
-									If (imeName == "CustomMSIME" || imeName == "OldMSIME")
+									; 旧MS-IMEで左右シフトから一時英数入力中に編集モードの記号を押すと、
+									; IMEオフになったり変換未確定になったりするので抑制
+									If ((imeName == "CustomMSIME" || imeName == "OldMSIME")
+									 && (i > 5 || !kanaMode))
 										Sleep, 30
 									; IMEをオフにするが後で元に戻せるようにしておく
 									i += 7
