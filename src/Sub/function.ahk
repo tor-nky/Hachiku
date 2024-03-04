@@ -947,10 +947,10 @@ SendEachChar(str)	; (str: String) -> Void
 							If (SubStr(str, i, 7) = "{NoIME}")
 							{
 								Send, % out
-								; 旧MS-IMEで左右シフトから一時英数入力中に編集モードの記号を押すと、
+								; 旧MS-IMEで編集モードの記号を押すと、
 								; IMEオフになったり変換未確定になったりするので抑制
-								If (imeName == "CustomMSIME" && (i > 5 || !kanaMode))
-									Sleep, 30
+								If (imeName == "CustomMSIME")
+									Sleep, 50
 								; IMEをオフにするが後で元に戻せるようにしておく
 								i += 7
 								noIME := True
@@ -1063,11 +1063,7 @@ SendEachChar(str)	; (str: String) -> Void
 								If (SubStr(str, i, 7) = "{NoIME}")
 								{
 									Send, % out
-									; 旧MS-IMEで左右シフトから一時英数入力中に編集モードの記号を押すと、
-									; IMEオフになったり変換未確定になったりするので抑制
-									If ((imeName == "CustomMSIME" || imeName == "OldMSIME")
-									 && (i > 5 || !kanaMode))
-										Sleep, 30
+									Sleep, 40
 									; IMEをオフにするが後で元に戻せるようにしておく
 									i += 7
 									noIME := True
