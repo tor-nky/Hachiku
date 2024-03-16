@@ -908,6 +908,11 @@ SendEachChar(str)	; (str: String) -> Void
 				; "{Raw}"からの残りは全部出力する
 				If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
 				{
+					preDelay := 10
+					; 前回の出力からの時間が短ければ、ディレイを入れる
+					If (lastDelay < preDelay)
+						Sleep, % preDelay - lastDelay
+
 					; Windows 11 以降のメモ帳へはゆっくりと
 					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
 						postDelay := 30
@@ -923,6 +928,8 @@ SendEachChar(str)	; (str: String) -> Void
 						; 出力直後のディレイ
 						Sleep, % postDelay
 					}
+
+					lastDelay := (postDelay < 0 ? 0 : postDelay)
 					; 後で誤作動しないように消去
 					strSub := ""
 				}
@@ -1244,10 +1251,12 @@ SendEachChar(str)	; (str: String) -> Void
 					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
 				{
 					out := strSub
-					postDelay := 10
+					preDelay := 10
 					; Windows 11 以降のメモ帳へはゆっくりと
 					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
 						postDelay := 30
+					Else
+						postDelay := 10
 				}
 				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
 				{
