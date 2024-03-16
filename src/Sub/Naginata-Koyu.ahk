@@ -284,7 +284,17 @@ KoyuIniRead(number, keyName)	; (number: Int, keyName: String) -> String
 		c := SubStr(strIn, i, 1)
 		If (c == "#")
 		{
-			strOut := Chr(strChopped) . strOut
+			; サロゲートペア
+			If (strChopped >= 0x10000 && strChopped <= 0x10FFFF)
+			{
+				strChopped -= 0x10000
+				strOut := Chr(0xD800 + (strChopped >> 10)) . Chr(0xDC00 + (strChopped & 0x3FF)) . strOut
+			}
+			; その他
+			Else
+			{
+				strOut := Chr(strChopped) . strOut
+			}
 			strChopped := ""
 		}
 		Else
