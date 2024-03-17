@@ -431,8 +431,8 @@ ButtonOK:
 	If (testMode != "ERROR") {
 		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
 		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
-		IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
 	}
+	IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
 
 	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
 	DeleteDefs()		; 配列定義をすべて消去する
@@ -485,8 +485,17 @@ PrefMenu:
 		Gui, Add, Checkbox, x+55 VeisuRepeat, 英数単打のリピート
 		If (eisuRepeat)
 			GuiControl, , eisuRepeat, 1
+		; テストモードが無効の時
+		If (testMode = "ERROR")
+		{
+			; 文字出力後に IME の状態を検出しない時間
+			Gui, Add, Text, xm y+30, 文字出力後に IME の状態を検出しない時間
+			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
+			Gui, Add, UpDown, VimeGetInterval Range0-500 128, %imeGetInterval%
+			Gui, Add, Text, x+5 yp+3, ミリ秒
+		}
 		; テストモード
-		If (testMode != "ERROR")
+		Else
 		{
 			; テスト表示
 			Gui, Add, Text, xm ys+132, テスト表示
