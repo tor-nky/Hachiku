@@ -118,9 +118,9 @@ Hachiku を再起動すれば直ります。
 これで先ほどの設定を有効にすると、間違ってゲームモードが起動したときに自動で強制無効になったりしますので、
 こうなったらゲームコントローラでゲームバーを起動するには、自己責任でレジストリのキーを消去することになります。
 # 動作確認
-* Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.01) U64 Unicode 64-bit.bin  
+* Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
 新旧MS-IME、ATOK 2017、Google 日本語入力  
-* Windows 11 Pro version 23H2 + AutoHotkey (v1.1.37.01) U64 Unicode 64-bit.bin  
+* Windows 11 Pro version 23H2 + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
 新旧MS-IME、Google 日本語入力  
 __AutoHotkey v2以降では使えません__
 
