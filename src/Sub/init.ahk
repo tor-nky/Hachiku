@@ -485,20 +485,16 @@ PrefMenu:
 		Gui, Add, Checkbox, x+55 VeisuRepeat, 英数単打のリピート
 		If (eisuRepeat)
 			GuiControl, , eisuRepeat, 1
-		; テストモードが無効の時
-		If (testMode = "ERROR")
-		{
-			; 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Text, xm y+30, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
-			Gui, Add, UpDown, VimeGetInterval Range0-500 128, %imeGetInterval%
-			Gui, Add, Text, x+5 yp+3, ミリ秒
-		}
+		; 文字出力後に IME の状態を検出しない時間
+		Gui, Add, Text, xm y+30, 文字出力後に IME の状態を検出しない時間
+		Gui, Add, Edit, xm+235 yp-3 W51 Number Right
+		Gui, Add, UpDown, VimeGetInterval Range0-500 128, %imeGetInterval%
+		Gui, Add, Text, x+5 yp+3, ミリ秒
 		; テストモード
-		Else
+		If (testMode != "ERROR")
 		{
 			; テスト表示
-			Gui, Add, Text, xm ys+132, テスト表示
+			Gui, Add, Text, xm y+12, テスト表示
 			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
 			Gui, Add, Radio, x+0 VtestMode1, 処理時間
 			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
@@ -511,25 +507,20 @@ PrefMenu:
 				GuiControl, , testMode2, 1
 			Else
 				GuiControl, , testMode3, 1
-			; リピートの好み
-			Gui, Add, Text, xm y+8, リピートの好み
-			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 常に無制限
-			Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
-			Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
-			Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない
-			If (repeatStyle0)
-				GuiControl, , repeatStyle0, 1
-			Else If (repeatStyle1)
-				GuiControl, , repeatStyle1, 1
-			Else If (repeatStyle2)
-				GuiControl, , repeatStyle2, 1
-			Else
-				GuiControl, , repeatStyle3, 1
-			; 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
-			Gui, Add, UpDown, VimeGetInterval Range0-2000 128, %imeGetInterval%
-			Gui, Add, Text, x+5 yp+3, ミリ秒
+			; ; リピートの好み
+			; Gui, Add, Text, xm y+8, リピートの好み
+			; Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 常に無制限
+			; Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
+			; Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
+			; Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない
+			; If (repeatStyle0)
+			; 	GuiControl, , repeatStyle0, 1
+			; Else If (repeatStyle1)
+			; 	GuiControl, , repeatStyle1, 1
+			; Else If (repeatStyle2)
+			; 	GuiControl, , repeatStyle2, 1
+			; Else
+			; 	GuiControl, , repeatStyle3, 1
 		}
 	; 「キー」メニュー
 	Gui, Tab, キー
