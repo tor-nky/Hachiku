@@ -852,8 +852,8 @@ SendEachChar(str)	; (str: String) -> Void
 		delay := (imeName == "NewMSIME" ? 30 : 10)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := 1	; 文末の [EOF] の表示が乱れるのを防止
-	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
-		postDelay := 30	; かな入力の1文字目をゆっくり出力
+	; Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
+	; 	postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
 
 	; 文字列を細切れにして出力
