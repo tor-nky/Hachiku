@@ -344,8 +344,8 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 
 	Menu, TRAY, Add, 設定..., PrefMenu	; 設定画面を追加
 	Menu, TRAY, Add						; セパレーター
-	Menu, TRAY, Add, ログ表示, DispLog	; ログ
-	Menu, TRAY, Add						; セパレーター
+	; Menu, TRAY, Add, ログ表示, DispLog	; ログ
+	; Menu, TRAY, Add						; セパレーター
 	Menu, TRAY, Standard	; 標準メニュー項目を追加する
 
 	; iniファイルがなけれは設定画面を表示
@@ -659,112 +659,112 @@ PrefMenu:
 	Gui, Show
 	Return
 
-; ログ表示
-DispLog:
-	DispLogFunc()
-	Return
-; ログ表示(本体)
-DispLogFunc()	; () -> Void型
-{
-	global inBufsKey, inBufReadPos, inBufsTime, USKB, testMode
-;	local scanCodeArray					; [String]型
-;		, lastKeyTime, keyTime, diff	; Double型
-;		, pos, number					; Int型
-;		, str, c, preStr, term, temp	; String型
+; ; ログ表示
+; DispLog:
+; 	DispLogFunc()
+; 	Return
+; ; ログ表示(本体)
+; DispLogFunc()	; () -> Void型
+; {
+; 	global inBufsKey, inBufReadPos, inBufsTime, USKB, testMode
+; ;	local scanCodeArray					; [String]型
+; ;		, lastKeyTime, keyTime, diff	; Double型
+; ;		, pos, number					; Int型
+; ;		, str, c, preStr, term, temp	; String型
 
-	; USキーボード
-	If (USKB)
-		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
-			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
-			, "D", "F", "G", "H", "J", "K", "L", ";", "'", "`", "LShift", "\", "Z", "X", "C", "V"
-			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5"
-			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
-			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
-			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
-			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
-			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
-	; USキーボード以外
-	Else
-		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
-			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
-			, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
-			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "英数", "F1", "F2", "F3", "F4", "F5"
-			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
-			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
-			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
-			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
-			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+; 	; USキーボード
+; 	If (USKB)
+; 		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
+; 			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
+; 			, "D", "F", "G", "H", "J", "K", "L", ";", "'", "`", "LShift", "\", "Z", "X", "C", "V"
+; 			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5"
+; 			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+; 			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+; 			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+; 			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+; 			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+; 	; USキーボード以外
+; 	Else
+; 		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
+; 			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
+; 			, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
+; 			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "英数", "F1", "F2", "F3", "F4", "F5"
+; 			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+; 			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+; 			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+; 			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+; 			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
 
-	Gui, Destroy
-	Gui, -MinimizeBox
-	Gui, Add, Text, xm, ≪ログ≫
-	lastKeyTime := 0.0
-	pos := inBufReadPos
-	While ((pos := ++pos & 31) != inBufReadPos)
-	{
-		str := inBufsKey[pos], keyTime := inBufsTime[pos]
-		If (str)
-		{
-			; 時間を書き出し
-			If (lastKeyTime)
-			{
-				If (testMode != "ERROR")
-					diff := round(keyTime - lastKeyTime, 1)
-				Else
-					diff := round(keyTime - lastKeyTime)
-				Gui, Add, Text, xm, % "(" . diff . "ms) "
-			}
-			Else
-				Gui, Add, Text, xm
+; 	Gui, Destroy
+; 	Gui, -MinimizeBox
+; 	Gui, Add, Text, xm, ≪ログ≫
+; 	lastKeyTime := 0.0
+; 	pos := inBufReadPos
+; 	While ((pos := ++pos & 31) != inBufReadPos)
+; 	{
+; 		str := inBufsKey[pos], keyTime := inBufsTime[pos]
+; 		If (str)
+; 		{
+; 			; 時間を書き出し
+; 			If (lastKeyTime)
+; 			{
+; 				If (testMode != "ERROR")
+; 					diff := round(keyTime - lastKeyTime, 1)
+; 				Else
+; 					diff := round(keyTime - lastKeyTime)
+; 				Gui, Add, Text, xm, % "(" . diff . "ms) "
+; 			}
+; 			Else
+; 				Gui, Add, Text, xm
 
-			; 修飾キー
-			preStr := ""
-			While (c := SubStr(str, 1, 1))
-			{
-				If (c == "+" || c == "^" || c == "!" || c == "#"
-				 || c == "<" || c == ">")
-				{
-					; 先頭の文字を分離
-					preStr .= c
-					str := SubStr(str, 2)
-				}
-				Else If (c == "*" || c == "~" || c == "$")
-					; 表示させたくない先頭の文字を消去
-					str := SubStr(str, 2)
-				Else
-					Break
-			}
-			; キーの上げ下げを調べる
-			StringRight, term, str, 3	; term に入力末尾の2文字を入れる
-			If (term = " up")
-			{
-				; キーが離されたとき
-				term := "↑"
-				str := SubStr(str, 1, StrLen(str) - 3)
-			}
-			Else
-				term := ""
+; 			; 修飾キー
+; 			preStr := ""
+; 			While (c := SubStr(str, 1, 1))
+; 			{
+; 				If (c == "+" || c == "^" || c == "!" || c == "#"
+; 				 || c == "<" || c == ">")
+; 				{
+; 					; 先頭の文字を分離
+; 					preStr .= c
+; 					str := SubStr(str, 2)
+; 				}
+; 				Else If (c == "*" || c == "~" || c == "$")
+; 					; 表示させたくない先頭の文字を消去
+; 					str := SubStr(str, 2)
+; 				Else
+; 					Break
+; 			}
+; 			; キーの上げ下げを調べる
+; 			StringRight, term, str, 3	; term に入力末尾の2文字を入れる
+; 			If (term = " up")
+; 			{
+; 				; キーが離されたとき
+; 				term := "↑"
+; 				str := SubStr(str, 1, StrLen(str) - 3)
+; 			}
+; 			Else
+; 				term := ""
 
-			; 書き出し
-			If (str = "KeyTimer")
-				str := "[KeyTimer]"
-			Else If (str = "vk1A")
-				str := "(Mac)英数"
-			Else If (str = "vk16")
-				str := "(Mac)かな"
-			Else If (SubStr(str, 1, 2) = "sc")
-			{
-				number := "0x" . SubStr(str, 3, 2)
-				temp := scanCodeArray[number]
-				If (temp != "")
-					str := temp
-			}
-			Gui, Add, Text, xm+60 yp, % preStr . str . term
-		}
-		; 押した時間を保存
-		lastKeyTime := keyTime
-	}
-	Gui, Add, Button, W60 xm+30 y+10 Default, Close
-	Gui, Show
-	Return
-}
+; 			; 書き出し
+; 			If (str = "KeyTimer")
+; 				str := "[KeyTimer]"
+; 			Else If (str = "vk1A")
+; 				str := "(Mac)英数"
+; 			Else If (str = "vk16")
+; 				str := "(Mac)かな"
+; 			Else If (SubStr(str, 1, 2) = "sc")
+; 			{
+; 				number := "0x" . SubStr(str, 3, 2)
+; 				temp := scanCodeArray[number]
+; 				If (temp != "")
+; 					str := temp
+; 			}
+; 			Gui, Add, Text, xm+60 yp, % preStr . str . term
+; 		}
+; 		; 押した時間を保存
+; 		lastKeyTime := keyTime
+; 	}
+; 	Gui, Add, Button, W60 xm+30 y+10 Default, Close
+; 	Gui, Show
+; 	Return
+; }
