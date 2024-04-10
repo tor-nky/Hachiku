@@ -778,13 +778,13 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 		; Windows 11 以降のメモ帳ではリピート中の移動は最大3個ずつ
 		Else If (osBuild >= 20000 && class == "Notepad" && count1 > 3)
 			count1 := 3
-		; 秀丸エディタとジャストシステム製品の行移動
-		Else If (moveLines
-		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
-			count1 := 1	; リピート中は1行ずつ
-		; ジャストシステム製品の文字移動
-		Else If (SubStr(class, 1, 3) == "js:")
-			count1 := 2	; リピート中は2字ずつ
+		; ; 秀丸エディタとジャストシステム製品の行移動
+		; Else If (moveLines
+		;  && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
+		; 	count1 := 1	; リピート中は1行ずつ
+		; ; ジャストシステム製品の文字移動
+		; Else If (SubStr(class, 1, 3) == "js:")
+		; 	count1 := 2	; リピート中は2字ずつ
 		; リピート時の行移動は最大〇打
 		Else If (moveLines && count1 > MAX_MOVE_LINES)
 			count1 := MAX_MOVE_LINES
@@ -850,8 +850,8 @@ SendEachChar(str)	; (str: String) -> Void
 		delay := 10
 	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
 		delay := (imeName == "NewMSIME" ? 30 : 10)
-	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
-		delay := 1	; 文末の [EOF] の表示が乱れるのを防止
+	; Else If (class == "Hidemaru32Class")	; 秀丸エディタ
+	; 	delay := 1	; 文末の [EOF] の表示が乱れるのを防止
 	; Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 	; 	postDelay := 30	; かな入力の1文字目をゆっくり出力
 	lastDelay := Floor(QPC() - lastSendTime)
@@ -1208,17 +1208,17 @@ SendEachChar(str)	; (str: String) -> Void
 					; Win11メモ帳+新MS-IME
 					Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
 						postDelay := 50
-					; 秀丸エディタ
-					Else If (class == "Hidemaru32Class")
-					{
-						If (imeName == "Google" || imeName == "ATOK")
-						{
-							preDelay := 10
-							postDelay := 60
-						}
-						Else If (imeName != "NewMSIME")
-							postDelay := 60
-					}
+					; ; 秀丸エディタ
+					; Else If (class == "Hidemaru32Class")
+					; {
+					; 	If (imeName == "Google" || imeName == "ATOK")
+					; 	{
+					; 		preDelay := 10
+					; 		postDelay := 60
+					; 	}
+					; 	Else If (imeName != "NewMSIME")
+					; 		postDelay := 60
+					; }
 				}
 				Else If (strSub = "^x")
 				{
