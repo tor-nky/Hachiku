@@ -34,7 +34,7 @@ KoyuMenu:
 	Gui, Destroy
 	Gui, Add, Text, , 固有名詞ショートカット設定
 ;	Gui, Add, Text, x+15, 〈セット%koyuNumber%〉
-	Gui, Add, Tab2, xm+560 y+0 Section Buttons Center, 第一面|第二面
+	; Gui, Add, Tab2, xm+560 y+0 Section Buttons Center, 第一面|第二面
 
 ; E列
 	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
@@ -145,114 +145,114 @@ KoyuMenu:
 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11, %B11%
 
 
-	Gui, Tab, 第二面
-; E列
-	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
-	Gui, Add, Text, xp+95 W92 Center, 2
-	Gui, Add, Text, xp+95 W92 Center, 3
-	Gui, Add, Text, xp+95 W92 Center, 4
-	Gui, Add, Text, xp+95 W92 Center, 5
-	Gui, Add, Text, xp+115 W92 Center, 6
-	Gui, Add, Text, xp+95 W92 Center, 7
-	Gui, Add, Text, xp+95 W92 Center, 8
-	Gui, Add, Text, xp+95 W92 Center, 9
-	Gui, Add, Text, xp+95 W92 Center, 0
-	Gui, Add, Text, xp+95 W92 Center, -
-	Gui, Add, Text, xp+95 W92 Center, ^  (US)=
-	Gui, Add, Text, xp+95 W92 Center, \  (US)＼
+; 	Gui, Tab, 第二面
+; ; E列
+; 	Gui, Add, Text, xm+0 ys+25 W90 Center, 1
+; 	Gui, Add, Text, xp+95 W92 Center, 2
+; 	Gui, Add, Text, xp+95 W92 Center, 3
+; 	Gui, Add, Text, xp+95 W92 Center, 4
+; 	Gui, Add, Text, xp+95 W92 Center, 5
+; 	Gui, Add, Text, xp+115 W92 Center, 6
+; 	Gui, Add, Text, xp+95 W92 Center, 7
+; 	Gui, Add, Text, xp+95 W92 Center, 8
+; 	Gui, Add, Text, xp+95 W92 Center, 9
+; 	Gui, Add, Text, xp+95 W92 Center, 0
+; 	Gui, Add, Text, xp+95 W92 Center, -
+; 	Gui, Add, Text, xp+95 W92 Center, ^  (US)=
+; 	Gui, Add, Text, xp+95 W92 Center, \  (US)＼
 
-	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vE01S, %E01S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE02S, %E02S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE03S, %E03S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE04S, %E04S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE05S, %E05S%
-	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vE06S, %E06S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE07S, %E07S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE08S, %E08S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE09S, %E09S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE10S, %E10S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE11S, %E11S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE12S, %E12S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE13S, %E13S%
+; 	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vE01S, %E01S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE02S, %E02S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE03S, %E03S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE04S, %E04S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE05S, %E05S%
+; 	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vE06S, %E06S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE07S, %E07S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE08S, %E08S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE09S, %E09S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE10S, %E10S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE11S, %E11S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE12S, %E12S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vE13S, %E13S%
 
-; D列
-	Gui, Add, Text, xm+0 y+15 W92 Center, Q
-	Gui, Add, Text, xp+95 W92 Center, W
-	Gui, Add, Text, xp+95 W92 Center, E
-	Gui, Add, Text, xp+95 W92 Center, R
-	Gui, Add, Text, xp+95 W92 Center, T
-	Gui, Add, Text, xp+115 W92 Center, Y
-	Gui, Add, Text, xp+95 W92 Center, U
-	Gui, Add, Text, xp+95 W92 Center, I
-	Gui, Add, Text, xp+95 W92 Center, O
-	Gui, Add, Text, xp+95 W92 Center, P
-	Gui, Add, Text, xp+95 W92 Center, @  (US)[
-	Gui, Add, Text, xp+95 W92 Center, [  (US)]
+; ; D列
+; 	Gui, Add, Text, xm+0 y+15 W92 Center, Q
+; 	Gui, Add, Text, xp+95 W92 Center, W
+; 	Gui, Add, Text, xp+95 W92 Center, E
+; 	Gui, Add, Text, xp+95 W92 Center, R
+; 	Gui, Add, Text, xp+95 W92 Center, T
+; 	Gui, Add, Text, xp+115 W92 Center, Y
+; 	Gui, Add, Text, xp+95 W92 Center, U
+; 	Gui, Add, Text, xp+95 W92 Center, I
+; 	Gui, Add, Text, xp+95 W92 Center, O
+; 	Gui, Add, Text, xp+95 W92 Center, P
+; 	Gui, Add, Text, xp+95 W92 Center, @  (US)[
+; 	Gui, Add, Text, xp+95 W92 Center, [  (US)]
 
-	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vD01S, %D01S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD02S, %D02S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD03S, %D03S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD04S, %D04S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD05S, %D05S%
-	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vD06S, %D06S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD07S, %D07S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD08S, %D08S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD09S, %D09S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD10S, %D10S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD11S, %D11S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD12S, %D12S%
+; 	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vD01S, %D01S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD02S, %D02S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD03S, %D03S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD04S, %D04S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD05S, %D05S%
+; 	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vD06S, %D06S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD07S, %D07S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD08S, %D08S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD09S, %D09S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD10S, %D10S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD11S, %D11S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vD12S, %D12S%
 
-; C列
-	Gui, Add, Text, xm+0 y+15 W92 Center, A
-	Gui, Add, Text, xp+95 W92 Center, S
-	Gui, Add, Text, xp+95 W92 Center, D
-	Gui, Add, Text, xp+95 W92 Center, F
-	Gui, Add, Text, xp+95 W92 Center, G
-	Gui, Add, Text, xp+115 W92 Center, H
-	Gui, Add, Text, xp+95 W92 Center, J
-	Gui, Add, Text, xp+95 W92 Center, K
-	Gui, Add, Text, xp+95 W92 Center, L
-	Gui, Add, Text, xp+95 W92 Center, `;
-	Gui, Add, Text, xp+95 W92 Center, :  (US)'
-	Gui, Add, Text, xp+95 W92 Center, ]  (US)``
+; ; C列
+; 	Gui, Add, Text, xm+0 y+15 W92 Center, A
+; 	Gui, Add, Text, xp+95 W92 Center, S
+; 	Gui, Add, Text, xp+95 W92 Center, D
+; 	Gui, Add, Text, xp+95 W92 Center, F
+; 	Gui, Add, Text, xp+95 W92 Center, G
+; 	Gui, Add, Text, xp+115 W92 Center, H
+; 	Gui, Add, Text, xp+95 W92 Center, J
+; 	Gui, Add, Text, xp+95 W92 Center, K
+; 	Gui, Add, Text, xp+95 W92 Center, L
+; 	Gui, Add, Text, xp+95 W92 Center, `;
+; 	Gui, Add, Text, xp+95 W92 Center, :  (US)'
+; 	Gui, Add, Text, xp+95 W92 Center, ]  (US)``
 
-	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vC01S, %C01S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC02S, %C02S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC03S, %C03S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC04S, %C04S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC05S, %C05S%
-	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vC06S, %C06S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC07S, %C07S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC08S, %C08S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC09S, %C09S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC10S, %C10S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC11S, %C11S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC12S, %C12S%
+; 	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vC01S, %C01S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC02S, %C02S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC03S, %C03S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC04S, %C04S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC05S, %C05S%
+; 	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vC06S, %C06S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC07S, %C07S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC08S, %C08S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC09S, %C09S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC10S, %C10S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC11S, %C11S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vC12S, %C12S%
 
-; B列
-	Gui, Add, Text, xm+0 y+15 W92 Center, Z
-	Gui, Add, Text, xp+95 W92 Center, X
-	Gui, Add, Text, xp+95 W92 Center, C
-	Gui, Add, Text, xp+95 W92 Center, V
-	Gui, Add, Text, xp+95 W92 Center, B
-	Gui, Add, Text, xp+115 W92 Center, N
-	Gui, Add, Text, xp+95 W92 Center, M
-	Gui, Add, Text, xp+95 W92 Center, `,
-	Gui, Add, Text, xp+95 W92 Center, `.
-	Gui, Add, Text, xp+95 W92 Center, /
-	Gui, Add, Text, xp+95 W92 Center, _  (US)なし
+; ; B列
+; 	Gui, Add, Text, xm+0 y+15 W92 Center, Z
+; 	Gui, Add, Text, xp+95 W92 Center, X
+; 	Gui, Add, Text, xp+95 W92 Center, C
+; 	Gui, Add, Text, xp+95 W92 Center, V
+; 	Gui, Add, Text, xp+95 W92 Center, B
+; 	Gui, Add, Text, xp+115 W92 Center, N
+; 	Gui, Add, Text, xp+95 W92 Center, M
+; 	Gui, Add, Text, xp+95 W92 Center, `,
+; 	Gui, Add, Text, xp+95 W92 Center, `.
+; 	Gui, Add, Text, xp+95 W92 Center, /
+; 	Gui, Add, Text, xp+95 W92 Center, _  (US)なし
 
-	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vB01S, %B01S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB02S, %B02S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB03S, %B03S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB04S, %B04S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB05S, %B05S%
-	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vB06S, %B06S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB07S, %B07S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB08S, %B08S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB09S, %B09S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB10S, %B10S%
-	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11S, %B11S%
+; 	Gui, Add, Edit, xm+0 y+2 W92 R2.4 -VScroll vB01S, %B01S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB02S, %B02S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB03S, %B03S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB04S, %B04S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB05S, %B05S%
+; 	Gui, Add, Edit, xp+115 W92 R2.4 -VScroll vB06S, %B06S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB07S, %B07S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB08S, %B08S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB09S, %B09S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB10S, %B10S%
+; 	Gui, Add, Edit, xp+95 W92 R2.4 -VScroll vB11S, %B11S%
 
 
 	Gui, Tab
@@ -387,57 +387,57 @@ KoyuReadAndRegist(number)	; (number: Int) -> Void
 	B10 := KoyuIniRead(number, "B10")
 	B11 := KoyuIniRead(number, "B11")
 
-	E01S := KoyuIniRead(number, "E01S")
-	E02S := KoyuIniRead(number, "E02S")
-	E03S := KoyuIniRead(number, "E03S")
-	E04S := KoyuIniRead(number, "E04S")
-	E05S := KoyuIniRead(number, "E05S")
-	E06S := KoyuIniRead(number, "E06S")
-	E07S := KoyuIniRead(number, "E07S")
-	E08S := KoyuIniRead(number, "E08S")
-	E09S := KoyuIniRead(number, "E09S")
-	E10S := KoyuIniRead(number, "E10S")
-	E11S := KoyuIniRead(number, "E11S")
-	E12S := KoyuIniRead(number, "E12S")
-	E13S := KoyuIniRead(number, "E13S")
+	; E01S := KoyuIniRead(number, "E01S")
+	; E02S := KoyuIniRead(number, "E02S")
+	; E03S := KoyuIniRead(number, "E03S")
+	; E04S := KoyuIniRead(number, "E04S")
+	; E05S := KoyuIniRead(number, "E05S")
+	; E06S := KoyuIniRead(number, "E06S")
+	; E07S := KoyuIniRead(number, "E07S")
+	; E08S := KoyuIniRead(number, "E08S")
+	; E09S := KoyuIniRead(number, "E09S")
+	; E10S := KoyuIniRead(number, "E10S")
+	; E11S := KoyuIniRead(number, "E11S")
+	; E12S := KoyuIniRead(number, "E12S")
+	; E13S := KoyuIniRead(number, "E13S")
 
-	D01S := KoyuIniRead(number, "D01S")
-	D02S := KoyuIniRead(number, "D02S")
-	D03S := KoyuIniRead(number, "D03S")
-	D04S := KoyuIniRead(number, "D04S")
-	D05S := KoyuIniRead(number, "D05S")
-	D06S := KoyuIniRead(number, "D06S")
-	D07S := KoyuIniRead(number, "D07S")
-	D08S := KoyuIniRead(number, "D08S")
-	D09S := KoyuIniRead(number, "D09S")
-	D10S := KoyuIniRead(number, "D10S")
-	D11S := KoyuIniRead(number, "D11S")
-	D12S := KoyuIniRead(number, "D12S")
+	; D01S := KoyuIniRead(number, "D01S")
+	; D02S := KoyuIniRead(number, "D02S")
+	; D03S := KoyuIniRead(number, "D03S")
+	; D04S := KoyuIniRead(number, "D04S")
+	; D05S := KoyuIniRead(number, "D05S")
+	; D06S := KoyuIniRead(number, "D06S")
+	; D07S := KoyuIniRead(number, "D07S")
+	; D08S := KoyuIniRead(number, "D08S")
+	; D09S := KoyuIniRead(number, "D09S")
+	; D10S := KoyuIniRead(number, "D10S")
+	; D11S := KoyuIniRead(number, "D11S")
+	; D12S := KoyuIniRead(number, "D12S")
 
-	C01S := KoyuIniRead(number, "C01S")
-	C02S := KoyuIniRead(number, "C02S")
-	C03S := KoyuIniRead(number, "C03S")
-	C04S := KoyuIniRead(number, "C04S")
-	C05S := KoyuIniRead(number, "C05S")
-	C06S := KoyuIniRead(number, "C06S")
-	C07S := KoyuIniRead(number, "C07S")
-	C08S := KoyuIniRead(number, "C08S")
-	C09S := KoyuIniRead(number, "C09S")
-	C10S := KoyuIniRead(number, "C10S")
-	C11S := KoyuIniRead(number, "C11S")
-	C12S := KoyuIniRead(number, "C12S")
+	; C01S := KoyuIniRead(number, "C01S")
+	; C02S := KoyuIniRead(number, "C02S")
+	; C03S := KoyuIniRead(number, "C03S")
+	; C04S := KoyuIniRead(number, "C04S")
+	; C05S := KoyuIniRead(number, "C05S")
+	; C06S := KoyuIniRead(number, "C06S")
+	; C07S := KoyuIniRead(number, "C07S")
+	; C08S := KoyuIniRead(number, "C08S")
+	; C09S := KoyuIniRead(number, "C09S")
+	; C10S := KoyuIniRead(number, "C10S")
+	; C11S := KoyuIniRead(number, "C11S")
+	; C12S := KoyuIniRead(number, "C12S")
 
-	B01S := KoyuIniRead(number, "B01S")
-	B02S := KoyuIniRead(number, "B02S")
-	B03S := KoyuIniRead(number, "B03S")
-	B04S := KoyuIniRead(number, "B04S")
-	B05S := KoyuIniRead(number, "B05S")
-	B06S := KoyuIniRead(number, "B06S")
-	B07S := KoyuIniRead(number, "B07S")
-	B08S := KoyuIniRead(number, "B08S")
-	B09S := KoyuIniRead(number, "B09S")
-	B10S := KoyuIniRead(number, "B10S")
-	B11S := KoyuIniRead(number, "B11S")
+	; B01S := KoyuIniRead(number, "B01S")
+	; B02S := KoyuIniRead(number, "B02S")
+	; B03S := KoyuIniRead(number, "B03S")
+	; B04S := KoyuIniRead(number, "B04S")
+	; B05S := KoyuIniRead(number, "B05S")
+	; B06S := KoyuIniRead(number, "B06S")
+	; B07S := KoyuIniRead(number, "B07S")
+	; B08S := KoyuIniRead(number, "B08S")
+	; B09S := KoyuIniRead(number, "B09S")
+	; B10S := KoyuIniRead(number, "B10S")
+	; B11S := KoyuIniRead(number, "B11S")
 
 	KoyuRegist()	; 固有名詞ショートカットの登録
 	Return
@@ -501,57 +501,57 @@ KoyuWriteAndRegist(number)	; (number: Int) -> Void
 	KoyuIniWrite(number, "B10", B10)
 	KoyuIniWrite(number, "B11", B11)
 
-	KoyuIniWrite(number, "E01S", E01S)
-	KoyuIniWrite(number, "E02S", E02S)
-	KoyuIniWrite(number, "E03S", E03S)
-	KoyuIniWrite(number, "E04S", E04S)
-	KoyuIniWrite(number, "E05S", E05S)
-	KoyuIniWrite(number, "E06S", E06S)
-	KoyuIniWrite(number, "E07S", E07S)
-	KoyuIniWrite(number, "E08S", E08S)
-	KoyuIniWrite(number, "E09S", E09S)
-	KoyuIniWrite(number, "E10S", E10S)
-	KoyuIniWrite(number, "E11S", E11S)
-	KoyuIniWrite(number, "E12S", E12S)
-	KoyuIniWrite(number, "E13S", E13S)
+	; KoyuIniWrite(number, "E01S", E01S)
+	; KoyuIniWrite(number, "E02S", E02S)
+	; KoyuIniWrite(number, "E03S", E03S)
+	; KoyuIniWrite(number, "E04S", E04S)
+	; KoyuIniWrite(number, "E05S", E05S)
+	; KoyuIniWrite(number, "E06S", E06S)
+	; KoyuIniWrite(number, "E07S", E07S)
+	; KoyuIniWrite(number, "E08S", E08S)
+	; KoyuIniWrite(number, "E09S", E09S)
+	; KoyuIniWrite(number, "E10S", E10S)
+	; KoyuIniWrite(number, "E11S", E11S)
+	; KoyuIniWrite(number, "E12S", E12S)
+	; KoyuIniWrite(number, "E13S", E13S)
 
-	KoyuIniWrite(number, "D01S", D01S)
-	KoyuIniWrite(number, "D02S", D02S)
-	KoyuIniWrite(number, "D03S", D03S)
-	KoyuIniWrite(number, "D04S", D04S)
-	KoyuIniWrite(number, "D05S", D05S)
-	KoyuIniWrite(number, "D06S", D06S)
-	KoyuIniWrite(number, "D07S", D07S)
-	KoyuIniWrite(number, "D08S", D08S)
-	KoyuIniWrite(number, "D09S", D09S)
-	KoyuIniWrite(number, "D10S", D10S)
-	KoyuIniWrite(number, "D11S", D11S)
-	KoyuIniWrite(number, "D12S", D12S)
+	; KoyuIniWrite(number, "D01S", D01S)
+	; KoyuIniWrite(number, "D02S", D02S)
+	; KoyuIniWrite(number, "D03S", D03S)
+	; KoyuIniWrite(number, "D04S", D04S)
+	; KoyuIniWrite(number, "D05S", D05S)
+	; KoyuIniWrite(number, "D06S", D06S)
+	; KoyuIniWrite(number, "D07S", D07S)
+	; KoyuIniWrite(number, "D08S", D08S)
+	; KoyuIniWrite(number, "D09S", D09S)
+	; KoyuIniWrite(number, "D10S", D10S)
+	; KoyuIniWrite(number, "D11S", D11S)
+	; KoyuIniWrite(number, "D12S", D12S)
 
-	KoyuIniWrite(number, "C01S", C01S)
-	KoyuIniWrite(number, "C02S", C02S)
-	KoyuIniWrite(number, "C03S", C03S)
-	KoyuIniWrite(number, "C04S", C04S)
-	KoyuIniWrite(number, "C05S", C05S)
-	KoyuIniWrite(number, "C06S", C06S)
-	KoyuIniWrite(number, "C07S", C07S)
-	KoyuIniWrite(number, "C08S", C08S)
-	KoyuIniWrite(number, "C09S", C09S)
-	KoyuIniWrite(number, "C10S", C10S)
-	KoyuIniWrite(number, "C11S", C11S)
-	KoyuIniWrite(number, "C12S", C12S)
+	; KoyuIniWrite(number, "C01S", C01S)
+	; KoyuIniWrite(number, "C02S", C02S)
+	; KoyuIniWrite(number, "C03S", C03S)
+	; KoyuIniWrite(number, "C04S", C04S)
+	; KoyuIniWrite(number, "C05S", C05S)
+	; KoyuIniWrite(number, "C06S", C06S)
+	; KoyuIniWrite(number, "C07S", C07S)
+	; KoyuIniWrite(number, "C08S", C08S)
+	; KoyuIniWrite(number, "C09S", C09S)
+	; KoyuIniWrite(number, "C10S", C10S)
+	; KoyuIniWrite(number, "C11S", C11S)
+	; KoyuIniWrite(number, "C12S", C12S)
 
-	KoyuIniWrite(number, "B01S", B01S)
-	KoyuIniWrite(number, "B02S", B02S)
-	KoyuIniWrite(number, "B03S", B03S)
-	KoyuIniWrite(number, "B04S", B04S)
-	KoyuIniWrite(number, "B05S", B05S)
-	KoyuIniWrite(number, "B06S", B06S)
-	KoyuIniWrite(number, "B07S", B07S)
-	KoyuIniWrite(number, "B08S", B08S)
-	KoyuIniWrite(number, "B09S", B09S)
-	KoyuIniWrite(number, "B10S", B10S)
-	KoyuIniWrite(number, "B11S", B11S)
+	; KoyuIniWrite(number, "B01S", B01S)
+	; KoyuIniWrite(number, "B02S", B02S)
+	; KoyuIniWrite(number, "B03S", B03S)
+	; KoyuIniWrite(number, "B04S", B04S)
+	; KoyuIniWrite(number, "B05S", B05S)
+	; KoyuIniWrite(number, "B06S", B06S)
+	; KoyuIniWrite(number, "B07S", B07S)
+	; KoyuIniWrite(number, "B08S", B08S)
+	; KoyuIniWrite(number, "B09S", B09S)
+	; KoyuIniWrite(number, "B10S", B10S)
+	; KoyuIniWrite(number, "B11S", B11S)
 
 	KoyuRegist()	; 固有名詞ショートカットの登録
 	Return
