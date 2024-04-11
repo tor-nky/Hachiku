@@ -132,43 +132,43 @@ ControlReplace(str)	; (str: String) -> String
 {
 	; DvorakJ との互換用
 	StringReplace, str, str, {→,			{Right,		A
-	StringReplace, str, str, {->,			{Right,		A
-	StringReplace, str, str, {右,			{Right,		A
+	; StringReplace, str, str, {->,			{Right,		A
+	; StringReplace, str, str, {右,			{Right,		A
 	StringReplace, str, str, {←,			{Left,		A
-	StringReplace, str, str, {<-,			{Left,		A
-	StringReplace, str, str, {左,			{Left,		A
+	; StringReplace, str, str, {<-,			{Left,		A
+	; StringReplace, str, str, {左,			{Left,		A
 	StringReplace, str, str, {↑,			{Up,		A
-	StringReplace, str, str, {上,			{Up,		A
+	; StringReplace, str, str, {上,			{Up,		A
 	StringReplace, str, str, {↓,			{Down,		A
-	StringReplace, str, str, {下,			{Down,		A
-	StringReplace, str, str, {ペースト},	^v,			A
-	StringReplace, str, str, {貼付},		^v,			A
-	StringReplace, str, str, {貼り付け},	^v,			A
-	StringReplace, str, str, {カット},		^x,			A
-	StringReplace, str, str, {切取},		^x,			A
-	StringReplace, str, str, {切り取り},	^x,			A
-	StringReplace, str, str, {コピー},		^c,			A
-	StringReplace, str, str, {無変換,		{vk1D,		A
-	StringReplace, str, str, {変換,			{vk1C,		A
+	; StringReplace, str, str, {下,			{Down,		A
+	; StringReplace, str, str, {ペースト},	^v,			A
+	; StringReplace, str, str, {貼付},		^v,			A
+	; StringReplace, str, str, {貼り付け},	^v,			A
+	; StringReplace, str, str, {カット},		^x,			A
+	; StringReplace, str, str, {切取},		^x,			A
+	; StringReplace, str, str, {切り取り},	^x,			A
+	; StringReplace, str, str, {コピー},		^c,			A
+	; StringReplace, str, str, {無変換,		{vk1D,		A
+	; StringReplace, str, str, {変換,			{vk1C,		A
 	StringReplace, str, str, {ひらがな,		{vkF2,		A
 	StringReplace, str, str, {改行,			{Enter,		A
-	StringReplace, str, str, {後退,			{BS,		A
-	StringReplace, str, str, {取消,			{Esc,		A
-	StringReplace, str, str, {削除,			{Del,		A
+	; StringReplace, str, str, {後退,			{BS,		A
+	; StringReplace, str, str, {取消,			{Esc,		A
+	; StringReplace, str, str, {削除,			{Del,		A
 	StringReplace, str, str, {全角,			{vkF3,		A
-	StringReplace, str, str, {タブ,			{Tab,		A
-	StringReplace, str, str, {空白,			{vk20,		A
-	StringReplace, str, str, {メニュー,		{AppsKey,	A
-	StringReplace, str, str, {Caps Lock,	{vkF0,		A
-	StringReplace, str, str, {Back Space,	{BS,		A
+	; StringReplace, str, str, {タブ,			{Tab,		A
+	; StringReplace, str, str, {空白,			{vk20,		A
+	; StringReplace, str, str, {メニュー,		{AppsKey,	A
+	; StringReplace, str, str, {Caps Lock,	{vkF0,		A
+	; StringReplace, str, str, {Back Space,	{BS,		A
 
 	; 追加
-	StringReplace, str, str, {カタカナ,		{vkF1,		A
-	StringReplace, str, str, {漢字,			{vk19,		A
-	StringReplace, str, str, {英数,			{vkF0,		A
-	StringReplace, str, str, {一時半角},	{NoIME},	A
-	StringReplace, str, str, {IME戻す},		{UndoIME},	A
-	StringReplace, str, str, {Space,		{vk20,		A
+	; StringReplace, str, str, {カタカナ,		{vkF1,		A
+	; StringReplace, str, str, {漢字,			{vk19,		A
+	; StringReplace, str, str, {英数,			{vkF0,		A
+	; StringReplace, str, str, {一時半角},	{NoIME},	A
+	; StringReplace, str, str, {IME戻す},		{UndoIME},	A
+	; StringReplace, str, str, {Space,		{vk20,		A
 
 	Return str
 }
@@ -297,28 +297,30 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 				ret .= strSub
 				kakutei := True
 			}
-			Else If (strSub = "{UndoIME}")
-			{
-				; IME入力モードの回復
-				If (noIME)
-					ret .= "{UndoIME}"
-				noIME := False
-			}
-			Else If (strSub = "{IMEOFF}")
-			{
-				ret .= strSub
-				kakutei := True
-				noIME := False
-			}
-			Else If (strSub = "{IMEON}"
-				|| strSub = "{vkF3}"		|| strSub = "{vkF4}"	; 半角/全角
-				|| strSub = "{vk19}"								; 漢字	Alt+`
-				|| strSub = "{vkF0}"								; 英数
-				|| InStr(strSub, "{vk16")							; (Mac)かな
-				|| InStr(strSub, "{vk1A")							; (Mac)英数
-				|| InStr(strSub, "{vkF2")							; ひらがな
-				|| InStr(strSub, "{vkF1")							; カタカナ
-				|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
+			; Else If (strSub = "{UndoIME}")
+			; {
+			; 	; IME入力モードの回復
+			; 	If (noIME)
+			; 		ret .= "{UndoIME}"
+			; 	noIME := False
+			; }
+			; Else If (strSub = "{IMEOFF}")
+			; {
+			; 	ret .= strSub
+			; 	kakutei := True
+			; 	noIME := False
+			; }
+			; Else If (strSub = "{IMEON}"
+			; 	|| strSub = "{vkF3}"		|| strSub = "{vkF4}"	; 半角/全角
+			; 	|| strSub = "{vk19}"								; 漢字	Alt+`
+			; 	|| strSub = "{vkF0}"								; 英数
+			; 	|| InStr(strSub, "{vk16")							; (Mac)かな
+			; 	|| InStr(strSub, "{vk1A")							; (Mac)英数
+			; 	|| InStr(strSub, "{vkF2")							; ひらがな
+			; 	|| InStr(strSub, "{vkF1")							; カタカナ
+			; 	|| strSub == "{全英}"		|| strSub == "{半ｶﾅ}")
+			Else If (strSub = "{vkF3}"		; 半角/全角
+				|| InStr(strSub, "{vkF2"))	; ひらがな
 			{
 				ret .= strSub
 				noIME := False
@@ -1013,18 +1015,19 @@ SendEachChar(str)	; (str: String) -> Void
 									i += 7
 									noIME := True
 								}
-								Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
-									|| SubStr(str, i, 6) = "{vk19}")
+								; Else If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
+								; 	|| SubStr(str, i, 6) = "{vk19}")
+								Else If (SubStr(str, i, 6) = "{vkF3}")
 								{
 									i += 6
 									noIME := False
 								}
-								Else If (SubStr(str, i, 8) = "{IMEOFF}")
-								{
-									i += 8
-									noIME := False
-									kanaMode := 0
-								}
+								; Else If (SubStr(str, i, 8) = "{IMEOFF}")
+								; {
+								; 	i += 8
+								; 	noIME := False
+								; 	kanaMode := 0
+								; }
 								; 「半角/全角」で元に戻す
 								Else
 									out := "{vkF3}"
@@ -1099,32 +1102,34 @@ SendEachChar(str)	; (str: String) -> Void
 						out := "{vkF3}"		; 半角/全角
 					}
 				}
-				Else If (strSub = "{IMEOFF}")
-				{
-					noIME := False
-					preDelay := 50
-					If (lastDelay < preDelay)
-						Sleep, % preDelay - lastDelay
-					IME_SET(kanaMode := 0)	; IMEオフ
-					lastDelay := imeNeedDelay
-					lastSendTime := 0.0
-				}
-				Else If (strSub = "{IMEON}")
-				{
-					noIME := False
-					IME_SET(1)		; IMEオン
-					lastDelay := imeNeedDelay
-					lastSendTime := 0.0
-				}
-				Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
-					|| strSub = "{vk19}"							; 漢字	Alt+`
-					|| strSub = "{vkF0}")							; 英数
+				; Else If (strSub = "{IMEOFF}")
+				; {
+				; 	noIME := False
+				; 	preDelay := 50
+				; 	If (lastDelay < preDelay)
+				; 		Sleep, % preDelay - lastDelay
+				; 	IME_SET(kanaMode := 0)	; IMEオフ
+				; 	lastDelay := imeNeedDelay
+				; 	lastSendTime := 0.0
+				; }
+				; Else If (strSub = "{IMEON}")
+				; {
+				; 	noIME := False
+				; 	IME_SET(1)		; IMEオン
+				; 	lastDelay := imeNeedDelay
+				; 	lastSendTime := 0.0
+				; }
+				; Else If (strSub = "{vkF3}"	|| strSub = "{vkF4}"	; 半角/全角
+				; 	|| strSub = "{vk19}"							; 漢字	Alt+`
+				; 	|| strSub = "{vkF0}")							; 英数
+				Else If (strSub = "{vkF3}")		; 半角/全角
 				{
 					noIME := False
 					out := strSub
 				}
-				Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
-					|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
+				; Else If (SubStr(strSub, 1, 5) = "{vkF2"		; ひらがな
+				; 	|| SubStr(strSub, 1, 5) = "{vk16")		; (Mac)かな
+				Else If (SubStr(strSub, 1, 5) = "{vkF2")	; ひらがな
 				{
 					noIME := False
 					; 他の IME からGoogle日本語入力に切り替えた時、ひらがなキーを押しても
@@ -1144,59 +1149,59 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 						kanaMode := 1
 				}
-				Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
-					|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
-				{
-					noIME := False
-					If (imeName == "NewMSIME")
-						Send, {vk16}
-					Else
-						Send, {vkF2}
-					out := "{vkF1}"		; カタカナ
-					kanaMode := 1
-				}
-				Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
-				{
-					noIME := False
-					out := strSub
-					kanaMode := 0
-				}
-				Else If (strSub == "{全英}")
-				{
-					noIME := False
-					If (imeName != "Google" && IME_GetConvMode())
-					{
-						IME_SET(1)			; IMEオン
-						IME_SetConvMode(24)	; IME 入力モード	全英数
-						lastDelay := imeNeedDelay
-						lastSendTime := 0.0
-					}
-					Else
-					{
-						If (imeName == "NewMSIME")
-							Send, {vk16}
-						Else
-							Send, {vkF2}
-						out := "+{vk1D}"	; シフト+無変換
-					}
-					kanaMode := 0
-				}
-				Else If (strSub == "{半ｶﾅ}")
-				{
-					noIME := False
-					If (imeName == "Google")
-						TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
-					Else If (!IME_GetConvMode())
-						TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
-					Else
-					{
-						IME_SET(1)			; IMEオン
-						IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
-						lastDelay := imeNeedDelay
-						lastSendTime := 0.0
-						kanaMode := 1
-					}
-				}
+				; Else If (SubStr(strSub, 1, 5) = "{vkF1"		; カタカナ
+				; 	|| SubStr(strSub, 1, 6) = "+{vk16")		; Shift + (Mac)かな
+				; {
+				; 	noIME := False
+				; 	If (imeName == "NewMSIME")
+				; 		Send, {vk16}
+				; 	Else
+				; 		Send, {vkF2}
+				; 	out := "{vkF1}"		; カタカナ
+				; 	kanaMode := 1
+				; }
+				; Else If (SubStr(strSub, 1, 5) = "{vk1A}")	; (Mac)英数
+				; {
+				; 	noIME := False
+				; 	out := strSub
+				; 	kanaMode := 0
+				; }
+				; Else If (strSub == "{全英}")
+				; {
+				; 	noIME := False
+				; 	If (imeName != "Google" && IME_GetConvMode())
+				; 	{
+				; 		IME_SET(1)			; IMEオン
+				; 		IME_SetConvMode(24)	; IME 入力モード	全英数
+				; 		lastDelay := imeNeedDelay
+				; 		lastSendTime := 0.0
+				; 	}
+				; 	Else
+				; 	{
+				; 		If (imeName == "NewMSIME")
+				; 			Send, {vk16}
+				; 		Else
+				; 			Send, {vkF2}
+				; 		out := "+{vk1D}"	; シフト+無変換
+				; 	}
+				; 	kanaMode := 0
+				; }
+				; Else If (strSub == "{半ｶﾅ}")
+				; {
+				; 	noIME := False
+				; 	If (imeName == "Google")
+				; 		TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
+				; 	Else If (!IME_GetConvMode())
+				; 		TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
+				; 	Else
+				; 	{
+				; 		IME_SET(1)			; IMEオン
+				; 		IME_SetConvMode(19)	; IME 入力モード	半ｶﾅ
+				; 		lastDelay := imeNeedDelay
+				; 		lastSendTime := 0.0
+				; 		kanaMode := 1
+				; 	}
+				; }
 				; エンター ※ただし、リピートさせて使うことがあるエンター単独の定義は除外
 				Else If (str != "{Enter}" && SubStr(strSub, 1, 6) = "{Enter")
 				{
@@ -1234,31 +1239,32 @@ SendEachChar(str)	; (str: String) -> Void
 				}
 				Else If (strSub = "{C_Clr}")
 					Clipboard :=				; クリップボードを空にする
-				Else If (SubStr(strSub, 1, 7) = "{C_Wait")
-				{
-					; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
-					wait := SubStr(strSub, 9, strSubLength - 9)
-					ClipWait, (wait ? wait : 0.2), 1
-				}
-				Else If (strSub = "{C_Bkup}")
-					clipSaved := ClipboardAll	; クリップボードの全内容を保存
-				Else If (strSub = "{C_Rstr}")
-				{
-					Clipboard := clipSaved		; クリップボードの内容を復元
-					clipSaved :=				; 保存用変数に使ったメモリを開放
-				}
-				Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
-					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
-				{
-					out := strSub
-					preDelay := 10
-					; Windows 11 以降のメモ帳へはゆっくりと
-					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
-						postDelay := 30
-					Else
-						postDelay := 10
-				}
-				Else If (strSub != "{Null}" && strSub != "{UndoIME}")
+				; Else If (SubStr(strSub, 1, 7) = "{C_Wait")
+				; {
+				; 	; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
+				; 	wait := SubStr(strSub, 9, strSubLength - 9)
+				; 	ClipWait, (wait ? wait : 0.2), 1
+				; }
+				; Else If (strSub = "{C_Bkup}")
+				; 	clipSaved := ClipboardAll	; クリップボードの全内容を保存
+				; Else If (strSub = "{C_Rstr}")
+				; {
+				; 	Clipboard := clipSaved		; クリップボードの内容を復元
+				; 	clipSaved :=				; 保存用変数に使ったメモリを開放
+				; }
+				; Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
+				; 	|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
+				; {
+				; 	out := strSub
+				; 	preDelay := 10
+				; 	; Windows 11 以降のメモ帳へはゆっくりと
+				; 	If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
+				; 		postDelay := 30
+				; 	Else
+				; 		postDelay := 10
+				; }
+				; Else If (strSub != "{Null}" && strSub != "{UndoIME}")
+				Else If (strSub != "{Null}")
 				{
 					out := strSub
 					; Win11メモ帳+新MS-IME
@@ -1347,7 +1353,8 @@ SendEachChar(str)	; (str: String) -> Void
 
 			; 必要なら IME の状態を元に戻す
 			; ※IME_SET(1) を使う方法
-			If (noIME && (i > strLength || strSub = "{UndoIME}"))
+			; If (noIME && (i > strLength || strSub = "{UndoIME}"))
+			If (noIME && i > strLength)
 			{
 				noIME := False
 
