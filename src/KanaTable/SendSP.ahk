@@ -71,9 +71,12 @@ SendESCx3()	; () -> Void
 
 	; Shift+Ctrl+無変換 のキー設定利用して良いか
 	; (秀丸エディタ、あるいはPC-9801キーボードでは使えないので除外)
+	; If (usingKeyConfig
+	;  && imeName != "OldMSIME" && imeName != "NewMSIME"
+	;  && class != "Hidemaru32Class" && keyDriver != "kbdnec.dll")
 	If (usingKeyConfig
 	 && imeName != "OldMSIME" && imeName != "NewMSIME"
-	 && class != "Hidemaru32Class" && keyDriver != "kbdnec.dll")
+	 && keyDriver != "kbdnec.dll")
 	{
 		SendEachChar("+^{vk1D 2}")	; ※ Shift+Ctrl+無変換
 		lastSendTime := QPC()		; 出力した時間を記録
@@ -114,13 +117,13 @@ SendESCx3()	; () -> Void
 	Else
 	{
 		SendEachChar("{Esc 5}")
-		; 一太郎のメニューを消す
-		If (SubStr(process, 1, 4) = "Taro")
-		{
-			Sleep, 500
-			IfWinActive, ahk_class #32770
-				Send, a
-		}
+		; ; 一太郎のメニューを消す
+		; If (SubStr(process, 1, 4) = "Taro")
+		; {
+		; 	Sleep, 500
+		; 	IfWinActive, ahk_class #32770
+		; 		Send, a
+		; }
 		lastSendTime := QPC()	; 出力した時間を記録
 	}
 }
