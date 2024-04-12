@@ -279,49 +279,6 @@ iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
 	SettingLayout()	; 出力確定する定義に印をつける
 
 ; ----------------------------------------------------------------------
-; メニューで使う変数	Bool型
-; ----------------------------------------------------------------------
-	; [Basic]
-	imeSelect0 := (imeSelect == 0 ? 1 : 0)
-	imeSelect1 := (imeSelect == 1 ? 1 : 0)
-	imeSelect2 := (imeSelect == 2 ? 1 : 0)
-	sideShift1 := (sideShift <= 1 ? 1 : 0)
-	sideShift2 := (sideShift > 1 ? 1 : 0)
-	enterShift0 := (!enterShift ? 1 : 0)
-	enterShift1 := (enterShift 1 ? 1 : 0)
-	spaceKeyRepeat0 := (spaceKeyRepeat == 0 ? 1 : 0)
-	spaceKeyRepeat1 := (spaceKeyRepeat == 1 ? 1 : 0)
-	spaceKeyRepeat2 := (spaceKeyRepeat == 2 ? 1 : 0)
-	; [Advanced]
-	combStyleN0 := (combStyleN == 0 ? 1 : 0)
-	combStyleN1 := (combStyleN == 1 ? 1 : 0)
-	combStyleN2 := (combStyleN == 2 ? 1 : 0)
-	combStyleN3 := (combStyleN == 3 ? 1 : 0)
-	combKeyUpN0 := (combKeyUpN == 0 ? 1 : 0)
-	combKeyUpN1 := (combKeyUpN == 1 ? 1 : 0)
-	combKeyUpN2 := (combKeyUpN == 2 ? 1 : 0)
-	combStyleS0 := (combStyleS == 0 ? 1 : 0)
-	combStyleS1 := (combStyleS == 1 ? 1 : 0)
-	combStyleS2 := (combStyleS == 2 ? 1 : 0)
-	combStyleS3 := (combStyleS == 3 ? 1 : 0)
-	combKeyUpS0 := (combKeyUpS == 0 ? 1 : 0)
-	combKeyUpS1 := (combKeyUpS == 1 ? 1 : 0)
-	combKeyUpS2 := (combKeyUpS == 2 ? 1 : 0)
-	combKeyUpSPC0 := (!combKeyUpSPC ? 1 : 0)
-	combKeyUpSPC1 := (combKeyUpSPC ? 1 : 0)
-	If (testMode != "ERROR")
-	{
-		testMode0 := (testMode == 0 ? 1 : 0)
-		testMode1 := (testMode == 1 ? 1 : 0)
-		testMode2 := (testMode == 2 ? 1 : 0)
-		testMode3 := (testMode == 3 ? 1 : 0)
-		repeatStyle0 := (repeatStyle == 0 ? 1 : 0)
-		repeatStyle1 := (repeatStyle == 1 ? 1 : 0)
-		repeatStyle2 := (repeatStyle == 2 ? 1 : 0)
-		repeatStyle3 := (repeatStyle == 3 ? 1 : 0)
-	}
-
-; ----------------------------------------------------------------------
 ; メニュー表示
 ; ----------------------------------------------------------------------
 	; ツールチップを変更する
@@ -381,77 +338,49 @@ VerticalMode:
 	ChangeVertical(vertical == 0 ? 1 : 0)
 	Return
 
-ButtonOK:
-	Gui, Submit
-	; [general]
-	iniVersion := version
-	; [Basic]
-	imeSelect := (imeSelect0 ? 0 : (imeSelect1 ? 1 : 2))
-	sideShift := (sideShift1 ? 1 : 2)
-	enterShift := (enterShift0 ? 0 : 1)
-	spaceKeyRepeat := (spaceKeyRepeat0 ? 0 : (spaceKeyRepeat1 ? 1 : 2))
-	; [Advanced]
-	combStyleN := (combStyleN0 ? 0 : (combStyleN1 ? 1 : (combStyleN2 ? 2 : 3)))
-	combKeyUpN := (combKeyUpN0 ? 0 : (combKeyUpN1 ? 1 : 2))
-	combStyleS := (combStyleS0 ? 0 : (combStyleS1 ? 1 : (combStyleS2 ? 2 : 3)))
-	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
-	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
-	If (testMode != "ERROR")
-	{
-		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
-		repeatStyle := (repeatStyle0 ? 0 : (repeatStyle1 ? 1 : (repeatStyle2 ? 2 : 3)))
-	}
-	; 設定ファイル書き込み
-	; [general]
-	IniWrite, %iniVersion%, %iniFilePath%, general, Version
-	; [Basic]
-	IniWrite, %imeSelect%, %iniFilePath%, Basic, IMESelect
-	IniWrite, %usingKeyConfig%, %iniFilePath%, Basic, UsingKeyConfig
-	IniWrite, %usLike%, %iniFilePath%, Basic, USLike
-	IniWrite, %sideShift%, %iniFilePath%, Basic, SideShift
-	IniWrite, %enterShift%, %iniFilePath%, Basic, EnterShift
-	IniWrite, %shiftDelay%, %iniFilePath%, Basic, ShiftDelay
-	IniWrite, %combDelay%, %iniFilePath%, Basic, CombDelay
-	IniWrite, %spaceKeyRepeat%, %iniFilePath%, Basic, SpaceKeyRepeat
-	IniWrite, %eisuRepeat%, %iniFilePath%, Basic, EisuRepeat
-	; [Naginata]
-	IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
-	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
-	; [Advanced]
-	IniWrite, %combLimitN%, %iniFilePath%, Advanced, CombLimitN
-	IniWrite, %combStyleN%, %iniFilePath%, Advanced, CombStyleN
-	IniWrite, %combKeyUpN%, %iniFilePath%, Advanced, CombKeyUpN
-	IniWrite, %combLimitS%, %iniFilePath%, Advanced, CombLimitS
-	IniWrite, %combStyleS%, %iniFilePath%, Advanced, CombStyleS
-	IniWrite, %combKeyUpS%, %iniFilePath%, Advanced, CombKeyUpS
-	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
-	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
-	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
-	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
-	If (testMode != "ERROR") {
-		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
-		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
-	}
-	IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
-
-	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
-	DeleteDefs()		; 配列定義をすべて消去する
-	ReadLayout()		; かな配列読み込み
-	SettingLayout()		; 出力確定する定義に印をつける
-	; 関数 KoyuRegist が存在したらトレイアイコン変更
-	If (IsFunc("KoyuRegist"))
-		ChangeVertical(vertical)
-GuiEscape:
-ButtonCancel:
-ButtonClose:
-GuiClose:
-	; IME窓の検出可否をリセット
-	goodHwnd := badHwnd := 0
-	Gui, Destroy
-	Return
-
 ; 設定画面
 PrefMenu:
+	; メニューで使う変数	Bool型
+	; [Basic]
+	imeSelect0 := (imeSelect == 0 ? 1 : 0)
+	imeSelect1 := (imeSelect == 1 ? 1 : 0)
+	imeSelect2 := (imeSelect == 2 ? 1 : 0)
+	sideShift1 := (sideShift <= 1 ? 1 : 0)
+	sideShift2 := (sideShift > 1 ? 1 : 0)
+	enterShift0 := (!enterShift ? 1 : 0)
+	enterShift1 := (enterShift 1 ? 1 : 0)
+	spaceKeyRepeat0 := (spaceKeyRepeat == 0 ? 1 : 0)
+	spaceKeyRepeat1 := (spaceKeyRepeat == 1 ? 1 : 0)
+	spaceKeyRepeat2 := (spaceKeyRepeat == 2 ? 1 : 0)
+	; [Advanced]
+	combStyleN0 := (combStyleN == 0 ? 1 : 0)
+	combStyleN1 := (combStyleN == 1 ? 1 : 0)
+	combStyleN2 := (combStyleN == 2 ? 1 : 0)
+	combStyleN3 := (combStyleN == 3 ? 1 : 0)
+	combKeyUpN0 := (combKeyUpN == 0 ? 1 : 0)
+	combKeyUpN1 := (combKeyUpN == 1 ? 1 : 0)
+	combKeyUpN2 := (combKeyUpN == 2 ? 1 : 0)
+	combStyleS0 := (combStyleS == 0 ? 1 : 0)
+	combStyleS1 := (combStyleS == 1 ? 1 : 0)
+	combStyleS2 := (combStyleS == 2 ? 1 : 0)
+	combStyleS3 := (combStyleS == 3 ? 1 : 0)
+	combKeyUpS0 := (combKeyUpS == 0 ? 1 : 0)
+	combKeyUpS1 := (combKeyUpS == 1 ? 1 : 0)
+	combKeyUpS2 := (combKeyUpS == 2 ? 1 : 0)
+	combKeyUpSPC0 := (!combKeyUpSPC ? 1 : 0)
+	combKeyUpSPC1 := (combKeyUpSPC ? 1 : 0)
+	If (testMode != "ERROR")
+	{
+		testMode0 := (testMode == 0 ? 1 : 0)
+		testMode1 := (testMode == 1 ? 1 : 0)
+		testMode2 := (testMode == 2 ? 1 : 0)
+		testMode3 := (testMode == 3 ? 1 : 0)
+		repeatStyle0 := (repeatStyle == 0 ? 1 : 0)
+		repeatStyle1 := (repeatStyle == 1 ? 1 : 0)
+		repeatStyle2 := (repeatStyle == 2 ? 1 : 0)
+		repeatStyle3 := (repeatStyle == 3 ? 1 : 0)
+	}
+
 	Gui, Destroy
 	Gui, -MinimizeBox
 	Gui, Add, Text, , 設定
@@ -657,6 +586,93 @@ PrefMenu:
 	Gui, Add, Button, W60 x+0, Cancel
 
 	Gui, Show
+	Return
+
+ButtonOK:
+	Gui, Submit
+	; [general]
+	iniVersion := version
+	; [Basic]
+	imeSelect := (imeSelect0 ? 0 : (imeSelect1 ? 1 : 2))
+	sideShift := (sideShift1 ? 1 : 2)
+	enterShift := (enterShift0 ? 0 : 1)
+	spaceKeyRepeat := (spaceKeyRepeat0 ? 0 : (spaceKeyRepeat1 ? 1 : 2))
+	; [Advanced]
+	combStyleN := (combStyleN0 ? 0 : (combStyleN1 ? 1 : (combStyleN2 ? 2 : 3)))
+	combKeyUpN := (combKeyUpN0 ? 0 : (combKeyUpN1 ? 1 : 2))
+	combStyleS := (combStyleS0 ? 0 : (combStyleS1 ? 1 : (combStyleS2 ? 2 : 3)))
+	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
+	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
+	If (testMode != "ERROR")
+	{
+		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
+		repeatStyle := (repeatStyle0 ? 0 : (repeatStyle1 ? 1 : (repeatStyle2 ? 2 : 3)))
+	}
+	; 設定ファイル書き込み
+	; [general]
+	IniWrite, %iniVersion%, %iniFilePath%, general, Version
+	; [Basic]
+	IniWrite, %imeSelect%, %iniFilePath%, Basic, IMESelect
+	IniWrite, %usingKeyConfig%, %iniFilePath%, Basic, UsingKeyConfig
+	IniWrite, %usLike%, %iniFilePath%, Basic, USLike
+	IniWrite, %sideShift%, %iniFilePath%, Basic, SideShift
+	IniWrite, %enterShift%, %iniFilePath%, Basic, EnterShift
+	IniWrite, %shiftDelay%, %iniFilePath%, Basic, ShiftDelay
+	IniWrite, %combDelay%, %iniFilePath%, Basic, CombDelay
+	IniWrite, %spaceKeyRepeat%, %iniFilePath%, Basic, SpaceKeyRepeat
+	IniWrite, %eisuRepeat%, %iniFilePath%, Basic, EisuRepeat
+	; [Naginata]
+	IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
+	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
+	; [Advanced]
+	IniWrite, %combLimitN%, %iniFilePath%, Advanced, CombLimitN
+	IniWrite, %combStyleN%, %iniFilePath%, Advanced, CombStyleN
+	IniWrite, %combKeyUpN%, %iniFilePath%, Advanced, CombKeyUpN
+	IniWrite, %combLimitS%, %iniFilePath%, Advanced, CombLimitS
+	IniWrite, %combStyleS%, %iniFilePath%, Advanced, CombStyleS
+	IniWrite, %combKeyUpS%, %iniFilePath%, Advanced, CombKeyUpS
+	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
+	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
+	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
+	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
+	If (testMode != "ERROR") {
+		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
+		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
+	}
+	IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
+
+	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
+	DeleteDefs()		; 配列定義をすべて消去する
+	ReadLayout()		; かな配列読み込み
+	SettingLayout()		; 出力確定する定義に印をつける
+	; 関数 KoyuRegist が存在したらトレイアイコン変更
+	If (IsFunc("KoyuRegist"))
+		ChangeVertical(vertical)
+GuiEscape:
+ButtonCancel:
+ButtonClose:
+GuiClose:
+	; IME窓の検出可否をリセット
+	goodHwnd := badHwnd := 0
+	Gui, Destroy
+
+	; メニューで使った変数を開放
+	; [Basic]
+	imeSelect0 := imeSelect1 := imeSelect2 :=
+	sideShift1 := sideShift2 :=
+	enterShift0 := enterShift1 :=
+	spaceKeyRepeat0 := spaceKeyRepeat1 := spaceKeyRepeat2 :=
+	; [Advanced]
+	combStyleN0 := combStyleN1 := combStyleN2 := combStyleN3 :=
+	combKeyUpN0 := combKeyUpN1 := combKeyUpN2 :=
+	combStyleS0 := combStyleS1 := combStyleS2 := combStyleS3 :=
+	combKeyUpS0 := combKeyUpS1 := combKeyUpS2 :=
+	combKeyUpSPC0 := combKeyUpSPC1 :=
+	If (testMode != "ERROR")
+	{
+		testMode0 := testMode1 := testMode2 := testMode3 :=
+		repeatStyle0 := repeatStyle1 := repeatStyle2 := repeatStyle3 :=
+	}
 	Return
 
 ; ; ログ表示
