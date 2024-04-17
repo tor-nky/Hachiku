@@ -12,7 +12,7 @@
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
 
-#Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
+; #Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
 
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル
@@ -58,7 +58,7 @@ ReadLayout()	; () -> Void
 
 	layoutName := "薙刀式配列`nv15fix版"
 
-	ReadStandardLayout()	; キーボード初期配列を読み込み
+	; ReadStandardLayout()	; キーボード初期配列を読み込み
 
 	; -----------------------------------------
 	; 別名登録	Int64型
