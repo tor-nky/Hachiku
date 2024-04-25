@@ -248,7 +248,7 @@ DispLog(*)
 class OSInfo
 {
 	; OS情報
-	static build := ""
+	static build := 0
 	static keyDriver := ""	; String型
 	static uskb := ""		; Bool型
 
@@ -256,8 +256,8 @@ class OSInfo
 	{
 		; local var[]	; [Int]型
 
-		RegExMatch(A_OSVersion, "(\d+)", &var, -1)	; 右から数字を検索
-		this.build := var[1]	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
+		If (RegExMatch(A_OSVersion, "\d+\.\d+\.(\d+)", &var))	; 右から数字を検索
+			this.build := var[1]	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
 		; キーボードドライバを調べて keyDriver に格納する
 		; 参考: https://ixsvr.dyndns.org/blog/764
 		static keyDriver := RegRead("HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "LayerDriver JPN")
