@@ -101,6 +101,7 @@ Google 日本語入力 は一時的に英数入力になっていることが検
 * 編集モードや固有名詞の入力でIME 入力モード切替の通知が出る。  
 全角記号を出力するために一旦、IMEをオフにしています。IMEの設定で通知をなくすことができます。
 # 不具合
+* __検知に失敗するため、新MS-IMEはまだ利用できません。__
 * Windowsがスリープするときに押していたキーが、スリープ解除後も押したままの扱いになる  
 Hachiku を再起動すれば直ります。
 * (秀丸エディタ)「名前を付けて保存」で IMEオフの状態だと、2文字目以降に大文字を入力してから何も入力ができない
@@ -118,11 +119,8 @@ Hachiku を再起動すれば直ります。
 これで先ほどの設定を有効にすると、間違ってゲームモードが起動したときに自動で強制無効になったりしますので、
 こうなったらゲームコントローラでゲームバーを起動するには、自己責任でレジストリのキーを消去することになります。
 # 動作確認
-* Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
-新旧MS-IME、ATOK 2017、Google 日本語入力  
-* Windows 11 Pro version 23H2 + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
-新旧MS-IME、Google 日本語入力  
-__AutoHotkey v2以降では使えません__
+* Windows 11 Pro version 23H2 + AutoHotkey (v2.0.13) U64 Unicode 64-bit.bin  
+旧MS-IME
 
 # 参考
 * [【薙刀式】v15fix版、発表](http://oookaworks.seesaa.net/article/500180437.html#gsc.tab=0)

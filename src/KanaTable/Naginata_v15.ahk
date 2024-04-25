@@ -53,8 +53,7 @@
 ; かな配列読み込み
 ReadLayout()	; () -> Void
 {
-	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	global layoutName, koyuNumber
+	global kanaGroup, layoutName
 
 	layoutName := "薙刀式配列`nv15fix版"
 
@@ -138,36 +137,36 @@ kanaGroup := ""	; グループなし
 	SetKana( AL_れ	,"re"		)		; れ
 
 ; センターシフト
-	SetKana( AL_ヴ | KC_SPC		,"vu"		)		; ヴ
-	SetKana( AL_ぬ | KC_SPC		,"nu"		)		; ぬ
-	SetKana( AL_り | KC_SPC		,"ri"		)		; り
-	SetKana( AL_ね | KC_SPC		,"ne"		)		; ね
+	SetKana( AL_ヴ | KC_SPC		,"vu"			)	; ヴ
+	SetKana( AL_ぬ | KC_SPC		,"nu"			)	; ぬ
+	SetKana( AL_り | KC_SPC		,"ri"			)	; り
+	SetKana( AL_ね | KC_SPC		,"ne"			)	; ね
 	SetKana( AL_左 | KC_SPC		,"+{←}"	, R)	; シフト + 左
 	SetKana( AL_右 | KC_SPC		,"+{→}"	, R)	; シフト + 右
-	SetKana( AL_さ | KC_SPC		,"sa"		)		; さ
-	SetKana( AL_よ | KC_SPC		,"yo"		)		; よ
-	SetKana( AL_え | KC_SPC		,"e"		)		; え
-	SetKana( AL_ゆ | KC_SPC		,"yu"		)		; ゆ
-	SetKana( AL_せ | KC_SPC		,"se"		)		; せ
-	SetKana( AL_め | KC_SPC		,"me"		)		; め
-	SetKana( AL_に | KC_SPC		,"ni"		)		; に
-	SetKana( AL_ま | KC_SPC		,"ma"		)		; ま
-	SetKana( AL_ち | KC_SPC		,"ti"		)		; ち
-	SetKana( AL_や | KC_SPC		,"ya"		)		; や
-	SetKana( AL_の | KC_SPC		,"no"		)		; の
-	SetKana( AL_も | KC_SPC		,"mo"		)		; も
-	SetKana( AL_つ | KC_SPC		,"tu"		)		; つ
-	SetKana( AL_ふ | KC_SPC		,"hu"		)		; ふ
-	SetKana( AL_ほ | KC_SPC		,"ho"		)		; ほ
-	SetKana( AL_ひ | KC_SPC		,"hi"		)		; ひ
-	SetKana( AL_を | KC_SPC		,"wo"		)		; を
-	SetKana( AL_、 | KC_SPC		,",{確定}"	)		; 、
-	SetKana( AL_み | KC_SPC		,"mi"		)		; み
-	SetKana( AL_お | KC_SPC		,"o"		)		; お
-	SetKana( AL_。 | KC_SPC		,".{確定}"	)		; 。
-	SetKana( AL_む | KC_SPC		,"mu"		)		; む
-	SetKana( AL_わ | KC_SPC		,"wa"		)		; わ
-	SetKana( AL_れ | KC_SPC		,"re"		)		; れ
+	SetKana( AL_さ | KC_SPC		,"sa"			)	; さ
+	SetKana( AL_よ | KC_SPC		,"yo"			)	; よ
+	SetKana( AL_え | KC_SPC		,"e"			)	; え
+	SetKana( AL_ゆ | KC_SPC		,"yu"			)	; ゆ
+	SetKana( AL_せ | KC_SPC		,"se"			)	; せ
+	SetKana( AL_め | KC_SPC		,"me"			)	; め
+	SetKana( AL_に | KC_SPC		,"ni"			)	; に
+	SetKana( AL_ま | KC_SPC		,"ma"			)	; ま
+	SetKana( AL_ち | KC_SPC		,"ti"			)	; ち
+	SetKana( AL_や | KC_SPC		,"ya"			)	; や
+	SetKana( AL_の | KC_SPC		,"no"			)	; の
+	SetKana( AL_も | KC_SPC		,"mo"			)	; も
+	SetKana( AL_つ | KC_SPC		,"tu"			)	; つ
+	SetKana( AL_ふ | KC_SPC		,"hu"			)	; ふ
+	SetKana( AL_ほ | KC_SPC		,"ho"			)	; ほ
+	SetKana( AL_ひ | KC_SPC		,"hi"			)	; ひ
+	SetKana( AL_を | KC_SPC		,"wo"			)	; を
+	SetKana( AL_、 | KC_SPC		,",{確定}"		)	; 、
+	SetKana( AL_み | KC_SPC		,"mi"			)	; み
+	SetKana( AL_お | KC_SPC		,"o"			)	; お
+	SetKana( AL_。 | KC_SPC		,".{確定}"		)	; 。
+	SetKana( AL_む | KC_SPC		,"mu"			)	; む
+	SetKana( AL_わ | KC_SPC		,"wa"			)	; わ
+	SetKana( AL_れ | KC_SPC		,"re"			)	; れ
 
 ;**********************************************
 ;**********************************************
@@ -264,27 +263,27 @@ kanaGroup := ""	; グループなし
 ;****************************
 ; 濁音拗音
 kanaGroup := "DA"
-	SetKana( AL_右濁 | AL_き | AL_や	,"gya"		)	; ぎゃ
-	SetKana( AL_右濁 | AL_し | AL_や	,"ja"		)	; じゃ
-	SetKana( AL_右濁 | AL_ち | AL_や	,"dya"		)	; ぢゃ
-	SetKana( AL_右濁 | AL_ひ | AL_や	,"bya"		)	; びゃ
+	SetKana( AL_右濁 | AL_き | AL_や	,"gya"	)	; ぎゃ
+	SetKana( AL_右濁 | AL_し | AL_や	,"ja"	)	; じゃ
+	SetKana( AL_右濁 | AL_ち | AL_や	,"dya"	)	; ぢゃ
+	SetKana( AL_右濁 | AL_ひ | AL_や	,"bya"	)	; びゃ
 
-	SetKana( AL_右濁 | AL_き | AL_ゆ	,"gyu"		)	; ぎゅ
-	SetKana( AL_右濁 | AL_し | AL_ゆ	,"ju"		)	; じゅ
-	SetKana( AL_右濁 | AL_ち | AL_ゆ	,"dyu"		)	; ぢゅ
-	SetKana( AL_右濁 | AL_ひ | AL_ゆ	,"byu"		)	; びゅ
+	SetKana( AL_右濁 | AL_き | AL_ゆ	,"gyu"	)	; ぎゅ
+	SetKana( AL_右濁 | AL_し | AL_ゆ	,"ju"	)	; じゅ
+	SetKana( AL_右濁 | AL_ち | AL_ゆ	,"dyu"	)	; ぢゅ
+	SetKana( AL_右濁 | AL_ひ | AL_ゆ	,"byu"	)	; びゅ
 
-	SetKana( AL_右濁 | AL_き | AL_よ	,"gyo"		)	; ぎょ
-	SetKana( AL_右濁 | AL_し | AL_よ	,"jo"		)	; じょ
-	SetKana( AL_右濁 | AL_ち | AL_よ	,"dyo"		)	; ぢょ
-	SetKana( AL_右濁 | AL_ひ | AL_よ	,"byo"		)	; びょ
+	SetKana( AL_右濁 | AL_き | AL_よ	,"gyo"	)	; ぎょ
+	SetKana( AL_右濁 | AL_し | AL_よ	,"jo"	)	; じょ
+	SetKana( AL_右濁 | AL_ち | AL_よ	,"dyo"	)	; ぢょ
+	SetKana( AL_右濁 | AL_ひ | AL_よ	,"byo"	)	; びょ
 
 ;****************************
 ; 半濁音拗音
 kanaGroup := "HA"
-	SetKana( AL_右半 | AL_ひ | AL_よ	,"pyo"		)	; ぴょ
-	SetKana( AL_右半 | AL_ひ | AL_ゆ	,"pyu"		)	; ぴゅ
-	SetKana( AL_右半 | AL_ひ | AL_や	,"pya"		)	; ぴゃ
+	SetKana( AL_右半 | AL_ひ | AL_よ	,"pyo"	)	; ぴょ
+	SetKana( AL_右半 | AL_ひ | AL_ゆ	,"pyu"	)	; ぴゅ
+	SetKana( AL_右半 | AL_ひ | AL_や	,"pya"	)	; ぴゃ
 
 ;*************************************
 ; 外来音は3キー同時押しに統一しました
@@ -295,67 +294,67 @@ kanaGroup := "HA"
 
 ; テ; ティテュディデュ
 kanaGroup := "HA"
-	SetKana( AL_右半 | AL_て | AL_ゆ	,"thu"		)	; てゅ
-	SetKana( AL_右半 | AL_て | AL_い	,"thi"		)	; てぃ
+	SetKana( AL_右半 | AL_て | AL_ゆ	,"thu"	)	; てゅ
+	SetKana( AL_右半 | AL_て | AL_い	,"thi"	)	; てぃ
 
 kanaGroup := "DA"
-	SetKana( AL_右濁 | AL_て | AL_ゆ	,"dhu"		)	; でゅ
-	SetKana( AL_右濁 | AL_て | AL_い	,"dhi"		)	; でぃ
+	SetKana( AL_右濁 | AL_て | AL_ゆ	,"dhu"	)	; でゅ
+	SetKana( AL_右濁 | AL_て | AL_い	,"dhi"	)	; でぃ
 
 ; ト; トゥドゥ
 kanaGroup := "HA"
-	SetKana( AL_右半 | AL_と | AL_う	,"twu"		)	; とぅ
+	SetKana( AL_右半 | AL_と | AL_う	,"twu"	)	; とぅ
 kanaGroup := "DA"
-	SetKana( AL_右濁 | AL_と | AL_う	,"dwu"		)	; どぅ
+	SetKana( AL_右濁 | AL_と | AL_う	,"dwu"	)	; どぅ
 
 ; シチ ェ; シェジェチェヂェ
 kanaGroup := "HA"
-	SetKana( AL_右半 | AL_し | AL_え	,"sye"		)	; しぇ
-	SetKana( AL_右半 | AL_ち | AL_え	,"tye"		)	; ちぇ
+	SetKana( AL_右半 | AL_し | AL_え	,"sye"	)	; しぇ
+	SetKana( AL_右半 | AL_ち | AL_え	,"tye"	)	; ちぇ
 kanaGroup := "DA"
-	SetKana( AL_右濁 | AL_し | AL_え	,"je"		)	; じぇ
-	SetKana( AL_右濁 | AL_ち | AL_え	,"dye"		)	; ぢぇ
+	SetKana( AL_右濁 | AL_し | AL_え	,"je"	)	; じぇ
+	SetKana( AL_右濁 | AL_ち | AL_え	,"dye"	)	; ぢぇ
 
 ;****************************
 ; フ; ファフィフェフォフュ
 kanaGroup := "HA"
-	SetKana( AL_左半 | AL_ふ | AL_え	,"fe"		)	; ふぇ
-	SetKana( AL_左半 | AL_ふ | AL_ゆ	,"fyu"		)	; ふゅ
-	SetKana( AL_左半 | AL_ふ | AL_あ	,"fa"		)	; ふぁ
-	SetKana( AL_左半 | AL_ふ | AL_い	,"fi"		)	; ふぃ
-	SetKana( AL_左半 | AL_ふ | AL_お	,"fo"		)	; ふぉ
+	SetKana( AL_左半 | AL_ふ | AL_え	,"fe"	)	; ふぇ
+	SetKana( AL_左半 | AL_ふ | AL_ゆ	,"fyu"	)	; ふゅ
+	SetKana( AL_左半 | AL_ふ | AL_あ	,"fa"	)	; ふぁ
+	SetKana( AL_左半 | AL_ふ | AL_い	,"fi"	)	; ふぃ
+	SetKana( AL_左半 | AL_ふ | AL_お	,"fo"	)	; ふぉ
 
 ; ヴ; ヴァヴィヴェヴォヴュ
-	SetKana( AL_右半 | AL_ヴ | AL_え	,"ve"		)	; ヴぇ
-	SetKana( AL_右半 | AL_ヴ | AL_ゆ	,"vuxyu"	)	; ヴゅ
-	SetKana( AL_右半 | AL_ヴ | AL_あ	,"va"		)	; ヴぁ
-	SetKana( AL_右半 | AL_ヴ | AL_い	,"vi"		)	; ヴぃ
-	SetKana( AL_右半 | AL_ヴ | AL_お	,"vo"		)	; ヴぉ
+	SetKana( AL_右半 | AL_ヴ | AL_え	,"ve"	)	; ヴぇ
+	SetKana( AL_右半 | AL_ヴ | AL_ゆ	,"vuxyu")	; ヴゅ
+	SetKana( AL_右半 | AL_ヴ | AL_あ	,"va"	)	; ヴぁ
+	SetKana( AL_右半 | AL_ヴ | AL_い	,"vi"	)	; ヴぃ
+	SetKana( AL_右半 | AL_ヴ | AL_お	,"vo"	)	; ヴぉ
 
 ; う; ウィウェウォ　い；イェ
-	SetKana( AL_左半 | AL_う | AL_え	,"we"		)	; うぇ
-	SetKana( AL_左半 | AL_う | AL_い	,"wi"		)	; うぃ
-	SetKana( AL_左半 | AL_う | AL_お	,"uxo"		)	; うぉ
+	SetKana( AL_左半 | AL_う | AL_え	,"we"	)	; うぇ
+	SetKana( AL_左半 | AL_う | AL_い	,"wi"	)	; うぃ
+	SetKana( AL_左半 | AL_う | AL_お	,"uxo"	)	; うぉ
 
-	SetKana( AL_左半 | AL_い | AL_え	,"ye"		)	; いぇ
+	SetKana( AL_左半 | AL_い | AL_え	,"ye"	)	; いぇ
 
 ; ツァ行はウァ行と被るが、ツァだけ被らないので定義
-	SetKana( AL_左半 | AL_つ | AL_あ	,"tsa"		)	; つぁ
+	SetKana( AL_左半 | AL_つ | AL_あ	,"tsa"	)	; つぁ
 
 ; ク; クァクィクェクォ
-	SetKana( AL_左半 | AL_く | AL_え	,"kuxe"		)	; くぇ
-	SetKana( AL_左半 | AL_く | AL_あ	,"kuxa"		)	; くぁ
-	SetKana( AL_左半 | AL_く | AL_い	,"kuxi"		)	; くぃ
-	SetKana( AL_左半 | AL_く | AL_お	,"kuxo"		)	; くぉ
-	SetKana( AL_左半 | AL_く | AL_わ	,"kuxwa"	)	; くゎ
+	SetKana( AL_左半 | AL_く | AL_え	,"kuxe"	)	; くぇ
+	SetKana( AL_左半 | AL_く | AL_あ	,"kuxa"	)	; くぁ
+	SetKana( AL_左半 | AL_く | AL_い	,"kuxi"	)	; くぃ
+	SetKana( AL_左半 | AL_く | AL_お	,"kuxo"	)	; くぉ
+	SetKana( AL_左半 | AL_く | AL_わ	,"kuxwa")	; くゎ
 
 ; グ; グァグィグェグォ
 kanaGroup := "DA"
-	SetKana( AL_左濁 | AL_く | AL_え	,"guxe"		)	; ぐぇ
-	SetKana( AL_左濁 | AL_く | AL_あ	,"gwa"		)	; ぐぁ
-	SetKana( AL_左濁 | AL_く | AL_い	,"guxi"		)	; ぐぃ
-	SetKana( AL_左濁 | AL_く | AL_お	,"guxo"		)	; ぐぉ
-	SetKana( AL_左濁 | AL_く | AL_わ	,"guxwa"	)	; ぐゎ
+	SetKana( AL_左濁 | AL_く | AL_え	,"guxe"	)	; ぐぇ
+	SetKana( AL_左濁 | AL_く | AL_あ	,"gwa"	)	; ぐぁ
+	SetKana( AL_左濁 | AL_く | AL_い	,"guxi"	)	; ぐぃ
+	SetKana( AL_左濁 | AL_く | AL_お	,"guxo"	)	; ぐぉ
+	SetKana( AL_左濁 | AL_く | AL_わ	,"guxwa")	; ぐゎ
 
 ;****************************
 ; IME ON/OFF
@@ -397,7 +396,7 @@ kanaGroup := "1R"
 	SetKana( KC_D | KC_F | KC_O		,"{Del}"		, R)	; Del
 	SetKana( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; +7↑
 	SetKana( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; +7↓
-	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetKana( KC_D | KC_F | KC_P		,"{Esc 3}"	  ,"ESCx3")	; 入力キャンセル
 	SetKana( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ
 	SetKana( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな
 
@@ -413,43 +412,43 @@ kanaGroup := "1R"
 	SetEisu( KC_D | KC_F | KC_O		,"{Del}"		, R)	; Del
 	SetEisu( KC_D | KC_F | KC_L		,"+{↑ 7}"		, R)	; +7↑
 	SetEisu( KC_D | KC_F | KC_DOT	,"+{↓ 7}"		, R)	; +7↓
-	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}",	  "ESCx3")	; 入力キャンセル
+	SetEisu( KC_D | KC_F | KC_P		,"{Esc 3}"	  ,"ESCx3")	; 入力キャンセル
 	SetEisu( KC_D | KC_F | KC_SCLN	,"^i"			)		; カタカナ
 	SetEisu( KC_D | KC_F | KC_SLSH	,"^u"			)		; ひらがな
 
 ; 左手
 kanaGroup := "1L"
-	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"	  ,NR)	; 新
-	SetKana( KC_J | KC_K | KC_A		,"……{確定}"		)	; ……
-	SetKana( KC_J | KC_K | KC_Z		,"――{確定}"		)	; ──
-	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"	)	; 『』
-	SetKana( KC_J | KC_K | KC_S		,"(){確定}{↑}"		)	; （）
-	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"	)	; 【】
-;	SetKana( KC_J | KC_K | KC_E		,"dhi"				)	; ディ
-	SetKana( KC_J | KC_K | KC_D		,"?{確定}"			)	; ？
-	SetKana( KC_J | KC_K | KC_C		,"{!}{確定}"		)	; ！
-	SetKana( KC_J | KC_K | KC_R		,"^s"			  ,NR)	; 保
-	SetKana( KC_J | KC_K | KC_F		,"[]{確定}{↑}"		)	; 「」
-	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"		)	; 確定↓
-	SetKana( KC_J | KC_K | KC_T		,"/"				)	; ・未確定
-	SetKana( KC_J | KC_K | KC_G		,"《》{確定}{↑}"	)	; 《》
-	SetKana( KC_J | KC_K | KC_B		,"{確定}{←}"		)	; 確定←
+	SetKana( KC_J | KC_K | KC_Q		,"{確定}^{End}"		,NR)	; 新
+	SetKana( KC_J | KC_K | KC_A		,"……{確定}"		)		; ……
+	SetKana( KC_J | KC_K | KC_Z		,"――{確定}"		)		; ──
+	SetKana( KC_J | KC_K | KC_W		,"『』{確定}{↑}"	)		; 『』
+	SetKana( KC_J | KC_K | KC_S		,"(){確定}{↑}"		)		; （）
+	SetKana( KC_J | KC_K | KC_X		,"【】{確定}{↑}"	)		; 【】
+;	SetKana( KC_J | KC_K | KC_E		,"dhi"				)		; ディ
+	SetKana( KC_J | KC_K | KC_D		,"?{確定}"			)		; ？
+	SetKana( KC_J | KC_K | KC_C		,"{!}{確定}"		)		; ！
+	SetKana( KC_J | KC_K | KC_R		,"^s"				,NR)	; 保
+	SetKana( KC_J | KC_K | KC_F		,"[]{確定}{↑}"		)		; 「」
+	SetKana( KC_J | KC_K | KC_V		,"{確定}{↓}"		)		; 確定↓
+	SetKana( KC_J | KC_K | KC_T		,"/"				)		; ・未確定
+	SetKana( KC_J | KC_K | KC_G		,"《》{確定}{↑}"	)		; 《》
+	SetKana( KC_J | KC_K | KC_B		,"{確定}{←}"		)		; 確定←
 
-	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"	  ,NR)	; 新
-	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"		)	; ……
-	SetEisu( KC_J | KC_K | KC_Z		,"――{確定}"		)	; ──
-	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"	)	; 『』
-	SetEisu( KC_J | KC_K | KC_S		,"(){確定}{↑}"		)	; （）
-	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"	)	; 【】
-;	SetEisu( KC_J | KC_K | KC_E		,"dhi"				)	; ディ
-	SetEisu( KC_J | KC_K | KC_D		,"?{確定}"			)	; ？
-	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"		)	; ！
-	SetEisu( KC_J | KC_K | KC_R		,"^s"			  ,NR)	; 保
-	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"	)	; 「」
-	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"		)	; 確定↓
-	SetEisu( KC_J | KC_K | KC_T		,"・"				)	; ・未確定
-	SetEisu( KC_J | KC_K | KC_G		,"《》{確定}{↑}"	)	; 《》
-	SetEisu( KC_J | KC_K | KC_B		,"{確定}{←}"		)	; 確定←
+	SetEisu( KC_J | KC_K | KC_Q		,"{確定}^{End}"		,NR)	; 新
+	SetEisu( KC_J | KC_K | KC_A		,"……{確定}"		)		; ……
+	SetEisu( KC_J | KC_K | KC_Z		,"――{確定}"		)		; ──
+	SetEisu( KC_J | KC_K | KC_W		,"『』{確定}{↑}"	)		; 『』
+	SetEisu( KC_J | KC_K | KC_S		,"(){確定}{↑}"		)		; （）
+	SetEisu( KC_J | KC_K | KC_X		,"【】{確定}{↑}"	)		; 【】
+;	SetEisu( KC_J | KC_K | KC_E		,"dhi"				)		; ディ
+	SetEisu( KC_J | KC_K | KC_D		,"?{確定}"			)		; ？
+	SetEisu( KC_J | KC_K | KC_C		,"{!}{確定}"		)		; ！
+	SetEisu( KC_J | KC_K | KC_R		,"^s"				,NR)	; 保
+	SetEisu( KC_J | KC_K | KC_F		,"「」{確定}{↑}"	)		; 「」
+	SetEisu( KC_J | KC_K | KC_V		,"{確定}{↓}"		)		; 確定↓
+	SetEisu( KC_J | KC_K | KC_T		,"・"				)		; ・未確定
+	SetEisu( KC_J | KC_K | KC_G		,"《》{確定}{↑}"	)		; 《》
+	SetEisu( KC_J | KC_K | KC_B		,"{確定}{←}"		)		; 確定←
 
 
 ; 編集モード２
@@ -531,7 +530,7 @@ kanaGroup := ""	; グループなし
 
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver = "kbd101.dll")
+	If (OSInfo.keyDriver = "kbd101.dll")
 	{
 	; おまけ
 		SetEisu( JP_YEN				,"\"	)	; ￥
@@ -543,10 +542,10 @@ kanaGroup := ""	; グループなし
 		SetKana( JP_YEN | KC_SPC	,"|"	)	; ｜	スペース押しながら
 	}
 
-	If (usLike > 0)
+	If (pref.usLike > 0)
 		USLikeLayout()	; USキーボード風の配列へ
 
-	KoyuReadAndRegist(koyuNumber)	; 固有名詞ショートカットの読み込み・登録
+	koyu.Read(pref.koyuNumber)	; 固有名詞ショートカットの読み込み・登録
 
 	Return
 }
@@ -554,10 +553,10 @@ kanaGroup := ""	; グループなし
 ; USキーボード風の配列へ
 USLikeLayout()	; () -> Void
 {
-	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
+	global kanaGroup
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver = "kbd101.dll")
+	If (OSInfo.keyDriver = "kbd101.dll")
 		Return
 
 kanaGroup := ""	; グループなし
@@ -603,7 +602,7 @@ kanaGroup := ""	; グループなし
 	SetKana( KC_SPC | KC_NUHS	,"+{sc0D}"	)	; ~
 
 	; 設定がPC-9800キーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver = "kbdnec.dll")
+	If (OSInfo.keyDriver = "kbdnec.dll")
 	{
 		SetEisu( KC_NUHS			,"+{sc0D}"	)	; `
 		SetEisu( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
@@ -618,8 +617,7 @@ kanaGroup := ""	; グループなし
 ; 固有名詞ショートカットの登録
 KoyuRegist()	; () -> Void
 {
-	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	#IncludeAgain %A_ScriptDir%/Sub/Naginata-Koyu_h.ahk
+	global kanaGroup
 
 ;**************************************
 ; 固有名詞ショートカット
@@ -628,137 +626,137 @@ KoyuRegist()	; () -> Void
 ; 第一面
 ; UIを押しながら左手*/
 	kanaGroup := "KL"	; 左手側
-		SetKana(KC_U | KC_I | KC_1		,"{直接}" . E01)
-		SetKana(KC_U | KC_I | KC_2		,"{直接}" . E02)
-		SetKana(KC_U | KC_I | KC_3		,"{直接}" . E03)
-		SetKana(KC_U | KC_I | KC_4		,"{直接}" . E04)
-		SetKana(KC_U | KC_I | KC_5		,"{直接}" . E05)
+		SetKana(KC_U | KC_I | KC_1		,"{直接}" . koyu.E01)
+		SetKana(KC_U | KC_I | KC_2		,"{直接}" . koyu.E02)
+		SetKana(KC_U | KC_I | KC_3		,"{直接}" . koyu.E03)
+		SetKana(KC_U | KC_I | KC_4		,"{直接}" . koyu.E04)
+		SetKana(KC_U | KC_I | KC_5		,"{直接}" . koyu.E05)
 
-		SetKana(KC_U | KC_I | KC_Q		,"{直接}" . D01)
-		SetKana(KC_U | KC_I | KC_W		,"{直接}" . D02)
-		SetKana(KC_U | KC_I | KC_E		,"{直接}" . D03)
-		SetKana(KC_U | KC_I | KC_R		,"{直接}" . D04)
-		SetKana(KC_U | KC_I | KC_T		,"{直接}" . D05)
+		SetKana(KC_U | KC_I | KC_Q		,"{直接}" . koyu.D01)
+		SetKana(KC_U | KC_I | KC_W		,"{直接}" . koyu.D02)
+		SetKana(KC_U | KC_I | KC_E		,"{直接}" . koyu.D03)
+		SetKana(KC_U | KC_I | KC_R		,"{直接}" . koyu.D04)
+		SetKana(KC_U | KC_I | KC_T		,"{直接}" . koyu.D05)
 
-		SetKana(KC_U | KC_I | KC_A		,"{直接}" . C01)
-		SetKana(KC_U | KC_I | KC_S		,"{直接}" . C02)
-		SetKana(KC_U | KC_I | KC_D		,"{直接}" . C03)
-		SetKana(KC_U | KC_I | KC_F		,"{直接}" . C04)
-		SetKana(KC_U | KC_I | KC_G		,"{直接}" . C05)
+		SetKana(KC_U | KC_I | KC_A		,"{直接}" . koyu.C01)
+		SetKana(KC_U | KC_I | KC_S		,"{直接}" . koyu.C02)
+		SetKana(KC_U | KC_I | KC_D		,"{直接}" . koyu.C03)
+		SetKana(KC_U | KC_I | KC_F		,"{直接}" . koyu.C04)
+		SetKana(KC_U | KC_I | KC_G		,"{直接}" . koyu.C05)
 
-		SetKana(KC_U | KC_I | KC_Z		,"{直接}" . B01)
-		SetKana(KC_U | KC_I | KC_X		,"{直接}" . B02)
-		SetKana(KC_U | KC_I | KC_C		,"{直接}" . B03)
-		SetKana(KC_U | KC_I | KC_V		,"{直接}" . B04)
-		SetKana(KC_U | KC_I | KC_B		,"{直接}" . B05)
+		SetKana(KC_U | KC_I | KC_Z		,"{直接}" . koyu.B01)
+		SetKana(KC_U | KC_I | KC_X		,"{直接}" . koyu.B02)
+		SetKana(KC_U | KC_I | KC_C		,"{直接}" . koyu.B03)
+		SetKana(KC_U | KC_I | KC_V		,"{直接}" . koyu.B04)
+		SetKana(KC_U | KC_I | KC_B		,"{直接}" . koyu.B05)
 
 ; ERを押しながら右手
 	kanaGroup := "KR"	; 右手側
-		SetKana(KC_E | KC_R | KC_6		,"{直接}" . E06)
-		SetKana(KC_E | KC_R | KC_7		,"{直接}" . E07)
-		SetKana(KC_E | KC_R | KC_8		,"{直接}" . E08)
-		SetKana(KC_E | KC_R | KC_9		,"{直接}" . E09)
-		SetKana(KC_E | KC_R | KC_0		,"{直接}" . E10)
-		SetKana(KC_E | KC_R | KC_MINS	,"{直接}" . E11)
-		SetKana(KC_E | KC_R | KC_EQL	,"{直接}" . E12)
-		SetKana(KC_E | KC_R | JP_YEN	,"{直接}" . E13)
+		SetKana(KC_E | KC_R | KC_6		,"{直接}" . koyu.E06)
+		SetKana(KC_E | KC_R | KC_7		,"{直接}" . koyu.E07)
+		SetKana(KC_E | KC_R | KC_8		,"{直接}" . koyu.E08)
+		SetKana(KC_E | KC_R | KC_9		,"{直接}" . koyu.E09)
+		SetKana(KC_E | KC_R | KC_0		,"{直接}" . koyu.E10)
+		SetKana(KC_E | KC_R | KC_MINS	,"{直接}" . koyu.E11)
+		SetKana(KC_E | KC_R | KC_EQL	,"{直接}" . koyu.E12)
+		SetKana(KC_E | KC_R | JP_YEN	,"{直接}" . koyu.E13)
 
-		SetKana(KC_E | KC_R | KC_Y		,"{直接}" . D06)
-		SetKana(KC_E | KC_R | KC_U		,"{直接}" . D07)
-		SetKana(KC_E | KC_R | KC_I		,"{直接}" . D08)
-		SetKana(KC_E | KC_R | KC_O		,"{直接}" . D09)
-		SetKana(KC_E | KC_R | KC_P		,"{直接}" . D10)
-		SetKana(KC_E | KC_R | KC_LBRC	,"{直接}" . D11)
-		SetKana(KC_E | KC_R | KC_RBRC	,"{直接}" . D12)
+		SetKana(KC_E | KC_R | KC_Y		,"{直接}" . koyu.D06)
+		SetKana(KC_E | KC_R | KC_U		,"{直接}" . koyu.D07)
+		SetKana(KC_E | KC_R | KC_I		,"{直接}" . koyu.D08)
+		SetKana(KC_E | KC_R | KC_O		,"{直接}" . koyu.D09)
+		SetKana(KC_E | KC_R | KC_P		,"{直接}" . koyu.D10)
+		SetKana(KC_E | KC_R | KC_LBRC	,"{直接}" . koyu.D11)
+		SetKana(KC_E | KC_R | KC_RBRC	,"{直接}" . koyu.D12)
 
-		SetKana(KC_E | KC_R | KC_H		,"{直接}" . C06)
-		SetKana(KC_E | KC_R | KC_J		,"{直接}" . C07)
-		SetKana(KC_E | KC_R | KC_K		,"{直接}" . C08)
-		SetKana(KC_E | KC_R | KC_L		,"{直接}" . C09)
-		SetKana(KC_E | KC_R | KC_SCLN	,"{直接}" . C10)
-		SetKana(KC_E | KC_R | KC_QUOT	,"{直接}" . C11)
-		SetKana(KC_E | KC_R | KC_NUHS	,"{直接}" . C12)
+		SetKana(KC_E | KC_R | KC_H		,"{直接}" . koyu.C06)
+		SetKana(KC_E | KC_R | KC_J		,"{直接}" . koyu.C07)
+		SetKana(KC_E | KC_R | KC_K		,"{直接}" . koyu.C08)
+		SetKana(KC_E | KC_R | KC_L		,"{直接}" . koyu.C09)
+		SetKana(KC_E | KC_R | KC_SCLN	,"{直接}" . koyu.C10)
+		SetKana(KC_E | KC_R | KC_QUOT	,"{直接}" . koyu.C11)
+		SetKana(KC_E | KC_R | KC_NUHS	,"{直接}" . koyu.C12)
 
-		SetKana(KC_E | KC_R | KC_N		,"{直接}" . B06)
-		SetKana(KC_E | KC_R | KC_M		,"{直接}" . B07)
-		SetKana(KC_E | KC_R | KC_COMM	,"{直接}" . B08)
-		SetKana(KC_E | KC_R | KC_DOT	,"{直接}" . B09)
-		SetKana(KC_E | KC_R | KC_SLSH	,"{直接}" . B10)
-		SetKana(KC_E | KC_R | KC_INT1	,"{直接}" . B11)
+		SetKana(KC_E | KC_R | KC_N		,"{直接}" . koyu.B06)
+		SetKana(KC_E | KC_R | KC_M		,"{直接}" . koyu.B07)
+		SetKana(KC_E | KC_R | KC_COMM	,"{直接}" . koyu.B08)
+		SetKana(KC_E | KC_R | KC_DOT	,"{直接}" . koyu.B09)
+		SetKana(KC_E | KC_R | KC_SLSH	,"{直接}" . koyu.B10)
+		SetKana(KC_E | KC_R | KC_INT1	,"{直接}" . koyu.B11)
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver == "kbd101.dll")
+	If (OSInfo.keyDriver == "kbd101.dll")
 	{
-		SetKana(KC_E | KC_R | KC_BSLS	,"{直接}" . E13)
-		SetKana(KC_E | KC_R | KC_GRV	,"{直接}" . C12)
+		SetKana(KC_E | KC_R | KC_BSLS	,"{直接}" . koyu.E13)
+		SetKana(KC_E | KC_R | KC_GRV	,"{直接}" . koyu.C12)
 	}
 
 ; 第二面
 ; UIを押しながら左手*/
 	kanaGroup := "KL"	; 左手側
-		SetKana(KC_SPC | KC_U | KC_I | KC_1	,"{直接}" . E01S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_2	,"{直接}" . E02S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_3	,"{直接}" . E03S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_4	,"{直接}" . E04S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_5	,"{直接}" . E05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_1	,"{直接}" . koyu.E01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_2	,"{直接}" . koyu.E02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_3	,"{直接}" . koyu.E03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_4	,"{直接}" . koyu.E04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_5	,"{直接}" . koyu.E05S)
 
-		SetKana(KC_SPC | KC_U | KC_I | KC_Q	,"{直接}" . D01S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_W	,"{直接}" . D02S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_E	,"{直接}" . D03S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_R	,"{直接}" . D04S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_T	,"{直接}" . D05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_Q	,"{直接}" . koyu.D01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_W	,"{直接}" . koyu.D02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_E	,"{直接}" . koyu.D03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_R	,"{直接}" . koyu.D04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_T	,"{直接}" . koyu.D05S)
 
-		SetKana(KC_SPC | KC_U | KC_I | KC_A	,"{直接}" . C01S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_S	,"{直接}" . C02S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_D	,"{直接}" . C03S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_F	,"{直接}" . C04S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_G	,"{直接}" . C05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_A	,"{直接}" . koyu.C01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_S	,"{直接}" . koyu.C02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_D	,"{直接}" . koyu.C03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_F	,"{直接}" . koyu.C04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_G	,"{直接}" . koyu.C05S)
 
-		SetKana(KC_SPC | KC_U | KC_I | KC_Z	,"{直接}" . B01S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_X	,"{直接}" . B02S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_C	,"{直接}" . B03S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_V	,"{直接}" . B04S)
-		SetKana(KC_SPC | KC_U | KC_I | KC_B	,"{直接}" . B05S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_Z	,"{直接}" . koyu.B01S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_X	,"{直接}" . koyu.B02S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_C	,"{直接}" . koyu.B03S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_V	,"{直接}" . koyu.B04S)
+		SetKana(KC_SPC | KC_U | KC_I | KC_B	,"{直接}" . koyu.B05S)
 
 ; ERを押しながら右手
 	kanaGroup := "KR"	; 右手側
-		SetKana(KC_SPC | KC_E | KC_R | KC_6		,"{直接}" . E06S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_7		,"{直接}" . E07S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_8		,"{直接}" . E08S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_9		,"{直接}" . E09S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_0		,"{直接}" . E10S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_MINS	,"{直接}" . E11S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_EQL	,"{直接}" . E12S)
-		SetKana(KC_SPC | KC_E | KC_R | JP_YEN	,"{直接}" . E13S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_6		,"{直接}" . koyu.E06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_7		,"{直接}" . koyu.E07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_8		,"{直接}" . koyu.E08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_9		,"{直接}" . koyu.E09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_0		,"{直接}" . koyu.E10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_MINS	,"{直接}" . koyu.E11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_EQL	,"{直接}" . koyu.E12S)
+		SetKana(KC_SPC | KC_E | KC_R | JP_YEN	,"{直接}" . koyu.E13S)
 
-		SetKana(KC_SPC | KC_E | KC_R | KC_Y		,"{直接}" . D06S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_U		,"{直接}" . D07S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_I		,"{直接}" . D08S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_O		,"{直接}" . D09S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_P		,"{直接}" . D10S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_LBRC	,"{直接}" . D11S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_RBRC	,"{直接}" . D12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_Y		,"{直接}" . koyu.D06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_U		,"{直接}" . koyu.D07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_I		,"{直接}" . koyu.D08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_O		,"{直接}" . koyu.D09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_P		,"{直接}" . koyu.D10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_LBRC	,"{直接}" . koyu.D11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_RBRC	,"{直接}" . koyu.D12S)
 
-		SetKana(KC_SPC | KC_E | KC_R | KC_H		,"{直接}" . C06S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_J		,"{直接}" . C07S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_K		,"{直接}" . C08S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_L		,"{直接}" . C09S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_SCLN	,"{直接}" . C10S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_QUOT	,"{直接}" . C11S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_NUHS	,"{直接}" . C12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_H		,"{直接}" . koyu.C06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_J		,"{直接}" . koyu.C07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_K		,"{直接}" . koyu.C08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_L		,"{直接}" . koyu.C09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_SCLN	,"{直接}" . koyu.C10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_QUOT	,"{直接}" . koyu.C11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_NUHS	,"{直接}" . koyu.C12S)
 
-		SetKana(KC_SPC | KC_E | KC_R | KC_N		,"{直接}" . B06S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_M		,"{直接}" . B07S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_COMM	,"{直接}" . B08S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_DOT	,"{直接}" . B09S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_SLSH	,"{直接}" . B10S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_INT1	,"{直接}" . B11S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_N		,"{直接}" . koyu.B06S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_M		,"{直接}" . koyu.B07S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_COMM	,"{直接}" . koyu.B08S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_DOT	,"{直接}" . koyu.B09S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_SLSH	,"{直接}" . koyu.B10S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_INT1	,"{直接}" . koyu.B11S)
 
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver == "kbd101.dll")
+	If (OSInfo.keyDriver == "kbd101.dll")
 	{
-		SetKana(KC_SPC | KC_E | KC_R | KC_BSLS	,"{直接}" . E13S)
-		SetKana(KC_SPC | KC_E | KC_R | KC_GRV	,"{直接}" . C12S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_BSLS	,"{直接}" . koyu.E13S)
+		SetKana(KC_SPC | KC_E | KC_R | KC_GRV	,"{直接}" . koyu.C12S)
 	}
 
 ; 固有名詞ショートカットを切り替える
@@ -775,5 +773,7 @@ KoyuRegist()	; () -> Void
 ; ----------------------------------------------------------------------
 ; 追加のホットキー
 ; ----------------------------------------------------------------------
-+^sc0B::Suspend, On		; 薙刀式中断 Shift+Ctrl+0
-+^sc02::Suspend, Off	; 薙刀式再開 Shift+Ctrl+1
++^sc0B::Suspend True	; 薙刀式中断 Shift+Ctrl+0
+#SuspendExempt  ; 以下のホットキーをSuspendから除外
++^sc02::Suspend False	; 薙刀式再開 Shift+Ctrl+1
+#SuspendExempt False  ; これよりSuspendの対象

@@ -36,8 +36,7 @@
 ; かな配列読み込み
 ReadWorkmanLayout()	; () -> Void
 {
-	#IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk	; 配列定義で使う定数
-	global layoutNameE, koyuNumber
+	global layoutNameE, kanaGroup
 
 	layoutNameE := "Workman Keyboard Layout"
 
@@ -251,9 +250,8 @@ kanaGroup := ""	; グループなし
 	SetKana( KC_SPC | KC_SLSH	,"?"	)
 	SetKana( KC_SPC | KC_INT1	,"_"	)
 
-
 	; 設定がUSキーボードの場合	参考: https://ixsvr.dyndns.org/blog/764
-	If (keyDriver = "kbd101.dll")
+	If (OSInfo.keyDriver = "kbd101.dll")
 	{
 		SetEisu( KC_GRV				,"{sc29}"	)
 		SetEisu( KC_GRV | KC_SPC	,"+{sc29}"	)

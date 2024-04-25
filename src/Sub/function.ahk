@@ -1,4 +1,4 @@
-﻿; Copyright 2021 Satoru NAKAYA
+﻿; Copyright 2021-2024 Satoru NAKAYA
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -17,25 +17,26 @@
 ; **********************************************************************
 
 
-; ----------------------------------------------------------------------
-; サブルーチン
-; ----------------------------------------------------------------------
-
 ; 後置シフトの判定期限タイマー
-KeyTimer:
+KeyTimer()
+{
+	global inBufWritePos, inBufRest
+
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
 	; 入力バッファが空の時だけ保存する
-	inBufsKey[inBufWritePos] := "KeyTimer", inBufsTime[inBufWritePos] := QPC()
+	inBufsKey[inBufWritePos+1] := "KeyTimer", inBufsTime[inBufWritePos+1] := QPC.Read()
 		, inBufWritePos := (inBufRest == 31 ? ++inBufWritePos & 31 : inBufWritePos)
-		, (inBufRest == 31 ? inBufRest-- : )
+		, (inBufRest == 31 ? inBufRest-- : "")
 	Convert()	; 変換ルーチン
 	Return
+}
 
 ; IME窓検出タイマー
-JudgeHwnd:
+JudgeHwnd()
+{
 	; 原理は、変換1回目でIME窓が検出できれば良しというもの
-	SetTimer, JudgeHwnd, Off
-	WinGet, hwnd, ID, A			; hwnd: Int型
+	SetTimer JudgeHwnd, 0
+	hwnd := WinExist("A")	; hwnd: Int型
 	If (IME_GET() && (IME_GetConvMode() & 1))
 	{
 		If (IME_GetConverting())
@@ -44,35 +45,37 @@ JudgeHwnd:
 			badHwnd := hwnd
 	}
 	Return
+}
 
-RemoveToolTip:
-	SetTimer, RemoveToolTip, Off
+RemoveToolTip()
+{
+	SetTimer RemoveToolTip, 0
 	ToolTip
 	Return
-
-; ----------------------------------------------------------------------
-; 関数
-; ----------------------------------------------------------------------
-
-; タイマー関数
-; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
-QPCInit() {	; () -> Int64
-	DllCall("QueryPerformanceFrequency", "Int64P", freq)	; freq: Int64型
-	Return freq
 }
-QPC() {	; () -> Double	ミリ秒単位
-	static coefficient := 1000.0 / QPCInit()			; Double型
-	DllCall("QueryPerformanceCounter", "Int64P", count)	; count: Int64型
-	Return count * coefficient
+
+; 時間を読み取る関数 QPC.Read()
+; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
+class QPC
+{
+	static ms_per_count := 0.0	; Double型
+	static __New() {
+		DllCall("QueryPerformanceFrequency", "Int64*", &freq := 0)	; freq: Int64型
+		this.ms_per_count := 1000.0 / freq
+	}
+	static Read() {	; () -> Double	ミリ秒単位
+		DllCall("QueryPerformanceCounter", "Int64*", &counter := 0)	; counter: Int64型
+		Return counter * this.ms_per_count
+	}
 }
 
 ; str をツールチップに表示し、time ミリ秒後に消す(デバッグ用)
 ToolTip2(str, time:=1000)	; (str: String, time: Int) -> Void
 {
-	ToolTip, %str%
+	ToolTip str
 	; str が空でなく、time が0でないとき
 	If (str && time != 0)
-		SetTimer, RemoveToolTip, %time%
+		SetTimer RemoveToolTip, time
 }
 
 ; 配列定義をすべて消去する
@@ -97,7 +100,6 @@ DeleteDefs()	; () -> Void
 ; 何キー同時か数える
 CountBit(keyComb)	; (keyComb: Int64) -> Int
 {
-	global KC_SPC
 ;	local count, i	; Int型
 
 	; スペースキーは数えない
@@ -118,11 +120,12 @@ CountBit(keyComb)	; (keyComb: Int64) -> Int
 ; 縦書き用定義から横書き用に変換
 ConvTateYoko(str)	; (str: String) -> String
 {
-	StringReplace, str, str, {Up,		{Temp,	A
-	StringReplace, str, str, {Right,	{Up,	A
-	StringReplace, str, str, {Down,		{Right,	A
-	StringReplace, str, str, {Left,		{Down,	A
-	StringReplace, str, str, {Temp,		{Left,	A
+	str := StrReplace(str, "{Up"	, "{Temp")
+	str := StrReplace(str, "{Up"	, "{Temp")
+	str := StrReplace(str, "{Right"	, "{Up")
+	str := StrReplace(str, "{Down"	, "{Right")
+	str := StrReplace(str, "{Left"	, "{Down")
+	str := StrReplace(str, "{Temp"	, "{Left")
 
 	Return str
 }
@@ -131,44 +134,44 @@ ConvTateYoko(str)	; (str: String) -> String
 ControlReplace(str)	; (str: String) -> String
 {
 	; DvorakJ との互換用
-	StringReplace, str, str, {→,			{Right,		A
-	StringReplace, str, str, {->,			{Right,		A
-	StringReplace, str, str, {右,			{Right,		A
-	StringReplace, str, str, {←,			{Left,		A
-	StringReplace, str, str, {<-,			{Left,		A
-	StringReplace, str, str, {左,			{Left,		A
-	StringReplace, str, str, {↑,			{Up,		A
-	StringReplace, str, str, {上,			{Up,		A
-	StringReplace, str, str, {↓,			{Down,		A
-	StringReplace, str, str, {下,			{Down,		A
-	StringReplace, str, str, {ペースト},	^v,			A
-	StringReplace, str, str, {貼付},		^v,			A
-	StringReplace, str, str, {貼り付け},	^v,			A
-	StringReplace, str, str, {カット},		^x,			A
-	StringReplace, str, str, {切取},		^x,			A
-	StringReplace, str, str, {切り取り},	^x,			A
-	StringReplace, str, str, {コピー},		^c,			A
-	StringReplace, str, str, {無変換,		{vk1D,		A
-	StringReplace, str, str, {変換,			{vk1C,		A
-	StringReplace, str, str, {ひらがな,		{vkF2,		A
-	StringReplace, str, str, {改行,			{Enter,		A
-	StringReplace, str, str, {後退,			{BS,		A
-	StringReplace, str, str, {取消,			{Esc,		A
-	StringReplace, str, str, {削除,			{Del,		A
-	StringReplace, str, str, {全角,			{vkF3,		A
-	StringReplace, str, str, {タブ,			{Tab,		A
-	StringReplace, str, str, {空白,			{vk20,		A
-	StringReplace, str, str, {メニュー,		{AppsKey,	A
-	StringReplace, str, str, {Caps Lock,	{vkF0,		A
-	StringReplace, str, str, {Back Space,	{BS,		A
+	str := StrReplace(str, "{→"				, "{Right")
+	str := StrReplace(str, "{->"			, "{Right")
+	str := StrReplace(str, "{右"			, "{Right")
+	str := StrReplace(str, "{←"				, "{Left")
+	str := StrReplace(str, "{<-"			, "{Left")
+	str := StrReplace(str, "{左"			, "{Left")
+	str := StrReplace(str, "{↑"				, "{Up")
+	str := StrReplace(str, "{上"			, "{Up")
+	str := StrReplace(str, "{↓"				, "{Down")
+	str := StrReplace(str, "{下"			, "{Down")
+	str := StrReplace(str, "{ペースト}"		, "^v")
+	str := StrReplace(str, "{貼付}"			, "^v")
+	str := StrReplace(str, "{貼り付け}"		, "^v")
+	str := StrReplace(str, "{カット}"		, "^x")
+	str := StrReplace(str, "{切取}"			, "^x")
+	str := StrReplace(str, "{切り取り}"		, "^x")
+	str := StrReplace(str, "{コピー}"		, "^c")
+	str := StrReplace(str, "{無変換"		, "{vk1D")
+	str := StrReplace(str, "{変換"			, "{vk1C")
+	str := StrReplace(str, "{ひらがな"		, "{vkF2")
+	str := StrReplace(str, "{改行"			, "{Enter")
+	str := StrReplace(str, "{後退"			, "{BS")
+	str := StrReplace(str, "{取消"			, "{Esc")
+	str := StrReplace(str, "{削除"			, "{Del")
+	str := StrReplace(str, "{全角"			, "{vkF3")
+	str := StrReplace(str, "{タブ"			, "{Tab")
+	str := StrReplace(str, "{空白"			, "{vk20")
+	str := StrReplace(str, "{メニュー"		, "{AppsKey")
+	str := StrReplace(str, "{Caps Lock"		, "{vkF0")
+	str := StrReplace(str, "{Back Space"	, "{BS")
 
 	; 追加
-	StringReplace, str, str, {カタカナ,		{vkF1,		A
-	StringReplace, str, str, {漢字,			{vk19,		A
-	StringReplace, str, str, {英数,			{vkF0,		A
-	StringReplace, str, str, {一時半角},	{NoIME},	A
-	StringReplace, str, str, {IME戻す},		{UndoIME},	A
-	StringReplace, str, str, {Space,		{vk20,		A
+	str := StrReplace(str, "{カタカナ"		, "{vkF1")
+	str := StrReplace(str, "{漢字"			, "{vk19")
+	str := StrReplace(str, "{英数"			, "{vkF0")
+	str := StrReplace(str, "{一時半角}"		, "{NoIME}")
+	str := StrReplace(str, "{IME戻す}"		, "{UndoIME}")
+	str := StrReplace(str, "{Space"			, "{vk20")
 
 	Return str
 }
@@ -178,7 +181,6 @@ ControlReplace(str)	; (str: String) -> String
 ; convYoko が True だったら縦書き用から横書き用に変換
 Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 {
-	global imeSelect
 ;	local strLength, strSubLength	; Int型
 ;		, strSub, ret, c			; String型
 ;		, i, bracket				; Int型
@@ -219,7 +221,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	; "{sc○○}" を "{sc○○ down}{sc○○ up}" の形式へ
 	Else If (RegExMatch(str, "i)^\{sc[\da-f]+\}$"))
 	{
-		strSub := SubStr(str, 1, strLength - 1)	; "{sc○○}" の "{sc○○" を取り出し
+		strSub := SubStr(str, 1, -1)	; "{sc○○}" の "{sc○○" を取り出し
 		ret := strSub . " down}" . strSub . " up}"
 		Return ret
 	}
@@ -258,8 +260,8 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 			If (convYoko)
 				strSub := ConvTateYoko(strSub)
 
-			If (Asc(strSub) > 127 || RegExMatch(strSub, "i)^\{U\+")
-				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", code) && code1 > 127))
+			If (Ord(strSub) > 127 || RegExMatch(strSub, "i)^\{U\+")
+				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", &code) && code[1] > 127))
 			{
 				; ASCIIコード以外の文字に変化したとき
 				If (!kakutei)
@@ -344,7 +346,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 	}
 
 	; ATOKで"{確定}"から始まるときは、"{確定}"を2度出力する
-	If (imeSelect == 1 && RegExMatch(ret, "^\{確定\}"))
+	If (pref.imeSelect == 1 && RegExMatch(ret, "^\{確定\}"))
 		ret := "{確定}" . ret
 
 	Return ret
@@ -360,8 +362,6 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 {
 	global defsKey, defsGroup, defsKanaMode, defsTateStr, defsYokoStr, defsCtrlName
 		, defBegin, defEnd
-		, kanaGroup, NR, R
-		, eisuRepeat
 ;	local keyCount	; Int型	何キー同時押しか
 ;		, i, imax	; Int型	カウンタ用
 
@@ -415,16 +415,14 @@ SetDefinition(kanaMode, keyComb, tate, yoko, ctrlName)	; (kanaMode: Bool, keyCom
 ; ctrlName が特別出力の時はそのまま返す(全てリピートさせるのは、関数Convet()内でも行う)
 RepeatStyleToCtrlName(ctrlName:="")	; (ctrlName: String) -> String
 {
-	global NR, R, repeatStyle
-
 	; リピート 常に無制限
-	If (!repeatStyle)
+	If (!pref.repeatStyle)
 		Return (ctrlName && ctrlName != NR ? ctrlName : R)
 	; リピート 基本する
-	Else If (repeatStyle == 1)
+	Else If (pref.repeatStyle == 1)
 		Return (ctrlName ? ctrlName : R)
 	; リピート 基本しない
-	Else If (repeatStyle == 2)
+	Else If (pref.repeatStyle == 2)
 		Return (ctrlName ? ctrlName : NR)
 	; リピート 全くしない
 	Else
@@ -434,7 +432,6 @@ RepeatStyleToCtrlName(ctrlName:="")	; (ctrlName: String) -> String
 ; かな定義登録
 SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	global NR, R
 ;	local tate, yoko	; String型
 
 	ctrlName := RepeatStyleToCtrlName(ctrlName)
@@ -450,8 +447,6 @@ SetKana(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 }
 SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global NR, R
-
 	ctrlName := RepeatStyleToCtrlName(ctrlName)
 	If (ctrlName == NR || ctrlName == R)
 		SetDefinition(1, keyComb, Analysis(tate), Analysis(yoko), ctrlName)
@@ -461,11 +456,10 @@ SetKana2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yok
 ; 英数定義登録
 SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: String) -> Void
 {
-	global NR, R, eisuRepeat
 ;	local tate, yoko	; String型
 
 	; 英数単打のリピートありの処理
-	If (eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
+	If (pref.eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
 		ctrlName := R
 	Else
 		ctrlName := RepeatStyleToCtrlName(ctrlName)
@@ -482,10 +476,8 @@ SetEisu(keyComb, str, ctrlName:="")	; (keyComb: Int64, str: String, ctrlName: St
 }
 SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yoko: String, ctrlName: String) -> Void
 {
-	global NR, R, eisuRepeat
-
 	; 英数単打のリピートありの処理
-	If (eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
+	If (pref.eisuRepeat && CountBit(keyComb) == 1 && ctrlName == "")
 		ctrlName := R
 	Else
 		ctrlName := RepeatStyleToCtrlName(ctrlName)
@@ -499,8 +491,6 @@ SetEisu2(keyComb, tate, yoko, ctrlName:="")	; (keyComb: Int64, tate: String, yok
 ; 一緒に押すと同時押しになるキーを探す
 FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64, kanaMode: Bool, keyCount: Int, group: String) -> Int64
 {
-	global defsKey, defsKanaMode, defsGroup, defBegin, defEnd
-		, KC_SPC
 ;	local i, imax		; Int型		カウンタ用
 ;		, bit			; Int64型
 
@@ -525,7 +515,6 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 ; 一緒に押すと同時押しになるキーを defsCombinableBit[] に記録
 SettingLayout()	; () -> Void
 {
-	global defsKey, defsKanaMode, defsCombinableBit, defBegin, defEnd
 ;	local i, imax	; Int型	カウンタ用
 ;		, searchBit	; Int64型
 
@@ -535,27 +524,9 @@ SettingLayout()	; () -> Void
 	While (i < imax)
 	{
 		searchBit := defsKey[i]
-		defsCombinableBit[i] := FindCombinableBit(searchBit, defsKanaMode[i], CountBit(searchBit))
+		defsCombinableBit.Push(FindCombinableBit(searchBit, defsKanaMode[i], CountBit(searchBit)))
 		i++
 	}
-}
-
-ExistNewMSIME()	; () -> Bool
-{
-;	local build	; Int型
-
-	; 参考: https://www.autohotkey.com/docs/Variables.htm#OSVersion
-	If A_OSVersion in WIN_8.1,WIN_8,WIN_7,WIN_VISTA,WIN_2003,WIN_XP,WIN_2000	; Note: No spaces around commas.
-		Return False
-
-	; 参考: https://docs.microsoft.com/ja-jp/windows/release-health/supported-versions-windows-client
-	; [requires v1.1.20+]
-	build := SubStr(A_OSVersion, 6)	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
-		; 備考：スタティック変数の初期化で呼び出された時、グローバル変数の osBuild はまだ初期化前
-	If (build <= 18363)	; Windows 10 1909 以前
-		Return False
-	Else
-		Return True
 }
 
 ; 使用している IME を調べる。MS-IME は 10秒経過していれば再調査。
@@ -564,35 +535,36 @@ ExistNewMSIME()	; () -> Bool
 ;			"ATOK": ATOK
 DetectIME()	; () -> String
 {
-	global imeSelect, goodHwnd, badHwnd, imeNeedDelay, imeGetConvertingInterval
-	static existNewMSIME := ExistNewMSIME()
-		, imeName := "", lastSearchTime := 0
+	global goodHwnd, badHwnd, imeNeedDelay, imeGetConvertingInterval
+	static imeName := ""		; String型
+		, lastSearchTime := 0	; Int32型
 ;	local value, nowIME	; String型
 
-	If (imeSelect == 1)
+	If (pref.imeSelect == 1)
 		nowIME := "ATOK"
-	Else If (imeSelect)
+	Else If (pref.imeSelect)
 		nowIME := "Google"
 	; 10秒経過したか、
 	; 他の IME から設定変更したとき(10秒以内に他のIMEに変えてまた戻すのは現実的ではないが)
 	Else If (A_TickCount < lastSearchTime || lastSearchTime + 10000 < A_TickCount
-		|| SubStr(imeName, StrLen(imeName) - 4, 5) != "MSIME")
+		|| SubStr(imeName, -5) != "MSIME")
 	{
 		lastSearchTime := A_TickCount
-;		nowIME := ""
-		If (existNewMSIME)
+		nowIME := ""
+		; Windows 10 Version 2004 (OS build 19041) 以降
+		If (OSInfo.build > 18363)
 		{
 			; 「以前のバージョンの Microsoft IME を使う」がオンになっているか調べる
 			; 参考: https://registry.tomoroh.net/archives/11547
-			RegRead, value, HKEY_CURRENT_USER
-				, SOFTWARE\Microsoft\Input\TSF\Tsf3Override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}
-				, NoTsf3Override2
-			If (ErrorLevel == 1 || !value)
+			value := RegRead("HKEY_CURRENT_USER\Software\Microsoft\input\tsf\tsf3override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}"
+				, "NoTsf3Override2", 0)
+			If (!value || value == "")
 				nowIME := "NewMSIME"
 		}
 		If (nowIME != "NewMSIME")
 		{
-			RegRead, value, HKEY_CURRENT_USER, SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME, keystyle
+			value := RegRead("HKEY_CURRENT_USER\SOFTWARE\Microsoft\IME\15.0\IMEJP\MSIME"
+				, "keystyle", "")
 			If (value == "Custom")
 				nowIME := "CustomMSIME"
 			Else
@@ -625,18 +597,18 @@ SendBlind(str)	; (str: String) -> Void
 	If (WinActive("ahk_class Framework::CFrame"))	; Process: ONENOTE.EXE
 	{																			; void keybd_event(BYTE bVk, BYTE bScan, DWORD dwFlags, ULONG_PTR dwExtraInfo);
 		If (str = "{Up down}")
-			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 1, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
+			DllCall("keybd_event", "UChar", 0x26, "UChar", 0x48, "UInt", 1, "UInt", 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY, 0)
 		Else If (str = "{Down down}")
-			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 1, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
+			DllCall("keybd_event", "UChar", 0x28, "UChar", 0x50, "UInt", 1, "UInt", 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY, 0)
 		Else If (str = "{Up up}")
-			DllCall("keybd_event", UChar, 0x26, UChar, 0x48, UInt, 3, UInt, 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+			DllCall("keybd_event", "UChar", 0x26, "UChar", 0x48, "UInt", 3, "UInt", 0)	; keybd_event(VK_UP, 0x48, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 		Else If (str = "{Down up}")
-			DllCall("keybd_event", UChar, 0x28, UChar, 0x50, UInt, 3, UInt, 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+			DllCall("keybd_event", "UChar", 0x28, "UChar", 0x50, "UInt", 3, "UInt", 0)	; keybd_event(VK_DOWN, 0x50, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
 		Else
-			Send, % "{Blind}" . str
+			Send ("{Blind}" . str)
 	}
 	Else
-		Send, % "{Blind}" . str
+		Send ("{Blind}" . str)
 }
 
 ; 下げたままのキーを上げる
@@ -648,15 +620,15 @@ SendKeyUp()	; () -> Void
 		Return
 
 	; "+" から始まっていた
-	If (Asc(restStr) == 43)
+	If (Ord(restStr) == 43)
 	{
 		; まず "+" より後に書かれたキーを上げる
-		SendBlind(SubStr(restStr, 2, StrLen(restStr) - 2) . " up}")
+		SendBlind(SubStr(restStr, 2, -1) . " up}")
 		; シフトを上げる
-		Send, {ShiftUp}
+		Send "{Shift up}"
 	}
 	Else
-		SendBlind(SubStr(restStr, 1, StrLen(restStr) - 1) . " up}")
+		SendBlind(SubStr(restStr, 1, -1) . " up}")
 
 	; 変数更新
 	restStr := ""
@@ -672,31 +644,31 @@ SendKeyDown(newStr:="", delay:=-2)	; (str: String, delay: Int) -> Void
 ;		, oldKey, newKey			; String型
 
 	; "+" から始まるか
-	oldShifted := (Asc(restStr) == 43 ? True : False)
-	newShifted := (Asc(newStr) == 43 ? True : False)
+	oldShifted := (Ord(restStr) == 43 ? True : False)
+	newShifted := (Ord(newStr) == 43 ? True : False)
 	; "+" 抜き
 	oldKey := (oldShifted ? SubStr(restStr, 2) : restStr)
 	newKey := (newShifted ? SubStr(newStr, 2) : newStr)
 
 	; 下げたままのキーとは別のキーに変わる
 	If (oldKey != "" && oldKey != newKey)
-		SendBlind(SubStr(oldKey, 1, StrLen(oldKey) - 1) . " up}")
+		SendBlind(SubStr(oldKey, 1, -1) . " up}")
 	; シフト あり→なし
 	If (oldShifted && !newShifted)
 		; シフトを上げる
-		Send, {ShiftUp}
+		Send "{Shift up}"
 	; シフト なし→あり
 	Else If (!oldShifted && newShifted)
-		Send, {ShiftDown}
+		Send "{Shift down}"
 
 	If (newKey != "")
 	{
 		; キーを下げる
-		SendBlind(SubStr(newKey, 1, StrLen(newKey) - 1) . " down}")
-		lastSendTime := QPC()	; 最後に出力した時間を記録
+		SendBlind(SubStr(newKey, 1, -1) . " down}")
+		lastSendTime := QPC.Read()	; 最後に出力した時間を記録
 		; ディレイ
 		If (delay > -2)
-			Sleep, % delay
+			Sleep delay
 	}
 
 	; 変数更新
@@ -706,56 +678,82 @@ SendKeyDown(newStr:="", delay:=-2)	; (str: String, delay: Int) -> Void
 ; スペースキー、矢印系キーを上げ下げを模倣して出力
 EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 {
-	global osBuild, repeatCount, repeatStyle, vertical
 ;	local hwnd				; Int型
 ;		, class, process	; String型
-;		, count, count1		; Int型
+;		, var				; [Int]型
+;		, count				; Int型
 ;		, key				; String型	矢印系キーだったらそのキー名
 ;		, moveLines			; Bool型	行移動があるか
 
 	; リピート時の行移動は最大〇打
 	MAX_MOVE_LINES := 5		; Int型定数
 
-	WinGet, hwnd, ID, A
-	WinGetClass, class, ahk_id %hwnd%
-	WinGet, process, ProcessName, ahk_id %hwnd%
+	hwnd := WinExist("A")
+	If (hwnd)
+	{
+		class := WinGetClass("A")
+		process := WinGetProcessName("A")
+	}
+	Else
+		class := process := ""
 
-	; スペースキー、矢印系キーの回数検出(count1 に入る)と、行移動の判定
+	; スペースキー、矢印系キーの回数検出(var[1] に入る)と、行移動の判定
 	key := ""
-	If (RegExMatch(str, "i)^\+?\{Space\}$|^\+?\{Space\s(\d+)\}$", count))
+	If (RegExMatch(str, "i)^\+?\{Space\}$"))
 	{
-		key := "{Space}"
-		moveLines := False
+		key := "{Space}", moveLines := False, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Up\}$|^\+?\{Up\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Space\s(\d+)\}$", &var))
 	{
-		key := "{Up}"
-		moveLines := !vertical
+		key := "{Space}", moveLines := False, count := var[1]
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Down\}$|^\+?\{Down\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Up\}$"))
 	{
-		key := "{Down}"
-		moveLines := !vertical
+		key := "{Up}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Left\}$|^\+?\{Left\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Up\s(\d+)\}$", &var))
 	{
-		key := "{Left}"
-		moveLines := vertical
+		key := "{Up}", moveLines := !pref.vertical, count := var[1]
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Right\}$|^\+?\{Right\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Down\}$"))
 	{
-		key := "{Right}"
-		moveLines := vertical
+		key := "{Down}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$|^\+?\{PgUp\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Down\s(\d+)\}$", &var))
 	{
-		key := "{PgUp}"
-		moveLines := True
+		key := "{Down}", moveLines := !pref.vertical, count := var[1]
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$|^\+?\{PgDn\s(\d+)\}$", count))
+	Else If (RegExMatch(str, "i)^\+?\{Left\}$"))
 	{
-		key := "{PgDn}"
-		moveLines := True
+		key := "{Left}", moveLines := pref.vertical, count := 1
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Left\s(\d+)\}$", &var))
+	{
+		key := "{Left}", moveLines := pref.vertical, count := var[1]
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Right\}$"))
+	{
+		key := "{Right}", moveLines := pref.vertical, count := 1
+	}
+	Else If (RegExMatch(str, "i)^\+?\{Right\s(\d+)\}$", &var))
+	{
+		key := "{Right}", moveLines := pref.vertical, count := var[1]
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\}$"))
+	{
+		key := "{PgUp}", moveLines := True, count := 1
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\s(\d+)\}$", &var))
+	{
+		key := "{PgUp}", moveLines := True, count := var[1]
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\}$"))
+	{
+		key := "{PgDn}", moveLines := True, count := 1
+	}
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\s(\d+)\}$", &var))
+	{
+		key := "{PgDn}", moveLines := True, count := var[1]
 	}
 
 	; 矢印系キーがなければ普通に出力して退出
@@ -763,42 +761,42 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		SendKeyUp()		; 押し下げ出力中のキーを上げる
 		If (delay > -1)
-			SetKeyDelay, delay, -1
-		Send, % str
-		SetKeyDelay, -1, -1
+			SetKeyDelay delay, -1
+		Send str
+		SetKeyDelay -1, -1
 		Return
 	}
 
 	; リピート時はキー押しの回数を制限する（全てリピートする設定の時は、制限しない）
-	If (repeatCount && repeatStyle)
+	If (repeat_count && pref.repeatStyle)
 	{
 		; Word
 		If (process == "WINWORD.EXE")
-			count1 := 1	; リピート中は1個ずつ
+			count := 1	; リピート中は1個ずつ
 		; Windows 11 以降のメモ帳ではリピート中の移動は最大3個ずつ
-		Else If (osBuild >= 20000 && class == "Notepad" && count1 > 3)
-			count1 := 3
+		Else If (OSInfo.build >= 20000 && class == "Notepad" && count > 3)
+			count := 3
 		; 秀丸エディタとジャストシステム製品の行移動
 		Else If (moveLines
 		 && (class == "Hidemaru32Class" || SubStr(class, 1, 3) == "js:"))
-			count1 := 1	; リピート中は1行ずつ
+			count := 1	; リピート中は1行ずつ
 		; ジャストシステム製品の文字移動
 		Else If (SubStr(class, 1, 3) == "js:")
-			count1 := 2	; リピート中は2字ずつ
+			count := 2	; リピート中は2字ずつ
 		; リピート時の行移動は最大〇打
-		Else If (moveLines && count1 > MAX_MOVE_LINES)
-			count1 := MAX_MOVE_LINES
+		Else If (moveLines && count > MAX_MOVE_LINES)
+			count := MAX_MOVE_LINES
 	}
 
 	; "+" から始まるか
-	If (Asc(str) == 43)
+	If (Ord(str) == 43)
 		key := "+" . key
 	; ループして出力
-	Loop % count1 - 1
+	Loop (count - 1)
 	{
 		SendKeyDown(key, delay)	; キーを下げる
 		; "+" から始まるか
-		If (Asc(str) == 43)
+		If (Ord(str) == 43)
 			SendKeyDown("+")	; 押し下げ出力中のシフト以外のキーを上げる
 		Else
 			SendKeyUp()	; 押し下げ出力中のキーを上げる
@@ -810,9 +808,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 ; 文字列 str を適宜スリープを入れながら出力する
 SendEachChar(str)	; (str: String) -> Void
 {
-	global osBuild, usingKeyConfig, sideShift, imeNeedDelay, imeGetConvertingInterval
-		, goodHwnd, badHwnd, lastSendTime, kanaMode, repeatCount
-		, imeState, imeSentenceMode
+	global lastSendTime, kanaMode, imeState, imeSentenceMode
 	static romanChar := False	; Bool型	ローマ字になり得る文字の出力中か(変換1回目のIME窓検出用)
 ;	local romanCharForNoIME		; Bool型	一時IMEをオフにしている間にローマ字(アスキー文字)を出力したか
 ;		, hwnd					; Int型
@@ -834,27 +830,32 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, inShifted				; Bool型
 ;		, imeConvMode			; Int?型	IME 入力モード	IME_GetConvMode()用
 
-	SetTimer, JudgeHwnd, Off	; IME窓検出タイマー停止
+	SetTimer JudgeHwnd, 0	; IME窓検出タイマー停止
 ;	SetKeyDelay, -1, -1
-	WinGet, hwnd, ID, A
-;	WinGetTitle, title, ahk_id %hwnd%
-	WinGetClass, class, ahk_id %hwnd%
-	WinGet, process, ProcessName, ahk_id %hwnd%
+	hwnd := WinExist("A")
+	If (hwnd)
+	{
+		; title := WinGetTitle("A")
+		class := WinGetClass("A")
+		process := WinGetProcessName("A")
+	}
+	Else
+		class := process := ""
 	imeName := DetectIME()
 
 	; ディレイの初期値
 	;	-1未満	Sleep をなるべく入れない
-	;	ほか	Sleep, % delay が基本的に1文字ごとに入る
+	;	ほか	Sleep delay が基本的に1文字ごとに入る
 	delay := preDelay := postDelay := -2
 	If (class == "CabinetWClass")	; エクスプローラー
 		delay := 10
-	Else If (osBuild >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
+	Else If (OSInfo.build >= 20000 && class == "Notepad")	; Windows 11 以降のメモ帳
 		delay := (imeName == "NewMSIME" ? 30 : 10)
 	Else If (class == "Hidemaru32Class")	; 秀丸エディタ
 		delay := 1	; 文末の [EOF] の表示が乱れるのを防止
 	Else If (!romanChar && SubStr(process, 1, 6) = "ptedit")	; brother P-touch Editor
 		postDelay := 30	; かな入力の1文字目をゆっくり出力
-	lastDelay := Floor(QPC() - lastSendTime)
+	lastDelay := Floor(QPC.Read() - lastSendTime)
 
 	; 文字列を細切れにして出力
 	noIME := romanCharForNoIME := False
@@ -886,13 +887,13 @@ SendEachChar(str)	; (str: String) -> Void
 			{
 				; Windows 11 以降のメモ帳、"{確定}"の直後、キー設定使用の旧MS-IME
 				; には間を空けてから
-				If (osBuild >= 20000 && class == "Notepad"
+				If (OSInfo.build >= 20000 && class == "Notepad"
 				 && SubStr(str, i - strSubLength - 4, 4) = "{確定}"
-				 && usingKeyConfig && imeName == "CustomMSIME")
+				 && pref.usingKeyConfig && imeName == "CustomMSIME")
 				{
 					preDelay := imeNeedDelay
 					If (lastDelay < preDelay)
-						Sleep, % preDelay - lastDelay
+						Sleep (preDelay - lastDelay)
 				}
 				EmulateKeyDownUp(strSub, delay)	; 矢印系キーを出力
 				lastDelay := delay
@@ -906,15 +907,15 @@ SendEachChar(str)	; (str: String) -> Void
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
 
 				; "{Raw}"からの残りは全部出力する
-				If (SubStr(strSub, strSubLength - 4, 5) = "{Raw}")
+				If (SubStr(strSub, -5) = "{Raw}")
 				{
 					preDelay := 10
 					; 前回の出力からの時間が短ければ、ディレイを入れる
 					If (lastDelay < preDelay)
-						Sleep, % preDelay - lastDelay
+						Sleep (preDelay - lastDelay)
 
 					; Windows 11 以降のメモ帳へはゆっくりと
-					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
+					If (OSInfo.build >= 20000 && class == "Notepad" && postDelay < 30)
 						postDelay := 30
 					Else
 						postDelay := 10
@@ -922,11 +923,11 @@ SendEachChar(str)	; (str: String) -> Void
 
 					While (i <= strLength)
 					{
-						SendRaw, % SubStr(str, i++, 1)
+						Send ("{Raw}" . SubStr(str, i++, 1))
 						If (i > strLength)
-							lastSendTime := QPC()	; 出力した時間を記録
+							lastSendTime := QPC.Read()	; 出力した時間を記録
 						; 出力直後のディレイ
-						Sleep, % postDelay
+						Sleep postDelay
 					}
 
 					lastDelay := (postDelay < 0 ? 0 : postDelay)
@@ -940,7 +941,7 @@ SendEachChar(str)	; (str: String) -> Void
 					; アスキー文字→{確定} のような定義でなく
 					; Shift+Ctrl+変換 に割り当てた「全確定」が使える時
 					If (!(imeSentenceMode && romanChar && i > 5)
-					 && usingKeyConfig
+					 && pref.usingKeyConfig
 					 && (imeName == "CustomMSIME" || imeName == "ATOK" || imeName == "Google"))
 					{
 						; IME_GET() には早すぎるか、通常 0 にならない IME_GetConvMode() の値が 0 の時
@@ -953,11 +954,11 @@ SendEachChar(str)	; (str: String) -> Void
 							; 直後の定義によってはそれも処理してカウンタを進める
 							If (SubStr(str, i, 7) = "{NoIME}")
 							{
-								Send, % out
+								Send out
 								; 旧MS-IMEで編集モードの記号を押すと、
 								; IMEオフになったり変換未確定になったりするので抑制
 								If (imeName == "CustomMSIME")
-									Sleep, 50
+									Sleep 50
 								; IMEをオフにするが後で元に戻せるようにしておく
 								i += 7
 								noIME := True
@@ -972,7 +973,7 @@ SendEachChar(str)	; (str: String) -> Void
 						If (lastDelay < imeNeedDelay
 							&& !(imeState && imeSentenceMode && romanChar && i > 5))
 						{
-							Sleep, % imeNeedDelay - lastDelay
+							Sleep (imeNeedDelay - lastDelay)
 							lastDelay := imeNeedDelay
 						}
 						; IMEオンで変換モードが無変換ではない時
@@ -988,10 +989,10 @@ SendEachChar(str)	; (str: String) -> Void
 							; かな入力中か、Google 日本語入力以外で「左右シフトかな」設定の時
 							; ※ Shift+英数 を押して一時英数になったのは除外する
 							Else If (((imeConvMode := IME_GetConvMode()) & 1)	; IME入力モードを保存し、かな入力か
-								|| (sideShift == 2 && imeName != "Google"))
+								|| (pref.sideShift == 2 && imeName != "Google"))
 							{
-								Send, {vkF3}	; 半角/全角
-								Sleep, % imeNeedDelay
+								Send "{vkF3}"	; 半角/全角
+								Sleep imeNeedDelay
 								lastDelay := imeNeedDelay
 								; 「半角/全角」を出力してもIMEオンのままだったら未変換文字あり
 								If (IME_GET())
@@ -1000,9 +1001,9 @@ SendEachChar(str)	; (str: String) -> Void
 									If (imeName != "Google")
 										IME_SetConvMode(imeConvMode)
 									Else If ((imeConvMode & 0xF) == 9)
-										Send, {vkF2}	; ひらがな
+										Send "{vkF2}"	; ひらがな
 									Else
-										Send, {vkF1}	; カタカナ
+										Send "{vkF1}"	; カタカナ
 									; 確定のためのエンター
 									out := "{Enter}"
 								}
@@ -1039,27 +1040,27 @@ SendEachChar(str)	; (str: String) -> Void
 								If (process == "Code.exe" && imeName == "NewMSIME"
 									&& SubStr(str, i, 12) = "{End}{Enter}")
 								{
-									Send, _
-									Sleep, 60
-									Send, {Enter}
+									Send "_"
+									Sleep 60
+									Send "{Enter}"
 									preDelay := 30
 									out := "{BS}"
 									postDelay := 60
 								}
 								; Win11メモ帳+新MS-IME
-								Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+								Else If (OSInfo.build >= 20000 && class == "Notepad" && imeName == "NewMSIME")
 								{
-									Send, _
-									Sleep, 30
-									Send, {Enter}
-									Sleep, 30
+									Send "_"
+									Sleep 30
+									Send "{Enter}"
+									Sleep 30
 									out := "{BS}"
 								}
 								Else
 								{
-									Send, _
-									Sleep, 30
-									Send, {Enter}
+									Send "_"
+									Sleep 30
+									Send "{Enter}"
 									out := "{BS}"
 								}
 							}
@@ -1069,8 +1070,8 @@ SendEachChar(str)	; (str: String) -> Void
 								; 直後の定義によってはそれも処理してカウンタを進める
 								If (SubStr(str, i, 7) = "{NoIME}")
 								{
-									Send, % out
-									Sleep, 40
+									Send out
+									Sleep 40
 									; IMEをオフにするが後で元に戻せるようにしておく
 									i += 7
 									noIME := True
@@ -1080,7 +1081,7 @@ SendEachChar(str)	; (str: String) -> Void
 								Else If (imeName == "NewMSIME")
 									; Win11メモ帳へは確実に文字確定するため
 									; 他へは入力予測窓を残さないため
-									preDelay := (osBuild >= 20000 && class == "Notepad" ? 60 : 30)
+									preDelay := (OSInfo.build >= 20000 && class == "Notepad" ? 60 : 30)
 							}
 						}
 					}
@@ -1090,7 +1091,7 @@ SendEachChar(str)	; (str: String) -> Void
 					If (lastDelay < imeNeedDelay)
 					{
 						; 前回の出力から一定時間空けて IME_GET() へ
-						Sleep, % imeNeedDelay - lastDelay
+						Sleep (imeNeedDelay - lastDelay)
 						lastDelay := imeNeedDelay
 					}
 					If (IME_GET())
@@ -1104,7 +1105,7 @@ SendEachChar(str)	; (str: String) -> Void
 					noIME := False
 					preDelay := 50
 					If (lastDelay < preDelay)
-						Sleep, % preDelay - lastDelay
+						Sleep (preDelay - lastDelay)
 					IME_SET(kanaMode := 0)	; IMEオフ
 					lastDelay := imeNeedDelay
 					lastSendTime := 0.0
@@ -1136,7 +1137,7 @@ SendEachChar(str)	; (str: String) -> Void
 					If (SubStr(str, i, 6) = "{vkF3}" || SubStr(str, i, 6) = "{vkF4}"
 						|| SubStr(str, i, 6) = "{vk19}")
 					{
-						Send, % out
+						Send out
 						out := SubStr(str, i, 6)
 						i += 6
 						kanaMode := 0
@@ -1149,9 +1150,9 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					If (imeName == "NewMSIME")
-						Send, {vk16}
+						Send "{vk16}"
 					Else
-						Send, {vkF2}
+						Send "{vkF2}"
 					out := "{vkF1}"		; カタカナ
 					kanaMode := 1
 				}
@@ -1174,9 +1175,9 @@ SendEachChar(str)	; (str: String) -> Void
 					Else
 					{
 						If (imeName == "NewMSIME")
-							Send, {vk16}
+							Send "{vk16}"
 						Else
-							Send, {vkF2}
+							Send "{vkF2}"
 						out := "+{vk1D}"	; シフト+無変換
 					}
 					kanaMode := 0
@@ -1185,9 +1186,9 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					noIME := False
 					If (imeName == "Google")
-						TrayTip, , Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません
+						TrayTip "Google 日本語入力では`n配列定義に {半ｶﾅ} は使えません"
 					Else If (!IME_GetConvMode())
-						TrayTip, , {半ｶﾅ} にはマウスで切り替えてください
+						TrayTip "{半ｶﾅ} にはマウスで切り替えてください"
 					Else
 					{
 						IME_SET(1)			; IMEオン
@@ -1206,7 +1207,7 @@ SendEachChar(str)	; (str: String) -> Void
 					If (process == "Code.exe" && imeName == "NewMSIME")
 						postDelay := 0
 					; Win11メモ帳+新MS-IME
-					Else If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME")
+					Else If (OSInfo.build >= 20000 && class == "Notepad" && imeName == "NewMSIME")
 						postDelay := 50
 					; 秀丸エディタ
 					Else If (class == "Hidemaru32Class")
@@ -1233,27 +1234,27 @@ SendEachChar(str)	; (str: String) -> Void
 					postDelay := 60
 				}
 				Else If (strSub = "{C_Clr}")
-					Clipboard :=				; クリップボードを空にする
+					A_Clipboard := ""			; クリップボードを空にする
 				Else If (SubStr(strSub, 1, 7) = "{C_Wait")
 				{
 					; 例: {C_Wait 0.5} は 0.5秒クリップボードの更新を待つ
-					wait := SubStr(strSub, 9, strSubLength - 9)
-					ClipWait, (wait ? wait : 0.2), 1
+					wait := SubStr(strSub, 9, -1)
+					ClipWait (IsNumber(wait) ? wait : 0.2), 1
 				}
 				Else If (strSub = "{C_Bkup}")
-					clipSaved := ClipboardAll	; クリップボードの全内容を保存
+					clipSaved := ClipboardAll()	; クリップボードの全内容を保存
 				Else If (strSub = "{C_Rstr}")
 				{
-					Clipboard := clipSaved		; クリップボードの内容を復元
-					clipSaved :=				; 保存用変数に使ったメモリを開放
+					A_Clipboard := clipSaved	; クリップボードの内容を復元
+					clipSaved := ""				; 保存用変数に使ったメモリを開放
 				}
-				Else If (Asc(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
-					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, strSubLength - 6) > 127))
+				Else If (Ord(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
+					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, -1) > 127))
 				{
 					out := strSub
 					preDelay := 10
 					; Windows 11 以降のメモ帳へはゆっくりと
-					If (osBuild >= 20000 && class == "Notepad" && postDelay < 30)
+					If (OSInfo.build >= 20000 && class == "Notepad" && postDelay < 30)
 						postDelay := 30
 					Else
 						postDelay := 10
@@ -1262,7 +1263,7 @@ SendEachChar(str)	; (str: String) -> Void
 				{
 					out := strSub
 					; Win11メモ帳+新MS-IME
-					If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME"
+					If (OSInfo.build >= 20000 && class == "Notepad" && imeName == "NewMSIME"
 						&& (RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$")
 							|| RegExMatch(strSub, "i)^\{sc[0-9a-f]+\sdown\}$")))
 					{
@@ -1279,9 +1280,9 @@ SendEachChar(str)	; (str: String) -> Void
 			{
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
-					Sleep, % preDelay - lastDelay
+					Sleep (preDelay - lastDelay)
 				; 後置ディレイの値を決定	{? up} はあとでディレイなし(-2)にされる
-				If (osBuild >= 20000 && class == "Notepad" && imeName == "NewMSIME"
+				If (OSInfo.build >= 20000 && class == "Notepad" && imeName == "NewMSIME"
 				 && postDelay < delay)	; Win11メモ帳+新MS-IME は postDelay が決まっていなかったら 40 を
 				{
 					postDelay := 40
@@ -1290,29 +1291,31 @@ SendEachChar(str)	; (str: String) -> Void
 					postDelay := delay
 
 				; 文字と回数を分離
-				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", outSub))
+				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", &outSub))
 				{
-					out := outSub1 . "}"	; outSub1 に文字が
-					count := outSub2		; outSub2 に回数が入る
+					out := outSub[1] . "}"	; outSub1 に文字が
+					count := outSub[2]		; outSub2 に回数が入る
 				}
+				Else
+					count := 1
 				; ループして出力
-				Loop, % count - 1
+				Loop (count - 1)
 				{
-					Send, % out
+					Send out
 					; 出力直後のディレイ
 					If (postDelay > -2)
-						Sleep, % postDelay
+						Sleep postDelay
 				}
 				; 最後の1回の出力
-				Send, % out
+				Send out
 
 				; 必要に応じて出力した時間を記録
 				If (!noIME && i > strLength)
-					lastSendTime := QPC()
+					lastSendTime := QPC.Read()
 
 				; ローマ字入力の文字を押した時
-				If (strSubLength == 1 && strSub >= "!" && strSub <= "~"
-				 || strSubLength == 3 && strSub >= "{!}" && strSub <= "{~}"
+				If (strSubLength == 1 && StrCompare(strSub, "!") >= 0 && StrCompare(strSub, "~") <= 0
+				 || strSubLength == 3 && StrCompare(strSub, "{!}") >= 0 && StrCompare(strSub, "{~}") <= 0
 				 || RegExMatch(strSub, "^\{[a-z\d\-]\sdown\}$"))
 				{
 					romanChar := True
@@ -1320,13 +1323,13 @@ SendEachChar(str)	; (str: String) -> Void
 						romanCharForNoIME := True
 				}
 				; キーを上げたのではなく、ローマ字入力の文字を押したのでもない時
-				Else If (SubStr(strSub, strSubLength - 3, 4) != " up}")
+				Else If (SubStr(strSub, -4) != " up}")
 				{
 					; IME窓の検出が当てにできるか判定
 					; 初めてのスペース変換1回目にIME窓検出タイマーを起動
 					If (hwnd != goodHwnd && hwnd != badHwnd
 					 && (out = "{vk20}" || out = "{Space}") && romanChar && i > strLength)
-						SetTimer, JudgeHwnd, % - imeGetConvertingInterval
+						SetTimer JudgeHwnd, - imeGetConvertingInterval
 					romanChar := False
 					imeState := imeSentenceMode := ""
 				}
@@ -1336,7 +1339,7 @@ SendEachChar(str)	; (str: String) -> Void
 
 				; 出力直後のディレイ
 				If (postDelay > -2)
-					Sleep, % postDelay
+					Sleep postDelay
 				lastDelay := (postDelay < 0 ? 0 : postDelay)
 			}
 			Else
@@ -1366,7 +1369,7 @@ SendEachChar(str)	; (str: String) -> Void
 
 				; 前回の出力からの時間が短ければ、ディレイを入れる
 				If (lastDelay < preDelay)
-					Sleep, % preDelay - lastDelay
+					Sleep (preDelay - lastDelay)
 				IME_SET(1)			; IMEオン
 				lastDelay := imeNeedDelay
 				lastSendTime := 0.0
@@ -1384,21 +1387,20 @@ SendEachChar(str)	; (str: String) -> Void
 ; i の指定がないときは、全部出力する
 OutBuf(i:=2)	; (i: Int) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames, NR, R
-		, testMode
+	global outStrs, outCtrlNames
 ;	local out		; String型
 ;		, ctrlName	; String型
 
-	While (i > 0 && outStrsLength > 0)
+	While (i-- > 0 && outStrs.Length)
 	{
-		out := outStrs[1]
-		ctrlName := outCtrlNames[1]
+		out := outStrs.RemoveAt(1)
+		ctrlName := outCtrlNames.RemoveAt(1)
 
 		; テスト表示 出力文字列
-		If (testMode == 3)
+		If (pref.testMode == 3)
 		{
-			ToolTip, %out%
-			SetTimer, RemoveToolTip, 2500
+			ToolTip out
+			SetTimer RemoveToolTip, 2500
 		}
 
 		; リピートなし
@@ -1416,11 +1418,6 @@ OutBuf(i:=2)	; (i: Int) -> Void
 			SendSP(out, ctrlName)
 			SendKeyUp()		; 押し下げ出力中のキーを上げる
 		}
-
-		outStrs[1] := outStrs[2]
-		outCtrlNames[1] := outCtrlNames[2]
-		outStrsLength--
-		i--
 	}
 	DispStoredStr()	; 表示待ち文字列表示
 }
@@ -1428,130 +1425,130 @@ OutBuf(i:=2)	; (i: Int) -> Void
 ; 仮出力バッファを最後から backCount 回分を削除して、str と ctrlName を保存
 StoreBuf(str, backCount, ctrlName)	; (str: String, backCount: Int, ctrlName: String) -> Void
 {
-	global outStrsLength, outStrs, outCtrlNames
+	global outStrs, outCtrlNames
 
+	If (backCount > outStrs.Length)
+		backCount := outStrs.Length
 	If (backCount > 0)
 	{
-		outStrsLength -= backCount
-		If (outStrsLength < 0)
-			outStrsLength := 0
+		outStrs.RemoveAt(1, backCount)
+		outCtrlNames.RemoveAt(1, backCount)
 	}
-	; バッファがいっぱいなので、1文字出力
-	Else If (outStrsLength == 2)
+	; バッファがいっぱいなら1個出力
+	Else If (outStrs.Length == 2)
 		OutBuf(1)
 
-	outStrsLength++
-	outStrs[outStrsLength] := str
-	outCtrlNames[outStrsLength] := ctrlName
+	outStrs.Push(str)
+	outCtrlNames.Push(ctrlName)
 	DispStoredStr()	; 表示待ち文字列表示
 }
 
 ; 縦書き・横書き切り替え
 ChangeVertical(mode)	; (mode: Bool) -> Void
 {
-	global iniFilePath, vertical
-
 	static icon_H_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
 					. Path_RemoveExtension(A_ScriptName) . "_H.ico"	; String型
 		, icon_V_Path := Path_AddBackslash(A_ScriptDir) . "Icons\"
 					. Path_RemoveExtension(A_ScriptName) . "_V.ico"	; String型
 
 	; 設定ファイル書き込み
-	If (vertical != mode)
+	If (pref.vertical != mode)
 	{
-		vertical := mode
-		IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
+		pref.vertical := mode
+		Try
+			IniWrite pref.vertical, pref.iniFilePath, "Naginata", "Vertical"
+		Catch OSError
+			TrayTip ".ini ファイルに書き込めません"
 	}
 
 	; タスクトレイ関連
-	If (vertical)
+	If (pref.vertical)
 	{
-		Menu, TRAY, Check, 縦書きモード		; “縦書きモード”にチェックを付ける
+		A_TrayMenu.Check("縦書きモード")	; “縦書きモード”にチェックを付ける
 		If (Path_FileExists(icon_V_Path))
-			Menu, TRAY, Icon, %icon_V_Path%
+			TraySetIcon icon_V_Path
 		Else
-			Menu, TRAY, Icon, *
+			TraySetIcon "*"
 	}
 	Else
 	{
-		Menu, TRAY, Uncheck, 縦書きモード	; “縦書きモード”のチェックを外す
+		A_TrayMenu.Uncheck("縦書きモード")	; “縦書きモード”のチェックを外す
 		If (Path_FileExists(icon_H_Path))
-			Menu, TRAY, Icon, %icon_H_Path%
+			TraySetIcon icon_H_Path
 		Else
-			Menu, TRAY, Icon, *
+			TraySetIcon "*"
 	}
 }
 
 ; 出力する文字列を選択
 SelectStr(index)	; (index: Int) -> String
 {
-	global vertical, defsTateStr, defsYokoStr
-
-	Return (vertical ? defsTateStr[index] : defsYokoStr[index])
+	Return (pref.vertical ? defsTateStr[index] : defsYokoStr[index])
 }
 
 ; テスト表示 timeA からの時間[ミリ秒単位]
 DispTime(timeA, str:="")	; (timeA: Double, str: String) -> Void
 {
-	global testMode
 ;	local timeAtoB	; Double型
 
-	If (testMode == 1)
+	If (pref.testMode == 1)
 	{
-		timeAtoB := Round(QPC() - timeA, 1)
-		ToolTip, %timeAtoB% ms%str%
-		SetTimer, RemoveToolTip, 1000
+		timeAtoB := Round(QPC.Read() - timeA, 1)
+		str := timeAtoB . " ms" . str
+		ToolTip str
+		SetTimer RemoveToolTip, 1000
 	}
 }
 
 ; テスト表示 表示待ち文字列
 DispStoredStr()	; () -> Void
 {
-	global testMode, outStrsLength, outStrs
-;	local str	; String型
+;	local disp, str	; String型
 
-	If (testMode == 2)
+	If (pref.testMode == 2)
 	{
-		If (!outStrsLength)
-			ToolTip
-		Else
+		disp := ""
+		i := 0
+		For str in outStrs
 		{
-			If (outStrsLength == 1)
-				str := outStrs[1]
-			Else
-				str := outStrs[1] . "`n" . outStrs[2]
-			ToolTip, %str%
+			If (i++)
+				disp .= "`n"
+			disp .= str
 		}
+		ToolTip disp
 	}
 }
 
 ; リピート回数を更新する
 RepeatCount(nowKey)	; (nowKey: String) -> Void
 {
-	global repeatCount
+	global repeat_count
 	static lastKey := ""	; String型	最後に押したキー
-;	local key	; [String]型
+;	local pressed	; Bool型
 
-	; nowKey をスペースで分割して配列 key に入れる
-	key := StrSplit(nowKey, A_Space)
-
-	; 最後に押したキーが
-	If (key[1] == lastKey)
+	pressed := True
+	If (SubStr(nowKey, -3) = " up")
 	{
+		pressed := False
+		nowKey := SubStr(nowKey, 1, -3)	; " up" を取り去る
+	}
+
+	If (nowKey == lastKey)
+	{
+		; リピート
+		If (pressed)
+			repeat_count++
 		; 離れた時
-		If (key[2] == "up")
+		Else
 		{
-			repeatCount := 0
+			repeat_count := 0
 			lastKey := ""
 		}
-		; リピート
-		Else
-			repeatCount++
 	}
 	; 別のキーが押された時
-	Else If (key[2] != "up")
+	Else If (pressed)
 	{
-		repeatCount := 0
+		repeat_count := 0
 		lastKey := nowKey
 	}
 	; なお最後に押したキーと別のキーが離れた時は何もしない
@@ -1560,15 +1557,8 @@ RepeatCount(nowKey)	; (nowKey: String) -> Void
 ; 変換、出力
 Convert()	; () -> Void
 {
-	global inBufsKey, inBufReadPos, inBufsTime, inBufRest
-		, KC_SPC, JP_YEN, KC_INT1, NR, R
-		, defsKey, defsGroup, defsKanaMode, defsCombinableBit, defsCtrlName, defBegin, defEnd
-		, outStrsLength, lastSendTime, kanaMode
-		, sideShift, shiftDelay, combDelay, spaceKeyRepeat
-		, combLimitN, combStyleN, combKeyUpN, combLimitS, combStyleS, combKeyUpS, combLimitE, combKeyUpSPC
-		, keyUpToOutputAll, eisuSandS, eisuRepeat
-		, repeatStyle, imeGetInterval
-		, spc, ent, repeatCount
+	global kanaMode, inBufReadPos, inBufRest
+		, spc, ent
 		, imeState, imeSentenceMode
 	static convRest	:= 0		; Int型		入力バッファに積んだ数/多重起動防止フラグ
 		, nextKey	:= ""		; String型	次回送りのキー入力
@@ -1584,8 +1574,8 @@ Convert()	; () -> Void
 		, repeatFlg	:= False	; Bool型	リピート中か
 		, ctrlName	:= NR		; String型	NR: リピートなし, R: リピートあり, 他: かな配列ごとの特殊コード
 		, combinableBit := -1	; Int64型	押すと同時押しになるキー (-1 は次の入力で即確定しないことを意味する)
-		, lastIMEConvMode		; Int型
-		, lastIMESentenceMode	; Int型
+		, lastIMEConvMode := 0		; Int型
+		, lastIMESentenceMode := 0	; Int型
 		; シフト用キーの状態
 		, sft		:= 0	; Bool型	左シフト
 		, rsft		:= 0	; Bool型	右シフト
@@ -1595,7 +1585,6 @@ Convert()	; () -> Void
 ;	local class				; String型
 ;		, keyTime			; Double型	キーを押した時間
 ;		, nowKey			; String型
-;		, nowKeyLength		; Int型
 ;		, term				; String型	入力の末端2文字
 ;		, toBuf				; String型	出力バッファに送る文字列
 ;		, keyCount			; Int型		今回は何キー同時押しか
@@ -1611,7 +1600,7 @@ Convert()	; () -> Void
 ;		, imeConvMode		; Int?型	IME 入力モード	IME_GetConvMode()用
 
 	; 判定期限タイマー停止
-	SetTimer, KeyTimer, Off
+	SetTimer KeyTimer, 0
 	; 多重起動防止
 	If (convRest || nextKey != "")
 		Return
@@ -1623,7 +1612,7 @@ Convert()	; () -> Void
 		{
 			; 入力バッファから読み出し
 			; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
-			nowKey := inBufsKey[inBufReadPos], keyTime := inBufsTime[inBufReadPos]
+			nowKey := inBufsKey[inBufReadPos+1], keyTime := inBufsTime[inBufReadPos+1]
 				, inBufReadPos := ++inBufReadPos & 31, inBufRest++
 
 			; 同時押し、後置シフトの判定タイマー反応
@@ -1640,7 +1629,7 @@ Convert()	; () -> Void
 				}
 				Else
 					; 10ミリ秒後に再判定
-					SetTimer, KeyTimer, -10
+					SetTimer KeyTimer, -10
 				Continue
 			}
 
@@ -1654,14 +1643,14 @@ Convert()	; () -> Void
 			nextKey := ""
 		}
 
-		WinGetClass, class, A
+		class := (WinExist("A") ? WinGetClass("A") : "")
 		; IME の状態を検出しない時間を過ぎていたら、入力モードを検出
 		; ※ 通常、IME_GET() の値が 0 でも IME_GetConvMode() の値は 0 にならない
 		;		例外1: IME のアイコンが "×" になっているとき。ただし Google Chrome と Edge の入力欄でないところは別
 		;		例外2: Excel と PowerPoint のコメント。でも IME のアイコンは "×" になっていない
 		;		例外3: IME_SetConvMode(0) を実行したとき
 		;		例外4: Firefox と Thunderbird を新MS-IMEで使い、左右シフトで一時英数入力にしているとき
-		If (lastSendTime + imeGetInterval <= QPC())
+		If (lastSendTime + pref.imeGetInterval <= QPC.Read())
 		{
 			imeState := IME_GET()
 			imeConvMode := IME_GetConvMode()
@@ -1692,12 +1681,12 @@ Convert()	; () -> Void
 		; Win+X キーで出てくるメニュー
 ;		Else If (imeState && WinExist("ahk_class Xaml_WindowedPopupClass"))
 ;			IME_SET(kanaMode := 0)	; IMEオフ
-		Else If ((sft || rsft) && sideShift <= 1	; 左右シフト英数で左右シフトを押している
+		Else If ((sft || rsft) && pref.sideShift <= 1	; 左右シフト英数で左右シフトを押している
 			&& !InStr(nowKey, "sc39") && !InStr(nowKey, "Shift") && !InStr(nowKey, "Enter"))
 		{
 			If (DetectIME() == "Google" && imeState && (imeConvMode & 1) == 1)
 			{
-				Send, {vkF3}	; 半角/全角 ※ 半角英数に入力切替
+				Send "{vkF3}"	; 半角/全角 ※ 半角英数に入力切替
 				imeState := ""
 			}
 			kanaMode := 0	; 英数モード
@@ -1708,7 +1697,7 @@ Convert()	; () -> Void
 			kanaMode := imeConvMode & 1
 
 		; 先頭の "+" を消去
-		If (Asc(nowKey) == 43)
+		If (Ord(nowKey) == 43)
 			nowKey := SubStr(nowKey, 2)
 		; 左右シフト処理
 		If (nowKey == "~LShift")
@@ -1729,7 +1718,7 @@ Convert()	; () -> Void
 			If (ent)
 				ent := 2	; 単独エンターではない
 			OutBuf()
-			Send, {ShiftDown}
+			Send "{Shift down}"
 			nowKey := "sc39"	; センターシフト押す
 		}
 		Else If (nowKey == "~LShift up")
@@ -1738,7 +1727,7 @@ Convert()	; () -> Void
 			; 右シフトは離されていない
 			If (rsft)
 			{
-				Send, {ShiftDown}
+				Send "{Shift down}"
 				DispTime(keyTime)	; キー変化からの経過時間を表示
 				Continue
 			}
@@ -1756,7 +1745,7 @@ Convert()	; () -> Void
 			rsft := 0
 			; 左シフトも離されている
 			If (!sft)
-				Send, {ShiftUp}
+				Send "{Shift up}"
 			; 他のシフトを押している時
 			If (sft || spc || ent)
 			{
@@ -1775,7 +1764,7 @@ Convert()	; () -> Void
 			; 他のシフトを押している時
 			If (sft || rsft || ent)
 			{
-				spc := (SpaceKeyRepeat == 2 ? 3 : 2)	; 他のシフトを離した後もリピートするか
+				spc := (pref.spaceKeyRepeat == 2 ? 3 : 2)	; 他のシフトを離した後もリピートするか
 				StoreBuf("+{Space}", 0, R)
 				OutBuf()
 				DispTime(keyTime, "`nシフト+スペース")	; キー変化からの経過時間を表示
@@ -1785,7 +1774,7 @@ Convert()	; () -> Void
 			; またはSandSなしの設定をした英数入力中
 			Else If (imeConvMode == 0 && class == "MozillaWindowClass"
 				&& !(DetectIME() == "NewMSIME" && imeSentenceMode != 0)
-				|| !eisuSandS && !kanaMode)
+				|| !pref.eisuSandS && !kanaMode)
 			{
 				StoreBuf("{Space}", 0, R)
 				OutBuf()
@@ -1793,8 +1782,8 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 英数単打のリピート、(スペースキーの長押し	空白リピート以外)リピートの好み 全て
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle && SpaceKeyRepeat != 2)
-				&& repeatCount && !(lastBit & KC_SPC))
+			Else If ((!kanaMode && pref.eisuRepeat || !pref.repeatStyle && pref.spaceKeyRepeat != 2)
+				&& repeat_count && !(lastBit & KC_SPC))
 			{
 				spc := 5	; 空白をリピート中
 				StoreBuf("{Space}", 0, R)
@@ -1803,10 +1792,10 @@ Convert()	; () -> Void
 				Continue
 			}
 			; スペースキーの長押し
-			Else If (spaceKeyRepeat && (spc & 1))
+			Else If (pref.spaceKeyRepeat && (spc & 1))
 			{
 				; 空白キャンセル
-				If (spaceKeyRepeat == 1)
+				If (pref.spaceKeyRepeat == 1)
 					spc := 2	; シフト継続中
 				Else
 				{
@@ -1838,7 +1827,7 @@ Convert()	; () -> Void
 		}
 		; エンターキー処理
 		Else If (nowKey == "Enter")
-;		Else If (nowKey == "Enter" && (eisuSandS || kanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
+;		Else If (nowKey == "Enter" && (pref.eisuSandS || kanaMode))	; 英数入力のSandSなし設定でエンターシフトも止めたい時
 		{
 			If (spc)
 				spc := 2	; 単独スペースではない
@@ -1853,8 +1842,8 @@ Convert()	; () -> Void
 				Continue
 			}
 			; 英数単打のリピート
-			Else If ((!kanaMode && eisuRepeat || !repeatStyle)
-				&& repeatCount && !(lastBit & KC_SPC))
+			Else If ((!kanaMode && pref.eisuRepeat || !pref.repeatStyle)
+				&& repeat_count && !(lastBit & KC_SPC))
 			{
 				ent := 5	; エンターをリピート中
 				StoreBuf("{vk0D}", 0, R)	; エンター単独押し ※"Enter"としないこと
@@ -1896,15 +1885,14 @@ Convert()	; () -> Void
 		}
 
 		keyCount := 0	; 何キー同時押しか、を入れる変数
-		nowKeyLength := StrLen(nowKey)
-		term := SubStr(nowKey, nowKeyLength - 1)	; term に入力末尾の2文字を入れる
+		term := SubStr(nowKey, -2)	; term に入力末尾の2文字を入れる
 		; キーが離れた時
 		If (term == "up")
 		{
 			; nowBit に sc○○ から 0x○○ に変換されたものを入れる
 			; 行が変われば十六進数の数値として扱える
 			If (SubStr(nowKey, 1, 2) == "sc")
-				nowBit := "0x" . SubStr(nowKey, nowKeyLength - 4, 2)
+				nowBit := "0x" . SubStr(nowKey, -5, 2)
 			Else
 				nowBit := 0
 		}
@@ -1952,13 +1940,13 @@ Convert()	; () -> Void
 			realBit &= bitMask
 
 			; 文字キーによるシフトの適用範囲
-			If (combKeyUpSPC && nowBit == KC_SPC)
-				shiftStyle := combKeyUpS	; スペースキーを離した時は、スペース押下時の設定
+			If (pref.combKeyUpSPC && nowBit == KC_SPC)
+				shiftStyle := pref.combKeyUpS	; スペースキーを離した時は、スペース押下時の設定
 			Else
-				shiftStyle := ((realBit & KC_SPC) ? combKeyUpS : combKeyUpN)
+				shiftStyle := ((realBit & KC_SPC) ? pref.combKeyUpS : pref.combKeyUpN)
 
 			; 「キーを離せば常に全部出力する」がオン、または直近の検索結果のキーを離した
-			If (keyUpToOutputAll || (lastBit & nowBit))
+			If (pref.keyUpToOutputAll || (lastBit & nowBit))
 			{
 				OutBuf()
 				SendKeyUp()		; 押し下げ出力中のキーを上げる
@@ -1972,7 +1960,7 @@ Convert()	; () -> Void
 				lastGroup := ""
 			}
 			; 一つ前に押したキーを離した
-			Else If (outStrsLength == 2 && lastKeyCount == 1 && nowBit == last2Bit)
+			Else If (outStrs.Length == 2 && lastKeyCount == 1 && nowBit == last2Bit)
 				OutBuf(1)	; 1個出力
 			; カーソルキー等
 			Else If (!nowBit)
@@ -1987,7 +1975,7 @@ Convert()	; () -> Void
 		}
 		; (キーリリース直後か、通常シフトまたは後置シフトの判定期限後に)スペースキーが押された時
 		Else If (nowBit == KC_SPC && !(realBit & nowBit)
-			&& (!outStrsLength || lastPushedTime + shiftDelay < keyTime))
+			&& (!outStrs.Length || lastPushedTime + pref.shiftDelay < keyTime))
 		{
 			OutBuf()
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
@@ -1996,16 +1984,16 @@ Convert()	; () -> Void
 			DispTime(keyTime)	; キー変化からの経過時間を表示
 		}
 		; リピート中のキー
-		Else If (repeatFlg && repeatCount && lastToBuf != "")
+		Else If (repeatFlg && repeat_count && lastToBuf != "")
 		{
 			; 入力バッファが空の時
-			If (inBufRest == 31 || !repeatStyle)
+			If (inBufRest == 31 || !pref.repeatStyle)
 			{
 				; 前回の文字列を出力
-				If (!outStrsLength)
+				If (!outStrs.Length)
 					StoreBuf(lastToBuf, 0, ctrlName)
 				OutBuf()
-				DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
+				DispTime(keyTime, "`nリピート " . repeat_count . "回目")	; キー変化からの経過時間を表示
 			}
 		}
 		; 押されていなかったキー、sc**以外のキー
@@ -2016,19 +2004,19 @@ Convert()	; () -> Void
 
 			; 文字キーによるシフトの適用範囲
 			; 英数入力時に判定期限ありなら、文字キーシフトは「同グループのみ継続」か「1回のみ」
-			shiftStyle := (realBitAndKC_SPC ? combStyleS : combStyleN)
-			If (combLimitE && !kanaMode && shiftStyle < 2)
+			shiftStyle := (realBitAndKC_SPC ? pref.combStyleS : pref.combStyleN)
+			If (pref.combLimitE && !kanaMode && shiftStyle < 2)
 				shiftStyle := 2
 ;			lastGroup := (!shiftStyle ? "" : lastGroup)	; かわせみ2用と同じ動作にするなら有効に
 
 			; 前に押したキーと同時押しにならない
 			; または同時押しの判定期限到来
-			If (outStrsLength
-			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastPushedTime + combDelay < keyTime
-			 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)) )))
+			If (outStrs.Length
+			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && pref.combDelay > 0 && lastPushedTime + pref.combDelay < keyTime
+			 && ((pref.combLimitN && !realBitAndKC_SPC) || (pref.combLimitS && realBitAndKC_SPC) || (pref.combLimitE && !kanaMode)) )))
 				OutBuf()
 			; 前に押したキーが出力確定していなければ同グループ優先で検索しない
-			If (outStrsLength)
+			If (outStrs.Length)
 				lastGroup := ""
 			; 出力確定しているので、シフト設定によっては1キー入力だけを検索する
 			Else If (shiftStyle == 3 || (shiftStyle == 2 && !lastGroup) || (shiftStyle == 1 && lastKeyCount == 1))
@@ -2091,7 +2079,7 @@ Convert()	; () -> Void
 							&& (!lastGroup || lastGroup == defsGroup[i]))
 						{
 							; 見つかった!
-							If (outStrsLength >= 2)
+							If (outStrs.Length >= 2)
 								; 2つ前に押したキーを出力
 								OutBuf(1)
 							backCount := (lastKeyCount >= 2 && nowBit != KC_SPC || !(defKeyCopy & lastBit) ? 0 : 1)
@@ -2136,7 +2124,7 @@ Convert()	; () -> Void
 			If (nowBit == KC_SPC && !keyCount)
 			{
 				; 仮出力バッファが空の時
-				If (!outStrsLength)
+				If (!outStrs.Length)
 				{
 					SendKeyUp()			; 押し下げ出力中のキーを上げる
 					repeatFlg := False	; リピート解除
@@ -2170,7 +2158,7 @@ Convert()	; () -> Void
 			StoreBuf(toBuf, backCount, ctrlName)
 
 			; キーリピート用
-			If (ctrlName == R || !repeatStyle)
+			If (ctrlName == R || !pref.repeatStyle)
 				repeatFlg := True	; キーリピートする
 			Else
 				repeatFlg := False
@@ -2207,10 +2195,10 @@ Convert()	; () -> Void
 			; 出力確定文字か？
 			; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
 			; オフなら、いま検索したキーを除外
-			combinableBit &= (keyUpToOutputAll ? realBit : lastBit) ^ (-1)
+			combinableBit &= (pref.keyUpToOutputAll ? realBit : lastBit) ^ (-1)
 
 			; 出力処理
-			If (combinableBit == 0 || (shiftDelay <= 0 && combinableBit == KC_SPC))
+			If (combinableBit == 0 || (pref.shiftDelay <= 0 && combinableBit == KC_SPC))
 				; 出力確定
 				OutBuf()
 			Else
@@ -2221,20 +2209,20 @@ Convert()	; () -> Void
 					; 入力バッファが空なので、同時押し、後置シフトの判定タイマー起動処理
 					timeLimit := 0.0
 					; 同時押しの判定
-					If (combDelay > 0
-					 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)))
+					If (pref.combDelay > 0
+					 && ((pref.combLimitN && !realBitAndKC_SPC) || (pref.combLimitS && realBitAndKC_SPC) || (pref.combLimitE && !kanaMode)))
 					{
-						timeLimit := keyTime + combDelay	; 期限の時間
+						timeLimit := keyTime + pref.combDelay	; 期限の時間
 						; 後置シフトも判定し、期限の長いほうを採用
-						If ((combinableBit & KC_SPC) && shiftDelay > combDelay)
-							timeLimit := keyTime + shiftDelay
+						If ((combinableBit & KC_SPC) && pref.shiftDelay > pref.combDelay)
+							timeLimit := keyTime + pref.shiftDelay
 					}
 					; 後置シフトの判定
 					Else If (combinableBit == KC_SPC)
-						timeLimit := keyTime + shiftDelay
+						timeLimit := keyTime + pref.shiftDelay
 					; タイマー起動
-					If (timeLimit != 0.0 && (interval := QPC() - timeLimit) < 0.0)
-						SetTimer, KeyTimer, %interval%	; 1回のみのタイマー
+					If (timeLimit != 0.0 && (interval := QPC.Read() - timeLimit) < 0.0)
+						SetTimer KeyTimer, interval	; 1回のみのタイマー
 				}
 			}
 			DispTime(keyTime)	; キー変化からの経過時間を表示
@@ -2250,9 +2238,10 @@ Convert()	; () -> Void
 						; 最大のスレッド数を設定
 
 ; キー入力部
+#SuspendExempt  ; 以下のホットキーをSuspendから除外
 ~LShift::
 *RShift::
-	Suspend, Permit	; ここまではSuspendの対象でないことを示す
+#SuspendExempt False  ; これよりSuspendの対象
 sc02::	; 1
 sc03::	; 2
 sc04::	; 3
@@ -2353,7 +2342,7 @@ sc39::	; Space
 +sc39::	; Space
 ; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
 ; UpキーとDownキーを取得する
-#If (spc || ent)
+#HotIf (spc || ent)
 Up::	; ※小文字にしてはいけない
 Down::
 Left::
@@ -2363,33 +2352,37 @@ End::
 PgUp::
 PgDn::
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift)
+#HotIf (pref.enterShift)
 Enter::
 +Enter::
 ; USキーボードの場合
-#If (USKB)
+#HotIf (OSInfo.uskb)
 sc29::	; (JIS)半角/全角	(US)`
 +sc29::	; (JIS)半角/全角	(US)`
-#If		; End #If ()
-; 入力バッファへ保存
+#HotIf		; End #HotIf ()
+{
+	global inBufWritePos, inBufRest
+
+	; 入力バッファへ保存
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
-	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
+	inBufsKey[inBufWritePos+1] := A_ThisHotkey, inBufsTime[inBufWritePos+1] := QPC.Read()
 		, inBufWritePos := (inBufRest > 16 ? ++inBufWritePos & 31 : inBufWritePos)	; キーを押す方はいっぱいまで使わない
-		, (inBufRest > 16 ? inBufRest-- : )
+		, (inBufRest > 16 ? inBufRest-- : "")
 	Convert()	; 変換ルーチン
 /*
 	If (testMode != "ERROR" && inBufRest <= 16 && A_TickCount >= trayTipTimeLimit)
 	{
-		TrayTip, , 入力バッファが一杯, , 16
+		TrayTip "入力バッファが一杯", , 16
 		trayTipTimeLimit := A_TickCount + 10000
 	}
 */
 	Return
-
+}
 ; キー押上げ
+#SuspendExempt  ; 以下のホットキーをSuspendから除外
 ~LShift up::
 *RShift up::
-	Suspend, Permit	; ここまではSuspendの対象でないことを示す
+#SuspendExempt False  ; これよりSuspendの対象
 sc02 up::	; 1
 sc03 up::	; 2
 sc04 up::	; 3
@@ -2490,7 +2483,7 @@ sc39 up::	; Space
 +sc39 up::	; Space
 ; Microsoft OneNote 対策のため、スペースキーかエンターキーを押しているときだけ
 ; UpキーとDownキーを取得する
-#If (spc || ent)
+#HotIf (spc || ent)
 Up up::	; ※小文字にしてはいけない
 Down up::
 Left up::
@@ -2500,20 +2493,24 @@ End up::
 PgUp up::
 PgDn up::
 ; エンター同時押しをシフトとして扱う場合
-#If (EnterShift)
+#HotIf (pref.enterShift)
 Enter up::
 +Enter up::
 ; USキーボードの場合
-#If (USKB)
+#HotIf (OSInfo.uskb)
 sc29 up::	; (JIS)半角/全角	(US)`
 +sc29 up::	; (JIS)半角/全角	(US)`
-#If		; End #If ()
-; 入力バッファへ保存
+#HotIf		; End #HotIf ()
+{
+	global inBufWritePos, inBufRest
+
+	; 入力バッファへ保存
 	; 参考: 鶴見惠一；6809マイコン・システム 設計手法，CQ出版社 p.114-121
-	inBufsKey[inBufWritePos] := A_ThisHotkey, inBufsTime[inBufWritePos] := QPC()
+	inBufsKey[inBufWritePos+1] := A_ThisHotkey, inBufsTime[inBufWritePos+1] := QPC.Read()
 		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)
-		, (inBufRest ? inBufRest-- : )
+		, (inBufRest ? inBufRest-- : "")
 	Convert()	; 変換ルーチン
 	Return
+}
 
 #MaxThreadsPerHotkey 1	; 元に戻す

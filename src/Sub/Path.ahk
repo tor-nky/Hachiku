@@ -28,7 +28,7 @@
 ;---  ファイルの有無をチェックする 戻り値 0:なし 1:あり ---
 ; ディレクトリ指定時も1が返る。UNCパス(\\%A_ComputerName%\hoge.txt 等)でもOK
 Path_FileExists(path)   {
-    Return DllCall("SHLWAPI.DLL\PathFileExists", Str,path, Int)
+    Return DllCall("SHLWAPI.DLL\PathFileExists", "Str", path, "Int")
 }
 
 ;=============================================================================
@@ -37,7 +37,7 @@ Path_FileExists(path)   {
 
 ;---- パス名の最後尾にバックスラッシュをつける -----
 Path_AddBackslash(path) {
-    DllCall("SHLWAPI.DLL\PathAddBackslash", Str, path)
+    DllCall("SHLWAPI.DLL\PathAddBackslash", "Str", path)
     return path
 }
 
@@ -48,7 +48,7 @@ Path_AddBackslash(path) {
 ;-----------------------------------------------------------
 Path_RenameExtension(path,ext)  {
     ext := ("." != SubStr(ext,1,1)) ? "." ext : ext     ;"."がない時は付加
-    DllCall("SHLWAPI.DLL\PathRenameExtension", Str,path, Str,ext)
+    DllCall("SHLWAPI.DLL\PathRenameExtension", "Str", path, "Str", ext)
     Return path
 }
 
@@ -58,6 +58,6 @@ Path_RenameExtension(path,ext)  {
 
 ;---- フルパス名から拡張子のみを除いたパス名を取得する ----
 Path_RemoveExtension(path)  {
-    DllCall("SHLWAPI.DLL\PathRemoveExtension", Str, path)
+    DllCall("SHLWAPI.DLL\PathRemoveExtension", "Str", path)
     return path
 }

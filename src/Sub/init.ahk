@@ -1,4 +1,4 @@
-﻿; Copyright 2021 Satoru NAKAYA
+﻿; Copyright 2021-2024 Satoru NAKAYA
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -16,26 +16,22 @@
 ;	3キー同時押し配列 初期設定
 ; **********************************************************************
 
-#NoEnv						; 変数名を解釈するとき、環境変数を無視する
-SetBatchLines, -1			; 自動Sleepなし
-ListLines, Off				; スクリプトの実行履歴を取らない
-SetKeyDelay, -1, -1			; キーストローク間のディレイを変更
-;Process, Priority, , High	; スクリプトを実行するプロセスの優先度を上げる
-#MenuMaskKey vk07			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
+ListLines False				; スクリプトの実行履歴を取らない
+SetKeyDelay -1, -1			; キーストローク間のディレイを変更
+;ProcessSetPriority "High"	; スクリプトを実行するプロセスの優先度を上げる
 #UseHook					; ホットキーはすべてフックを使用する
-Thread, Interrupt, 33, 11	; スレッド開始から約33ミリ秒ないし11行以内の割り込みを禁止
-SetStoreCapslockMode, Off	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
+Thread "Interrupt", 33, 13	; スレッド開始から約33ミリ秒ないし13行以内の割り込みを禁止
+SetStoreCapsLockMode False	; Sendコマンド実行時にCapsLockの状態を自動的に変更しない
 
-;SetFormat, Integer, H		; 数値演算の結果を、16進数の整数による文字列で表現する
-;CoordMode, ToolTip, Screen	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
+;CoordMode "ToolTip", "Screen"	; ToolTipの表示座標の扱いをスクリーン上での絶対座標にする
 
-#HotkeyInterval 1000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
-#MaxHotkeysPerInterval 120	; 指定時間の間に実行できる最大のホットキー数
+A_MenuMaskKey := "vk07"			; Win または Alt の押下解除時のイベントを隠蔽するためのキーを変更する
+A_HotkeyInterval := 1000		; 指定時間(ミリ秒単位)の間に実行できる最大のホットキー数
+A_MaxHotkeysPerInterval := 120	; 指定時間の間に実行できる最大のホットキー数
 
 
 ; ----------------------------------------------------------------------
 ; 配列定義で使う定数	Int64型定数
-;	関数内では #IncludeAgain %A_ScriptDir%/Sub/KeyBit_h.ahk で利用可能
 ; ----------------------------------------------------------------------
 ; キーを64bitの各ビットに割り当てる
 ; 右側の数字は仮想キーコードになっている
@@ -112,7 +108,7 @@ R := "Repeat"		; String型定数
 ;imeGetConvertingInterval	; Int型定数
 
 ; ----------------------------------------------------------------------
-; 共用変数(メニュー用は別途)
+; 共用変数
 ; ----------------------------------------------------------------------
 lastSendTime := 0.0	; Double型		最後に出力した時間
 kanaMode := 0		; Bool型		0: 英数入力, 1: かな入力
@@ -130,245 +126,89 @@ defsCombinableBit := []	; [Int64]型
 defBegin := [1, 1, 1]	; [Int]型	定義の始め 1キー, 2キー同時, 3キー同時
 defEnd	:= [1, 1, 1]	; [Int]型	定義の終わり+1 1キー, 2キー同時, 3キー同時
 ; 入力バッファ
-inBufsKey := []		; [String]型
-inBufsTime := []	; [Double]型	入力の時間
+inBufsKey := ["", "", "", "", "",  "", "", "", "", ""
+			, "", "", "", "", "",  "", "", "", "", ""
+			, "", "", "", "", "",  "", "", "", "", ""
+			, "", "", ]		; [String]型
+inBufsTime := [0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
+			 , 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
+			 , 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
+			 , 0.0, 0.0, ]	; [Double]型	入力の時間
 inBufReadPos := 0	; Int型			読み出し位置
 inBufWritePos := 0	; Int型			書き込み位置
 inBufRest := 31		; Int型
 ; 仮出力バッファ
 outStrs := []		; [String]型
 outCtrlNames := []	; [String]型
-outStrsLength := 0	; Int型			保存されている個数
 restStr := ""		; [String]型	下げたままのキー 例: +{Up}
 ; シフト用キーの状態
 spc		:= 0		; Int型	スペースキー 0: 押していない, 1: 単独押し, 2: シフト継続中, 3, 5: リピート中(3: かなを押すと変換取消→シフト側文字)
 ent		:= 0		; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
-repeatCount := 0	; Int型	リピート回数
+repeat_count := 0	; Int型	リピート回数
 
 goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
 
 ; ----------------------------------------------------------------------
-; OS情報
+; 設定ファイル読み込み
 ; ----------------------------------------------------------------------
-osBuild := SubStr(A_OSVersion, 6)	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
-
-; ----------------------------------------------------------------------
-; 設定ファイル読み込み ※規定外の値が書かれていたら、初期値になる
-; ----------------------------------------------------------------------
-
-; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
-iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
-
-; 参考: https://so-zou.jp/software/tool/system/auto-hot-key/commands/file.htm
-; [general]
-; バージョン記録
-	IniRead, iniVersion, %iniFilePath%, general, Version, ""
-
-; [Basic]
-; IMESelect		0: MS-IME専用, 1: ATOK使用, 2: Google 日本語入力
-	IniRead, imeSelect, %iniFilePath%, Basic, IMESelect
-	If (imeSelect != Floor(imeSelect) || imeSelect < 0 || imeSelect > 2)
-		imeSelect := 0	; 初期値
-; UsingKeyConfig	0: なし, 1: あり
-	IniRead, usingKeyConfig, %iniFilePath%, Basic, UsingKeyConfig
-	If (usingKeyConfig != Floor(usingKeyConfig) || usingKeyConfig < 0 || usingKeyConfig > 1)
-		usingKeyConfig := 0	; 初期値
-; USLike		0: 英数表記通り, 1: USキーボード風配列
-	IniRead, usLike, %iniFilePath%, Basic, USLike
-	If (usLike != Floor(usLike) || usLike < 0 || usLike > 1)
-		usLike := 0	; 初期値
-; SideShift		左右シフト	0または1: 英数２, 2: かな
-	IniRead, sideShift, %iniFilePath%, Basic, SideShift
-	If (sideShift != Floor(sideShift) || sideShift < 0 || sideShift > 2)
-		sideShift := 1	; 初期値
-; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
-	IniRead, enterShift, %iniFilePath%, Basic, EnterShift
-	If (enterShift != Floor(enterShift) || enterShift < 0 || enterShift > 1)
-		enterShift := 0	; 初期値
-; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
-	IniRead, shiftDelay, %iniFilePath%, Basic, ShiftDelay
-	If (shiftDelay < 0 || shiftDelay > 200)
-		shiftDelay := 0	; 初期値
-; CombDelay		0: 同時押しは時間無制限
-; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
-	IniRead, combDelay, %iniFilePath%, Basic, CombDelay
-	If (combDelay < 0 || combDelay > 200)
-		combDelay := 50	; 初期値
-; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
-	IniRead, spaceKeyRepeat, %iniFilePath%, Basic, SpaceKeyRepeat
-	If (spaceKeyRepeat != Floor(spaceKeyRepeat) || spaceKeyRepeat < 0 || spaceKeyRepeat > 2)
-		spaceKeyRepeat := 0	; 初期値
-; 英数単打のリピート	0: なし, 1: あり
-	IniRead, eisuRepeat, %iniFilePath%, Basic, EisuRepeat
-	If (eisuRepeat != Floor(eisuRepeat) || eisuRepeat < 0 || eisuRepeat > 1)
-		eisuRepeat := 1	; 初期値
-
-; [Naginata]
-; Vertical		0: 横書き用, 1: 縦書き用
-	IniRead, vertical, %iniFilePath%, Naginata, Vertical
-	If (vertical != Floor(vertical) || vertical < 0 || vertical > 1)
-		vertical := 1	; 初期値
-; 固有名詞ショートカットの選択
-	IniRead, koyuNumber, %iniFilePath%, Naginata, KoyuNumber, 1
-
-; [Advanced]
-;	通常時
-;		同時打鍵の判定期限	0: なし, 1: あり
-		IniRead, combLimitN, %iniFilePath%, Advanced, CombLimitN
-		If (combLimitN != Floor(combLimitN) || combLimitN < 0 || combLimitN > 1)
-			combLimitN := 0	; 初期値
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
-		IniRead, combStyleN, %iniFilePath%, Advanced, CombStyleN
-		If (combStyleN != Floor(combStyleN) || combStyleN < 0 || combStyleN > 3)
-			combStyleN := 3	; 初期値
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
-		IniRead, combKeyUpN, %iniFilePath%, Advanced, CombKeyUpN
-		If (combKeyUpN != Floor(combKeyUpN) || combKeyUpN < 0 || combKeyUpN > 2)
-			combKeyUpN := 0	; 初期値
-;	スペース押下時
-;		同時打鍵の判定期限	0: なし, 1: あり
-		IniRead, combLimitS, %iniFilePath%, Advanced, CombLimitS
-		If (combLimitS != Floor(combLimitS) || combLimitS < 0 || combLimitS > 1)
-			combLimitS := 1	; 初期値
-;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
-		IniRead, combStyleS, %iniFilePath%, Advanced, CombStyleS
-		If (combStyleS != Floor(combStyleS) || combStyleS < 0 || combStyleS > 3)
-			combStyleS := 3	; 初期値
-;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
-		IniRead, combKeyUpS, %iniFilePath%, Advanced, CombKeyUpS
-		If (combKeyUpS != Floor(combKeyUpS) || combKeyUpS < 0 || combKeyUpS > 2)
-			combKeyUpS := 2	; 初期値
-;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
-		IniRead, combLimitE, %iniFilePath%, Advanced, CombLimitE
-		If (combLimitE != Floor(combLimitE) || combLimitE < 0 || combLimitE > 1)
-			combLimitE := 0	; 初期値
-;	スペースキーを離した時の設定	0: 通常時, 1: スペース押下時
-		IniRead, combKeyUpSPC, %iniFilePath%, Advanced, CombKeyUpSPC
-		If (combKeyUpSPC != Floor(combKeyUpSPC) || combKeyUpSPC < 0 || combKeyUpSPC > 1)
-			combKeyUpSPC := 1	; 初期値
-; 英数入力時のSandS		0: なし, 1: あり
-	IniRead, eisuSandS, %iniFilePath%, Advanced, EisuSandS
-	If (eisuSandS != Floor(eisuSandS) || eisuSandS < 0 || eisuSandS > 1)
-		eisuSandS := 1	; 初期値
-; キーを離せば常に全部出力する	0: しない, 1: する
-	IniRead, keyUpToOutputAll, %iniFilePath%, Advanced, KeyUpToOutputAll
-	If (keyUpToOutputAll != Floor(keyUpToOutputAll) || keyUpToOutputAll < 0 || keyUpToOutputAll > 1)
-		keyUpToOutputAll := 0	; 初期値
-; テスト表示	0: なし, 1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列 ※iniになければ設定画面に表示しない
-	IniRead, testMode, %iniFilePath%, Advanced, TestMode
-	If (testMode != "ERROR" && (testMode != Floor(testMode) || testMode < 0 || testMode > 3))
-		testMode := 0	; 初期値
-; リピートの好み	0: 常に無制限, 1: 基本する, 2: 基本しない, 3: 全くしない
-		IniRead, repeatStyle, %iniFilePath%, Advanced, RepeatStyle
-		If (repeatStyle != Floor(repeatStyle) || repeatStyle < 0 || repeatStyle > 3)
-			repeatStyle := 2	; 初期値
-; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
-	IniRead, imeGetInterval, %iniFilePath%, Advanced, IME_Get_Interval
-	If (imeGetInterval < 0 || imeGetInterval > 2000)
-		imeGetInterval := 125	; 初期値
+pref := Preference()	; Object型	設定用
 
 ; ----------------------------------------------------------------------
 ; かな配列読み込み
 ; ----------------------------------------------------------------------
-	; キーボードドライバを調べて keyDriver に格納する
-	; 参考: https://ixsvr.dyndns.org/blog/764
-	RegRead, keyDriver, HKEY_LOCAL_MACHINE, SYSTEM\CurrentControlSet\Services\i8042prt\Parameters, LayerDriver JPN
-	USKB := (keyDriver = "kbd101.dll" ? True : False)	; Bool型
+
+	koyu := KoyuMeishi()	; Object型	固有名詞用
 
 	ReadLayout()	; かな配列読み込み
 	SettingLayout()	; 出力確定する定義に印をつける
-
-; ----------------------------------------------------------------------
-; メニューで使う変数	Bool型
-; ----------------------------------------------------------------------
-	; [Basic]
-	imeSelect0 := (imeSelect == 0 ? 1 : 0)
-	imeSelect1 := (imeSelect == 1 ? 1 : 0)
-	imeSelect2 := (imeSelect == 2 ? 1 : 0)
-	sideShift1 := (sideShift <= 1 ? 1 : 0)
-	sideShift2 := (sideShift > 1 ? 1 : 0)
-	enterShift0 := (!enterShift ? 1 : 0)
-	enterShift1 := (enterShift 1 ? 1 : 0)
-	spaceKeyRepeat0 := (spaceKeyRepeat == 0 ? 1 : 0)
-	spaceKeyRepeat1 := (spaceKeyRepeat == 1 ? 1 : 0)
-	spaceKeyRepeat2 := (spaceKeyRepeat == 2 ? 1 : 0)
-	; [Advanced]
-	combStyleN0 := (combStyleN == 0 ? 1 : 0)
-	combStyleN1 := (combStyleN == 1 ? 1 : 0)
-	combStyleN2 := (combStyleN == 2 ? 1 : 0)
-	combStyleN3 := (combStyleN == 3 ? 1 : 0)
-	combKeyUpN0 := (combKeyUpN == 0 ? 1 : 0)
-	combKeyUpN1 := (combKeyUpN == 1 ? 1 : 0)
-	combKeyUpN2 := (combKeyUpN == 2 ? 1 : 0)
-	combStyleS0 := (combStyleS == 0 ? 1 : 0)
-	combStyleS1 := (combStyleS == 1 ? 1 : 0)
-	combStyleS2 := (combStyleS == 2 ? 1 : 0)
-	combStyleS3 := (combStyleS == 3 ? 1 : 0)
-	combKeyUpS0 := (combKeyUpS == 0 ? 1 : 0)
-	combKeyUpS1 := (combKeyUpS == 1 ? 1 : 0)
-	combKeyUpS2 := (combKeyUpS == 2 ? 1 : 0)
-	combKeyUpSPC0 := (!combKeyUpSPC ? 1 : 0)
-	combKeyUpSPC1 := (combKeyUpSPC ? 1 : 0)
-	If (testMode != "ERROR")
-	{
-		testMode0 := (testMode == 0 ? 1 : 0)
-		testMode1 := (testMode == 1 ? 1 : 0)
-		testMode2 := (testMode == 2 ? 1 : 0)
-		testMode3 := (testMode == 3 ? 1 : 0)
-		repeatStyle0 := (repeatStyle == 0 ? 1 : 0)
-		repeatStyle1 := (repeatStyle == 1 ? 1 : 0)
-		repeatStyle2 := (repeatStyle == 2 ? 1 : 0)
-		repeatStyle3 := (repeatStyle == 3 ? 1 : 0)
-	}
 
 ; ----------------------------------------------------------------------
 ; メニュー表示
 ; ----------------------------------------------------------------------
 	; ツールチップを変更する
 	If (layoutNameE)
-		Menu, TRAY, Tip, Hachiku %version%`n%layoutNameE%`n+ %layoutName%`n固有名詞セット%koyuNumber%
+		A_IconTip := "Hachiku " . version . "`n" . layoutNameE . "`n+ " . layoutName . "`n固有名詞セット" . pref.koyuNumber
 	Else
-		Menu, TRAY, Tip, Hachiku %version%`n%layoutName%`n固有名詞セット%koyuNumber%
+		A_IconTip := "Hachiku " . version . "`n" . layoutName . "`n固有名詞セット" . pref.koyuNumber
 	; 標準メニュー項目を削除する
-	Menu, TRAY, NoStandard
+	A_TrayMenu.Delete()
 
 	; 薙刀式配列用メニュー
-	If (IsFunc("KoyuRegist"))	; 関数 KoyuRegist が存在するか
-	{
-		; 縦書きモード切替を追加
-		Menu, TRAY, Add, 縦書きモード, VerticalMode
-		ChangeVertical(vertical)
-		; 「固有名詞」編集画面を追加
-		Menu, TRAY, Add, 固有名詞登録, KoyuMenu
-	}
+	; 縦書きモード切替を追加
+	A_TrayMenu.Add("縦書きモード", VerticalMode)
+	ChangeVertical(pref.vertical)
+	; 「固有名詞」編集画面を追加
+	A_TrayMenu.Add("固有名詞登録", KoyuMenu)
 
-	Menu, TRAY, Add, 設定..., PrefMenu	; 設定画面を追加
-	Menu, TRAY, Add						; セパレーター
-	Menu, TRAY, Add, ログ表示, DispLog	; ログ
-	Menu, TRAY, Add						; セパレーター
-	Menu, TRAY, Standard	; 標準メニュー項目を追加する
+	A_TrayMenu.Add("設定...", PreferenceMenu)	; 設定画面を追加
+	A_TrayMenu.Add()	; セパレーター
+	A_TrayMenu.Add("ログ表示", DispLog)			; ログ
+	A_TrayMenu.Add()	; セパレーター
+	A_TrayMenu.AddStandard()	; 標準メニュー項目を追加する
 
 	; iniファイルがなけれは設定画面を表示
-	If (!Path_FileExists(iniFilePath))
-		Gosub, PrefMenu
+	If (!Path_FileExists(pref.iniFilePath))
+		PreferenceMenu()
 
 ; ----------------------------------------------------------------------
-; スクリプト終了時に実行させたいサブルーチンを指定
+; スクリプト終了時に実行させたい関数を指定
 ; ----------------------------------------------------------------------
-OnExit, ExitSub
+OnExit ExitSub
 
 Exit	; 起動時はここまで実行
 
 ; ----------------------------------------------------------------------
-; スクリプト終了時に実行するサブルーチン
+; スクリプト終了時に実行する関数
 ; ----------------------------------------------------------------------
-ExitSub:
+ExitSub(*)
+{
 	; 押し下げ出力中のキーを上げる
 	SendKeyUp()
 	; 右シフトが押されていればキーを下げる
 	If (GetKeyState("RShift", "P"))
-		Send, {RShift down}
+		Send "{RShift down}"
 	ExitApp
+}
 
 ; ----------------------------------------------------------------------
 ; メニュー動作
@@ -376,404 +216,497 @@ ExitSub:
 ; 参考: https://rcmdnk.com/blog/2017/11/07/computer-windows-autohotkey/
 
 ; 縦書きモード切替
-VerticalMode:
-	Menu, TRAY, ToggleCheck, 縦書きモード
-	ChangeVertical(vertical == 0 ? 1 : 0)
+VerticalMode(*)
+{
+	ChangeVertical(pref.vertical == 0 ? 1 : 0)
 	Return
+}
 
-ButtonOK:
-	Gui, Submit
-	; [general]
-	iniVersion := version
-	; [Basic]
-	imeSelect := (imeSelect0 ? 0 : (imeSelect1 ? 1 : 2))
-	sideShift := (sideShift1 ? 1 : 2)
-	enterShift := (enterShift0 ? 0 : 1)
-	spaceKeyRepeat := (spaceKeyRepeat0 ? 0 : (spaceKeyRepeat1 ? 1 : 2))
-	; [Advanced]
-	combStyleN := (combStyleN0 ? 0 : (combStyleN1 ? 1 : (combStyleN2 ? 2 : 3)))
-	combKeyUpN := (combKeyUpN0 ? 0 : (combKeyUpN1 ? 1 : 2))
-	combStyleS := (combStyleS0 ? 0 : (combStyleS1 ? 1 : (combStyleS2 ? 2 : 3)))
-	combKeyUpS := (combKeyUpS0 ? 0 : (combKeyUpS1 ? 1 : 2))
-	combKeyUpSPC := (combKeyUpSPC0 ? 0 : 1)
-	If (testMode != "ERROR")
-	{
-		testMode := (testMode0 ? 0 : (testMode1 ? 1 : (testMode2 ? 2 : 3)))
-		repeatStyle := (repeatStyle0 ? 0 : (repeatStyle1 ? 1 : (repeatStyle2 ? 2 : 3)))
-	}
-	; 設定ファイル書き込み
-	; [general]
-	IniWrite, %iniVersion%, %iniFilePath%, general, Version
-	; [Basic]
-	IniWrite, %imeSelect%, %iniFilePath%, Basic, IMESelect
-	IniWrite, %usingKeyConfig%, %iniFilePath%, Basic, UsingKeyConfig
-	IniWrite, %usLike%, %iniFilePath%, Basic, USLike
-	IniWrite, %sideShift%, %iniFilePath%, Basic, SideShift
-	IniWrite, %enterShift%, %iniFilePath%, Basic, EnterShift
-	IniWrite, %shiftDelay%, %iniFilePath%, Basic, ShiftDelay
-	IniWrite, %combDelay%, %iniFilePath%, Basic, CombDelay
-	IniWrite, %spaceKeyRepeat%, %iniFilePath%, Basic, SpaceKeyRepeat
-	IniWrite, %eisuRepeat%, %iniFilePath%, Basic, EisuRepeat
-	; [Naginata]
-	IniWrite, %vertical%, %iniFilePath%, Naginata, Vertical
-	IniWrite, %koyuNumber%, %iniFilePath%, Naginata, KoyuNumber
-	; [Advanced]
-	IniWrite, %combLimitN%, %iniFilePath%, Advanced, CombLimitN
-	IniWrite, %combStyleN%, %iniFilePath%, Advanced, CombStyleN
-	IniWrite, %combKeyUpN%, %iniFilePath%, Advanced, CombKeyUpN
-	IniWrite, %combLimitS%, %iniFilePath%, Advanced, CombLimitS
-	IniWrite, %combStyleS%, %iniFilePath%, Advanced, CombStyleS
-	IniWrite, %combKeyUpS%, %iniFilePath%, Advanced, CombKeyUpS
-	IniWrite, %combLimitE%, %iniFilePath%, Advanced, CombLimitE
-	IniWrite, %combKeyUpSPC%, %iniFilePath%, Advanced, CombKeyUpSPC
-	IniWrite, %eisuSandS%, %iniFilePath%, Advanced, EisuSandS
-	IniWrite, %keyUpToOutputAll%, %iniFilePath%, Advanced, KeyUpToOutputAll
-	If (testMode != "ERROR") {
-		IniWrite, %testMode%, %iniFilePath%, Advanced, TestMode
-		IniWrite, %repeatStyle%, %iniFilePath%, Advanced, RepeatStyle
-	}
-	IniWrite, %imeGetInterval%, %iniFilePath%, Advanced, IME_Get_Interval
+; 固有名詞ショートカット登録画面
+KoyuMenu(*)
+{
+	koyuGUI := koyu.Edit()
+}
 
-	Menu, TRAY, Icon, *	; トレイアイコンをいったん起動時のものに
-	DeleteDefs()		; 配列定義をすべて消去する
-	ReadLayout()		; かな配列読み込み
-	SettingLayout()		; 出力確定する定義に印をつける
-	; 関数 KoyuRegist が存在したらトレイアイコン変更
-	If (IsFunc("KoyuRegist"))
-		ChangeVertical(vertical)
-GuiEscape:
-ButtonCancel:
-ButtonClose:
-GuiClose:
-	; IME窓の検出可否をリセット
-	goodHwnd := badHwnd := 0
-	Gui, Destroy
-	Return
-
-; 設定画面
-PrefMenu:
-	Gui, Destroy
-	Gui, -MinimizeBox
-	Gui, Add, Text, , 設定
-
-	Gui, Add, Text, x+200 W180 Right, %version%
-	Gui, Add, Tab2, xm+140 y+0 Section Buttons Center, 基本|キー|同時打鍵
-
-	; 「基本」メニュー
-	Gui, Tab, 基本
-		; IMEの選択
-		Gui, Add, Text, xm ys+40, IMEの選択
-		Gui, Add, Radio, xm+68 yp+0 Group VimeSelect0, MS-IME
-		Gui, Add, Radio, x+0 VimeSelect1, ATOK
-		Gui, Add, Radio, x+0 VimeSelect2, Google
-		If (imeSelect0)
-			GuiControl, , imeSelect0, 1
-		Else If (imeSelect1)
-			GuiControl, , imeSelect1, 1
-		Else
-			GuiControl, , imeSelect2, 1
-		; キー設定利用
-		Gui, Add, Checkbox, xm+18 y+5 VusingKeyConfig, キー設定利用 (Ctrl+Shift+変換⇒全確定、Ctrl+Shift+無変換⇒全消去)
-		If (usingKeyConfig)
-			GuiControl, , usingKeyConfig, 1
-		; 後置シフトの待ち時間
-		Gui, Add, Text, xm y+15, 後置シフトの待ち時間
-		Gui, Add, Edit, xm+122 yp-3 W45 Number Right
-		Gui, Add, UpDown, VshiftDelay Range0-200, %shiftDelay%
-		Gui, Add, Text, x+5 yp+3, ミリ秒
-		; 英数単打のリピート
-		Gui, Add, Checkbox, x+55 VeisuRepeat, 英数単打のリピート
-		If (eisuRepeat)
-			GuiControl, , eisuRepeat, 1
-		; テストモードが無効の時
-		If (testMode = "ERROR")
-		{
-			; 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Text, xm y+30, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
-			Gui, Add, UpDown, VimeGetInterval Range0-500 128, %imeGetInterval%
-			Gui, Add, Text, x+5 yp+3, ミリ秒
-		}
-		; テストモード
-		Else
-		{
-			; テスト表示
-			Gui, Add, Text, xm ys+132, テスト表示
-			Gui, Add, Radio, xm+75 yp+0 Group VtestMode0, なし
-			Gui, Add, Radio, x+0 VtestMode1, 処理時間
-			Gui, Add, Radio, x+0 VtestMode2, 表示待ち文字列
-			Gui, Add, Radio, x+0 VtestMode3, 出力文字列
-			If (testMode0)
-				GuiControl, , testMode0, 1
-			Else If (testMode1)
-				GuiControl, , testMode1, 1
-			Else If (testMode2)
-				GuiControl, , testMode2, 1
-			Else
-				GuiControl, , testMode3, 1
-			; リピートの好み
-			Gui, Add, Text, xm y+8, リピートの好み
-			Gui, Add, Radio, xm+75 yp+0 Group VrepeatStyle0, 常に無制限
-			Gui, Add, Radio, x+0 VrepeatStyle1, 基本する
-			Gui, Add, Radio, x+0 VrepeatStyle2, 基本しない
-			Gui, Add, Radio, x+0 VrepeatStyle3, 全くしない
-			If (repeatStyle0)
-				GuiControl, , repeatStyle0, 1
-			Else If (repeatStyle1)
-				GuiControl, , repeatStyle1, 1
-			Else If (repeatStyle2)
-				GuiControl, , repeatStyle2, 1
-			Else
-				GuiControl, , repeatStyle3, 1
-			; 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Text, xm y+10, 文字出力後に IME の状態を検出しない時間
-			Gui, Add, Edit, xm+235 yp-3 W51 Number Right
-			Gui, Add, UpDown, VimeGetInterval Range0-2000 128, %imeGetInterval%
-			Gui, Add, Text, x+5 yp+3, ミリ秒
-		}
-	; 「キー」メニュー
-	Gui, Tab, キー
-		; 記号をUSキーボード風にする
-		; 関数 USLikeLayout が存在したら
-		If (IsFunc("USLikeLayout"))
-		{
-			Gui, Add, Checkbox, xm y+10 VusLike, 記号をUSキーボード風にする
-			If (usLike)
-				GuiControl, , usLike, 1
-			Gui, Add, Text, xm+18 y+1, ※ 日本語キーボードの時のみ有効です
-		}
-		; 左右シフト
-		Gui, Add, Text, xm y+10, 左右シフト
-		Gui, Add, Radio, xm+68 yp+0 Group VsideShift1, 英数
-		Gui, Add, Radio, x+0 VsideShift2, かな
-		If (sideShift1)
-			GuiControl, , sideShift1, 1
-		Else
-			GuiControl, , sideShift2, 1
-		; エンター
-		Gui, Add, Text, xm y+5, エンター
-		Gui, Add, Radio, xm+68 yp+0 Group VenterShift0, 通常
-		Gui, Add, Radio, x+0 VenterShift1, 同時押しシフト
-		If (enterShift0)
-			GuiControl, , enterShift0, 1
-		Else
-			GuiControl, , enterShift1, 1
-		; スペースキーの長押し
-		Gui, Add, Text, xm y+10, スペースキーの長押し
-		Gui, Add, Radio, xm+18 y+3 Group VspaceKeyRepeat0, 何もしない
-		Gui, Add, Radio, x+0 VspaceKeyRepeat1, 空白キャンセル
-		Gui, Add, Radio, x+0 VspaceKeyRepeat2, 空白リピート
-		If (spaceKeyRepeat0)
-			GuiControl, , spaceKeyRepeat0, 1
-		Else If (spaceKeyRepeat1)
-			GuiControl, , spaceKeyRepeat1, 1
-		Else
-			GuiControl, , spaceKeyRepeat2, 1
-		; 英数入力時のSandS
-		Gui, Add, Checkbox, xm y+15 VeisuSandS, 英数入力時のSandS
-		If (eisuSandS)
-			GuiControl, , eisuSandS, 1
-		; キーを離せば常に全部出力する
-		Gui, Add, Checkbox, xm y+15 VkeyUpToOutputAll, キーを離せば常に全部出力する
-		If (keyUpToOutputAll)
-			GuiControl, , keyUpToOutputAll, 1
-	; 「同時打鍵」メニュー
-	Gui, Tab, 同時打鍵
-		; 同時打鍵判定
-		Gui, Add, Text, xm y+10, 同時打鍵判定
-		Gui, Add, Edit, xm+95 yp-3 W45 Number Right
-		Gui, Add, UpDown, VcombDelay Range0-200, %combDelay%
-		Gui, Add, Text, x+5 yp+3, ミリ秒 ※ 0 は無制限
-		; 通常
-		Gui, Add, Text, xm+10 y+10, 通常
-			; 判定期限
-			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitN, 判定期限
-			If (combLimitN)
-				GuiControl, , combLimitN, 1
-			; 文字キーシフト
-			Gui, Add, Text, xm+20 y+5, 文字キーシフト
-			Gui, Add, Radio, xm+105 yp+0 Group VcombStyleN0, ずっと
-			Gui, Add, Radio, x+0 VcombStyleN1, 途切れるまで
-			Gui, Add, Radio, x+0 VcombStyleN2, 同グループのみ継続
-			Gui, Add, Radio, x+0 VcombStyleN3, 1回のみ
-			If (combStyleN0)
-				GuiControl, , combStyleN0, 1
-			Else If (combStyleN1)
-				GuiControl, , combStyleN1, 1
-			Else If (combStyleN2)
-				GuiControl, , combStyleN2, 1
-			Else
-				GuiControl, , combStyleN3, 1
-			; キーを離すと
-			Gui, Add, Text, xm+20 y+5, キーを離すと
-			Gui, Add, Radio, xm+105 yp+0 Group VcombKeyUpN0, 全復活
-			Gui, Add, Radio, x+0 VcombKeyUpN1, そのまま
-			Gui, Add, Radio, x+0 VcombKeyUpN2, 全部出力済みなら解除
-			If (combKeyUpN0)
-				GuiControl, , combKeyUpN0, 1
-			Else If (combKeyUpN1)
-				GuiControl, , combKeyUpN1, 1
-			Else
-				GuiControl, , combKeyUpN2, 1
-		; スペース押下時
-		Gui, Add, Text, xm+10 y+5, スペース押下時
-			; 判定期限
-			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitS, 判定期限
-			If (combLimitS)
-				GuiControl, , combLimitS, 1
-			; 文字キーシフト
-			Gui, Add, Text, xm+20 y+5, 文字キーシフト
-			Gui, Add, Radio, xm+105 yp+0 Group VcombStyleS0, ずっと
-			Gui, Add, Radio, x+0 VcombStyleS1, 途切れるまで
-			Gui, Add, Radio, x+0 VcombStyleS2, 同グループのみ継続
-			Gui, Add, Radio, x+0 VcombStyleS3, 1回のみ
-			If (combStyleS0)
-				GuiControl, , combStyleS0, 1
-			Else If (combStyleS1)
-				GuiControl, , combStyleS1, 1
-			Else If (combStyleS2)
-				GuiControl, , combStyleS2, 1
-			Else
-				GuiControl, , combStyleS3, 1
-			; キーを離すと
-			Gui, Add, Text, xm+20 y+5, キーを離すと
-			Gui, Add, Radio, xm+105 yp+0 Group VcombKeyUpS0, 全復活
-			Gui, Add, Radio, x+0 VcombKeyUpS1, そのまま
-			Gui, Add, Radio, x+0 VcombKeyUpS2, 全部出力済みなら解除
-			If (combKeyUpS0)
-				GuiControl, , combKeyUpS0, 1
-			Else If (combKeyUpS1)
-				GuiControl, , combKeyUpS1, 1
-			Else
-				GuiControl, , combKeyUpS2, 1
-		; 英数入力時
-		Gui, Add, Text, xm+10 y+5, 英数入力時
-			; 判定期限ありを強制する
-			Gui, Add, Checkbox, xm+95 yp+0 VcombLimitE, 判定期限強制 ※文字キーシフトは｢同グループのみ｣か｢1回のみ｣
-			If (combLimitE)
-				GuiControl, , combLimitE, 1
-		; スペースキーを離した時の設定
-		Gui, Add, Text, xm+10 y+5, スペースキーを離した時の設定
-			Gui, Add, Radio, xm+160 yp+0 Group VcombKeyUpSPC0, 通常時
-			Gui, Add, Radio, x+0 VcombKeyUpSPC1, スペース押下時
-			If (combKeyUpSPC0)
-				GuiControl, , combKeyUpSPC0, 1
-			Else
-				GuiControl, , combKeyUpSPC1, 1
-
-	Gui, Tab
-	Gui, Add, Button, W60 xm+146 ys+200 Default, OK
-	Gui, Add, Button, W60 x+0, Cancel
-
-	Gui, Show
-	Return
+; 設定メニュー
+PreferenceMenu(*)
+{
+	prefMenu := pref.Edit()
+}
 
 ; ログ表示
-DispLog:
-	DispLogFunc()
-	Return
-; ログ表示(本体)
-DispLogFunc()	; () -> Void型
+DispLog(*)
 {
-	global inBufsKey, inBufReadPos, inBufsTime, USKB, testMode
-;	local scanCodeArray					; [String]型
-;		, lastKeyTime, keyTime, diff	; Double型
-;		, pos, number					; Int型
-;		, str, c, preStr, term, temp	; String型
+	log := DisplayLog()
+}
 
-	; USキーボード
-	If (USKB)
-		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
-			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
-			, "D", "F", "G", "H", "J", "K", "L", ";", "'", "`", "LShift", "\", "Z", "X", "C", "V"
-			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5"
-			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
-			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
-			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
-			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
-			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
-	; USキーボード以外
-	Else
-		scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
-			, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
-			, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
-			, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "英数", "F1", "F2", "F3", "F4", "F5"
-			, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
-			, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
-			, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
-			, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
-			, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+; ----------------------------------------------------------------------
+; クラス
+; ----------------------------------------------------------------------
 
-	Gui, Destroy
-	Gui, -MinimizeBox
-	Gui, Add, Text, xm, ≪ログ≫
-	lastKeyTime := 0.0
-	pos := inBufReadPos
-	While ((pos := ++pos & 31) != inBufReadPos)
+; OS情報
+class OSInfo
+{
+	; OS情報
+	static build := ""
+	static keyDriver := ""	; String型
+	static uskb := ""		; Bool型
+
+	static __New()
 	{
-		str := inBufsKey[pos], keyTime := inBufsTime[pos]
-		If (str)
-		{
-			; 時間を書き出し
-			If (lastKeyTime)
-			{
-				If (testMode != "ERROR")
-					diff := round(keyTime - lastKeyTime, 1)
-				Else
-					diff := round(keyTime - lastKeyTime)
-				Gui, Add, Text, xm, % "(" . diff . "ms) "
-			}
-			Else
-				Gui, Add, Text, xm
+		; local var[]	; [Int]型
 
-			; 修飾キー
-			preStr := ""
-			While (c := SubStr(str, 1, 1))
-			{
-				If (c == "+" || c == "^" || c == "!" || c == "#"
-				 || c == "<" || c == ">")
-				{
-					; 先頭の文字を分離
-					preStr .= c
-					str := SubStr(str, 2)
-				}
-				Else If (c == "*" || c == "~" || c == "$")
-					; 表示させたくない先頭の文字を消去
-					str := SubStr(str, 2)
-				Else
-					Break
-			}
-			; キーの上げ下げを調べる
-			StringRight, term, str, 3	; term に入力末尾の2文字を入れる
-			If (term = " up")
-			{
-				; キーが離されたとき
-				term := "↑"
-				str := SubStr(str, 1, StrLen(str) - 3)
-			}
-			Else
-				term := ""
-
-			; 書き出し
-			If (str = "KeyTimer")
-				str := "[KeyTimer]"
-			Else If (str = "vk1A")
-				str := "(Mac)英数"
-			Else If (str = "vk16")
-				str := "(Mac)かな"
-			Else If (SubStr(str, 1, 2) = "sc")
-			{
-				number := "0x" . SubStr(str, 3, 2)
-				temp := scanCodeArray[number]
-				If (temp != "")
-					str := temp
-			}
-			Gui, Add, Text, xm+60 yp, % preStr . str . term
-		}
-		; 押した時間を保存
-		lastKeyTime := keyTime
+		RegExMatch(A_OSVersion, "(\d+)", &var, -1)	; 右から数字を検索
+		this.build := var[1]	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
+		; キーボードドライバを調べて keyDriver に格納する
+		; 参考: https://ixsvr.dyndns.org/blog/764
+		static keyDriver := RegRead("HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "LayerDriver JPN")
+		static uskb := (keyDriver = "kbd101.dll" ? True : False)	; Bool型
 	}
-	Gui, Add, Button, W60 xm+30 y+10 Default, Close
-	Gui, Show
-	Return
+}
+
+; 設定関連
+class Preference
+{
+	; 設定ファイル読み込み ※規定外の値が書かれていたら、初期値になる
+	__New()
+	{
+		; local str		; String型
+
+		; スクリプトのパス名の拡張子をiniに付け替え、スペースを含んでいたら""でくくる
+		this.iniFilePath := Path_RenameExtension(A_ScriptFullPath, "ini")	; String型
+
+		; [general]
+		; バージョン記録
+			; this.iniVersion := IniRead(this.iniFilePath, "general", "Version", "")
+
+		; [Basic]
+		; IMESelect		0: MS-IME専用, 1: ATOK使用, 2: Google 日本語入力
+			str := IniRead(this.iniFilePath, "Basic", "IMESelect", "")
+			this.imeSelect := Normalize(str, 0, 2, 0)
+		; UsingKeyConfig	0: なし, 1: あり
+			str := IniRead(this.iniFilePath, "Basic", "UsingKeyConfig", "")
+			this.usingKeyConfig := Normalize(str, 0, 1, 0)
+		; USLike		0: 英数表記通り, 1: USキーボード風配列
+			str := IniRead(this.iniFilePath, "Basic", "USLike", "")
+			this.usLike := Normalize(str, 0, 1, 0)
+		; SideShift		左右シフト	0または1: 英数２, 2: かな
+			str := IniRead(this.iniFilePath, "Basic", "SideShift", "")
+			this.sideShift := Normalize(str, 1, 2, 1)
+		; EnterShift	0: 通常のエンター, 1: エンター同時押しをシフトとして扱う
+			str := IniRead(this.iniFilePath, "Basic", "EnterShift", "")
+			this.enterShift := Normalize(str, 0, 1, 0)
+		; ShiftDelay	0: 通常シフト, 1-200: 後置シフトの待ち時間(ミリ秒)
+			str := IniRead(this.iniFilePath, "Basic", "ShiftDelay", "")
+			this.shiftDelay := Normalize(str, 0, 200, 0)
+		; CombDelay		0: 同時押しは時間無制限
+		; 				1-200: シフト中の同時打鍵判定時間(ミリ秒)
+			str := IniRead(this.iniFilePath, "Basic", "CombDelay", "")
+			this.combDelay := Normalize(str, 0, 200, 50)
+		; SpaceKeyRepeat	スペースキーの長押し	0: 何もしない, 1: 空白キャンセル, 2: 空白リピート
+			str := IniRead(this.iniFilePath, "Basic", "SpaceKeyRepeat", "")
+			this.spaceKeyRepeat := Normalize(str, 0, 2, 0)
+		; 英数単打のリピート	0: なし, 1: あり
+			str := IniRead(this.iniFilePath, "Basic", "EisuRepeat", "")
+			this.eisuRepeat := Normalize(str, 0, 1, 1)
+
+		; [Naginata]
+		; Vertical		0: 横書き用, 1: 縦書き用
+			str := IniRead(this.iniFilePath, "Naginata", "Vertical", "")
+			this.vertical := Normalize(str, 0, 1, 1)
+		; 固有名詞ショートカットの選択
+			this.koyuNumber := IniRead(this.iniFilePath, "Naginata", "KoyuNumber", 1)
+
+		; [Advanced]
+		;	通常時
+		;		同時打鍵の判定期限	0: なし, 1: あり
+				str := IniRead(this.iniFilePath, "Advanced", "CombLimitN", "")
+				this.combLimitN := Normalize(str, 0, 1, 0)
+		;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+				str := IniRead(this.iniFilePath, "Advanced", "CombStyleN", "")
+				this.combStyleN := Normalize(str, 0, 3, 3)
+		;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
+				str := IniRead(this.iniFilePath, "Advanced", "CombKeyUpN", "")
+				this.combKeyUpN := Normalize(str, 0, 2, 0)
+		;	スペース押下時
+		;		同時打鍵の判定期限	0: なし, 1: あり
+				str := IniRead(this.iniFilePath, "Advanced", "CombLimitS", "")
+				this.combLimitS := Normalize(str, 0, 1, 1)
+		;		文字キーシフト		0: ずっと, 1: 途切れるまで, 2: 同グループのみ継続, 3: 1回のみ
+				str := IniRead(this.iniFilePath, "Advanced", "CombStyleS", "")
+				this.combStyleS := Normalize(str, 0, 3, 3)
+		;		キーを離すと		0: 全復活, 1: そのまま, 2: 全部出力済みなら解除
+				str := IniRead(this.iniFilePath, "Advanced", "CombKeyUpS", "")
+				this.combKeyUpS := Normalize(str, 0, 2, 2)
+		;	英数時の同時打鍵期限を強制する	0: なし, 1: あり
+				str := IniRead(this.iniFilePath, "Advanced", "CombLimitE", "")
+				this.combLimitE := Normalize(str, 0, 1, 0)
+		;	スペースキーを離した時の設定	0: 通常時, 1: スペース押下時
+				str := IniRead(this.iniFilePath, "Advanced", "CombKeyUpSPC", "")
+				this.combKeyUpSPC := Normalize(str, 0, 1, 1)
+		; 英数入力時のSandS		0: なし, 1: あり
+			str := IniRead(this.iniFilePath, "Advanced", "EisuSandS", "")
+			this.eisuSandS := Normalize(str, 0, 1, 1)
+		; キーを離せば常に全部出力する	0: しない, 1: する
+			str := IniRead(this.iniFilePath, "Advanced", "KeyUpToOutputAll", "")
+			this.keyUpToOutputAll := Normalize(str, 0, 1, 0)
+		; テスト表示	0: なし, 1: 処理時間, 2: 表示待ち文字列, 3: 出力文字列 ※iniになければ設定画面に表示しない
+			str := IniRead(this.iniFilePath, "Advanced", "TestMode", "")
+			this.testMode := Normalize(str, 0, 3, "NONE")
+		; リピートの好み	0: 常に無制限, 1: 基本する, 2: 基本しない, 3: 全くしない
+				str := IniRead(this.iniFilePath, "Advanced", "RepeatStyle", "")
+				this.repeatStyle := Normalize(str, 0, 3, 2)
+		; IME_Get_Interval	文字出力後に IME の状態を検出しない時間(ミリ秒)
+			str := IniRead(this.iniFilePath, "Advanced", "IME_Get_Interval", "")
+			this.imeGetInterval := Normalize(str, 0, 2000, 125)
+
+		; 文字列から数値を取り出す
+		; min から max の範囲に入っていなければ、default を返す
+		; (str: String, min: Int, max: Int, default) -> Any ※ defalut は数値でなくてもよい
+		Normalize(str, min, max, default)
+		{
+			If (IsInteger(str))
+			{
+				value := Integer(str)
+				If (min <= value && value <= max)
+					Return value
+			}
+			Return default
+		}
+	}
+
+	; 設定メニュー
+	Edit()
+	{
+		; GUI操作
+		this.menu := Gui()
+		this.menu.Opt("-MinimizeBox")	; タイトルバーの最小化ボタンを無効化
+		this.menu.Add("Text", , "設定")
+
+		this.menu.Add("Text", "x+200 W180 Right", version)
+
+		tab := this.menu.Add("Tab2", "xm+140 y+0 Section Buttons Center", ["基本", "キー", "同時打鍵"])
+		; 「基本」メニュー
+			; IMEの選択
+			this.menu.Add("Text", "xm ys+40", "IMEの選択")
+			this.menu.Add("Radio", "xm+68 yp+0 Group VimeSelect" . (pref.imeSelect == 0 ? " Checked" : ""), "MS-IME")
+			this.menu.Add("Radio", "x+0"						 . (pref.imeSelect == 1 ? " Checked" : ""), "ATOK")
+			this.menu.Add("Radio", "x+0"						 . (pref.imeSelect == 2 ? " Checked" : ""), "Google")
+			; キー設定利用
+			this.menu.Add("Checkbox", "xm+18 y+5 VusingKeyConfig" . (pref.usingKeyConfig ? " Checked" : ""), "キー設定利用 (Ctrl+Shift+変換⇒全確定、Ctrl+Shift+無変換⇒全消去)")
+			; 後置シフトの待ち時間
+			this.menu.Add("Text", "xm y+15", "後置シフトの待ち時間")
+			this.menu.Add("Edit", "xm+122 yp-3 W45 Number Right")
+			this.menu.Add("UpDown", "VshiftDelay Range0-200", pref.shiftDelay)
+			this.menu.Add("Text", "x+5 yp+3", "ミリ秒")
+			; 英数単打のリピート
+			this.menu.Add("Checkbox", "x+55 VeisuRepeat" . (pref.eisuRepeat ? " Checked" : ""), "英数単打のリピート")
+			; テストモードが無効の時
+			If (pref.testMode = "NONE")
+			{
+				; 文字出力後に IME の状態を検出しない時間
+				this.menu.Add("Text", "xm y+30", "文字出力後に IME の状態を検出しない時間")
+				this.menu.Add("Edit", "xm+235 yp-3 W51 Number Right")
+				this.menu.Add("UpDown", "VimeGetInterval Range0-500 128", pref.imeGetInterval)
+				this.menu.Add("Text", "x+5 yp+3", "ミリ秒")
+			}
+			; テストモード
+			Else
+			{
+				; テスト表示
+				this.menu.Add("Text", "xm ys+132", "テスト表示")
+				this.menu.Add("Radio", "xm+75 yp+0 Group VtestMode" . (pref.testMode == 0 ? " Checked" : ""), "なし")
+				this.menu.Add("Radio", "x+0"						. (pref.testMode == 1 ? " Checked" : ""), "処理時間")
+				this.menu.Add("Radio", "x+0"						. (pref.testMode == 2 ? " Checked" : ""), "表示待ち文字列")
+				this.menu.Add("Radio", "x+0"						. (pref.testMode == 3 ? " Checked" : ""), "出力文字列")
+				; リピートの好み
+				this.menu.Add("Text", "xm y+8", "リピートの好み")
+				this.menu.Add("Radio", "xm+75 yp+0 Group VrepeatStyle" . (pref.repeatStyle == 0 ? " Checked" : ""), "常に無制限")
+				this.menu.Add("Radio", "x+0"						   . (pref.repeatStyle == 1 ? " Checked" : ""), "基本する")
+				this.menu.Add("Radio", "x+0"						   . (pref.repeatStyle == 2 ? " Checked" : ""), "基本しない")
+				this.menu.Add("Radio", "x+0"						   . (pref.repeatStyle == 3 ? " Checked" : ""), "全くしない")
+				; 文字出力後に IME の状態を検出しない時間
+				this.menu.Add("Text", "xm y+10", "文字出力後に IME の状態を検出しない時間")
+				this.menu.Add("Edit", "xm+235 yp-3 W51 Number Right")
+				this.menu.Add("UpDown", "VimeGetInterval Range0-2000 128", pref.imeGetInterval)
+				this.menu.Add("Text", "x+5 yp+3", "ミリ秒")
+			}
+		; 「キー」メニュー
+		tab.UseTab(2)
+			; 記号をUSキーボード風にする
+			this.menu.Add("Checkbox", "xm y+10 VusLike" . (pref.usLike ? " Checked" : ""), "記号をUSキーボード風にする")
+			this.menu.Add("Text", "xm+18 y+1", "※ 日本語キーボードの時のみ有効です")
+			; 左右シフト
+			this.menu.Add("Text", "xm y+10", "左右シフト")
+			this.menu.Add("Radio", "xm+68 yp+0 Group VsideShift" . (pref.sideShift <= 1 ? " Checked" : ""), "英数")
+			this.menu.Add("Radio", "x+0"						 . (pref.sideShift == 2 ? " Checked" : ""), "かな")
+			; エンター
+			this.menu.Add("Text", "xm y+5", "エンター")
+			this.menu.Add("Radio", "xm+68 yp+0 Group VenterShift" . (pref.enterShift == 0 ? " Checked" : ""), "通常")
+			this.menu.Add("Radio", "x+0"						  . (pref.enterShift == 1 ? " Checked" : ""), "同時押しシフト")
+			; スペースキーの長押し
+			this.menu.Add("Text", "xm y+10", "スペースキーの長押し")
+			this.menu.Add("Radio", "xm+18 y+3 Group VspaceKeyRepeat" . (pref.spaceKeyRepeat == 0 ? " Checked" : ""), "何もしない")
+			this.menu.Add("Radio", "x+0"							 . (pref.spaceKeyRepeat == 1 ? " Checked" : ""), "空白キャンセル")
+			this.menu.Add("Radio", "x+0"							 . (pref.spaceKeyRepeat == 2 ? " Checked" : ""), "空白リピート")
+			; 英数入力時のSandS
+			this.menu.Add("Checkbox", "xm y+15 VeisuSandS" . (pref.eisuSandS ? " Checked" : ""), "英数入力時のSandS")
+			; キーを離せば常に全部出力する
+			this.menu.Add("Checkbox", "xm y+15 VkeyUpToOutputAll" . (pref.keyUpToOutputAll ? " Checked" : ""), "キーを離せば常に全部出力する")
+		; 「同時打鍵」メニュー
+		tab.UseTab(3)
+			; 同時打鍵判定
+			this.menu.Add("Text", "xm y+10", "同時打鍵判定")
+			this.menu.Add("Edit", "xm+95 yp-3 W45 Number Right")
+			this.menu.Add("UpDown", "VcombDelay Range0-200", pref.combDelay)
+			this.menu.Add("Text", "x+5 yp+3", "ミリ秒 ※ 0 は無制限")
+			; 通常
+			this.menu.Add("Text", "xm+10 y+10", "通常")
+				; 判定期限
+				this.menu.Add("Checkbox", "xm+95 yp+0 VcombLimitN" . (pref.combLimitN ? " Checked" : ""), "判定期限")
+				; 文字キーシフト
+				this.menu.Add("Text", "xm+20 y+5", "文字キーシフト")
+				this.menu.Add("Radio", "xm+105 yp+0 Group VcombStyleN" . (pref.combStyleN == 0 ? " Checked" : ""), "ずっと")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleN == 1 ? " Checked" : ""), "途切れるまで")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleN == 2 ? " Checked" : ""), "同グループのみ継続")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleN == 3 ? " Checked" : ""), "1回のみ")
+				; キーを離すと
+				this.menu.Add("Text", "xm+20 y+5", "キーを離すと")
+				this.menu.Add("Radio", "xm+105 yp+0 Group VcombKeyUpN" . (pref.combKeyUpN == 0 ? " Checked" : ""), "全復活")
+				this.menu.Add("Radio", "x+0"						   . (pref.combKeyUpN == 1 ? " Checked" : ""), "そのまま")
+				this.menu.Add("Radio", "x+0"						   . (pref.combKeyUpN == 2 ? " Checked" : ""), "全部出力済みなら解除")
+			; スペース押下時
+			this.menu.Add("Text", "xm+10 y+5", "スペース押下時")
+				; 判定期限
+				this.menu.Add("Checkbox", "xm+95 yp+0 VcombLimitS" . (pref.combLimitS ? " Checked" : ""), "判定期限")
+				; 文字キーシフト
+				this.menu.Add("Text", "xm+20 y+5", "文字キーシフト")
+				this.menu.Add("Radio", "xm+105 yp+0 Group VcombStyleS" . (pref.combStyleS == 0 ? " Checked" : ""), "ずっと")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleS == 1 ? " Checked" : ""), "途切れるまで")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleS == 2 ? " Checked" : ""), "同グループのみ継続")
+				this.menu.Add("Radio", "x+0"						   . (pref.combStyleS == 3 ? " Checked" : ""), "1回のみ")
+				; キーを離すと
+				this.menu.Add("Text", "xm+20 y+5", "キーを離すと")
+				this.menu.Add("Radio", "xm+105 yp+0 Group VcombKeyUpS" . (pref.combKeyUpS == 0 ? " Checked" : ""), "全復活")
+				this.menu.Add("Radio", "x+0"						   . (pref.combKeyUpS == 1 ? " Checked" : ""), "そのまま")
+				this.menu.Add("Radio", "x+0"						   . (pref.combKeyUpS == 2 ? " Checked" : ""), "全部出力済みなら解除")
+			; 英数入力時
+			this.menu.Add("Text", "xm+10 y+5", "英数入力時")
+				; 判定期限ありを強制する
+				this.menu.Add("Checkbox", "xm+95 yp+0 VcombLimitE" . (pref.combLimitE ? " Checked" : ""), "判定期限強制 ※文字キーシフトは｢同グループのみ｣か｢1回のみ｣")
+			; スペースキーを離した時の設定
+			this.menu.Add("Text", "xm+10 y+5", "スペースキーを離した時の設定")
+				this.menu.Add("Radio", "xm+160 yp+0 Group VcombKeyUpSPC" . (pref.combKeyUpSPC == 0 ? " Checked" : ""), "通常時")
+				this.menu.Add("Radio", "x+0"							 . (pref.combKeyUpSPC == 1 ? " Checked" : ""), "スペース押下時")
+
+		tab.UseTab()	; あとのコントロールはタブに属さない
+		this.menu.Add("Button", "W60 xm+146 ys+200 Default", "OK").OnEvent("Click", Okay)
+		this.menu.Add("Button", "W60 x+0", "Cancel").OnEvent("Click", Cancel)
+		this.menu.OnEvent("Escape", Cancel)
+		this.menu.Show()
+
+		Cancel(*)
+		{
+			this.menu.Destroy()
+		}
+
+		Okay(*)
+		{
+			global goodHwnd, badHwnd
+
+			Saved := this.menu.Submit()	; 名前付きコントロールの内容を、オブジェクトに保存
+			this.menu.Destroy()
+
+			; 設定値をコピー
+			; [Basic]
+			this.imeSelect := Saved.imeSelect - 1
+			this.usingKeyConfig := Saved.usingKeyConfig
+			this.usLike := Saved.usLike
+			this.sideShift := Saved.sideShift
+			this.enterShift := Saved.enterShift - 1
+			this.shiftDelay := Saved.shiftDelay
+			this.combDelay := Saved.combDelay
+			this.spaceKeyRepeat := Saved.spaceKeyRepeat - 1
+			this.eisuRepeat := Saved.eisuRepeat
+			; [Advanced]
+			this.combLimitN := Saved.combLimitN
+			this.combStyleN := Saved.combStyleN - 1
+			this.combKeyUpN := Saved.combKeyUpN - 1
+			this.combLimitS := Saved.combLimitS
+			this.combStyleS := Saved.combStyleS - 1
+			this.combKeyUpS := Saved.combKeyUpS - 1
+			this.combLimitE := Saved.combLimitE
+			this.combKeyUpSPC := Saved.combKeyUpSPC - 1
+			this.eisuSandS := Saved.eisuSandS
+			this.keyUpToOutputAll := Saved.keyUpToOutputAll
+			If (this.testMode != "NONE") {
+				this.testMode := Saved.testMode - 1
+				this.repeatStyle := Saved.repeatStyle - 1
+			}
+			this.imeGetInterval := Saved.imeGetInterval
+
+			Try
+			{
+				; 設定ファイル書き込み
+				; [general]
+				IniWrite version, this.iniFilePath, "general", "Version"
+				; [Basic]
+				IniWrite this.imeSelect, this.iniFilePath, "Basic", "IMESelect"
+				IniWrite this.usingKeyConfig, this.iniFilePath, "Basic", "UsingKeyConfig"
+				IniWrite this.usLike, this.iniFilePath, "Basic", "USLike"
+				IniWrite this.sideShift, this.iniFilePath, "Basic", "SideShift"
+				IniWrite this.enterShift, this.iniFilePath, "Basic", "EnterShift"
+				IniWrite this.shiftDelay, this.iniFilePath, "Basic", "ShiftDelay"
+				IniWrite this.combDelay, this.iniFilePath, "Basic", "CombDelay"
+				IniWrite this.spaceKeyRepeat, this.iniFilePath, "Basic", "SpaceKeyRepeat"
+				IniWrite this.eisuRepeat, this.iniFilePath, "Basic", "EisuRepeat"
+				; [Naginata]
+				IniWrite this.vertical, this.iniFilePath, "Naginata", "Vertical"
+				IniWrite this.koyuNumber, this.iniFilePath, "Naginata", "KoyuNumber"
+				; [Advanced]
+				IniWrite this.combLimitN, this.iniFilePath, "Advanced", "CombLimitN"
+				IniWrite this.combStyleN, this.iniFilePath, "Advanced", "CombStyleN"
+				IniWrite this.combKeyUpN, this.iniFilePath, "Advanced", "CombKeyUpN"
+				IniWrite this.combLimitS, this.iniFilePath, "Advanced", "CombLimitS"
+				IniWrite this.combStyleS, this.iniFilePath, "Advanced", "CombStyleS"
+				IniWrite this.combKeyUpS, this.iniFilePath, "Advanced", "CombKeyUpS"
+				IniWrite this.combLimitE, this.iniFilePath, "Advanced", "CombLimitE"
+				IniWrite this.combKeyUpSPC, this.iniFilePath, "Advanced", "CombKeyUpSPC"
+				IniWrite this.eisuSandS, this.iniFilePath, "Advanced", "EisuSandS"
+				IniWrite this.keyUpToOutputAll, this.iniFilePath, "Advanced", "KeyUpToOutputAll"
+				If (this.testMode != "NONE") {
+					IniWrite this.testMode, this.iniFilePath, "Advanced", "TestMode"
+					IniWrite this.repeatStyle, this.iniFilePath, "Advanced", "RepeatStyle"
+				}
+				IniWrite this.imeGetInterval, this.iniFilePath, "Advanced", "IME_Get_Interval"
+			}
+			Catch OSError
+				TrayTip ".ini ファイルに書き込めません"
+
+			TraySetIcon "*"		; トレイアイコンをいったん起動時のものに
+			DeleteDefs()		; 配列定義をすべて消去する
+			ReadLayout()		; かな配列読み込み
+			SettingLayout()		; 出力確定する定義に印をつける
+			; トレイアイコン変更
+			ChangeVertical(this.vertical)
+
+			; IME窓の検出可否をリセット
+			goodHwnd := badHwnd := 0
+		}
+	}
+}
+
+; ログ表示
+class DisplayLog
+{
+	disp := Gui()
+
+	__New()
+	{
+		;	local scanCodeArray					; [String]型
+		;		, lastKeyTime, keyTime, diff	; Double型
+		;		, pos, number					; Int型
+		;		, str, c, preStr, term, temp	; String型
+
+		; USキーボード
+		If (OSInfo.uskb)
+			scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "=", "BackSpace", "Tab"
+				, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "", "", "A", "S"
+				, "D", "F", "G", "H", "J", "K", "L", ";", "'", "``", "LShift", "\", "Z", "X", "C", "V"
+				, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "CapsLock", "F1", "F2", "F3", "F4", "F5"
+				, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+				, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+				, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+				, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+				, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+		; USキーボード以外
+		Else
+			scanCodeArray := ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Ø", "-", "^", "BackSpace", "Tab"
+				, "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "@", "[", "", "", "A", "S"
+				, "D", "F", "G", "H", "J", "K", "L", ";", ":", "半角/全角", "LShift", "]", "Z", "X", "C", "V"
+				, "B", "N", "M", ",", ".", "/", "", "", "", "Space", "英数", "F1", "F2", "F3", "F4", "F5"
+				, "F6", "F7", "F8", "F9", "F10", "Pause", "ScrollLock", "", "", "", "", "", "", "", "", ""
+				, "", "", "", "", "SysRq", "", "KC_NUBS", "F11", "F12", "(Mac)=", "", "", "(NEC),", "", "", ""
+				, "", "", "", "", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", ""
+				, "(JIS)ひらがな", "(Mac)英数", "(Mac)かな", "(JIS)_", "", "", "F24", "KC_LANG4"
+				, "KC_LANG3", "(JIS)変換", "", "(JIS)無変換", "", "(JIS)￥", "(Mac),", ""]
+
+		; GUI操作
+		this.disp.Opt("-MinimizeBox")	; タイトルバーの最小化ボタンを無効化
+		this.disp.Add("Text", "xm", "≪ログ≫")
+		lastKeyTime := 0.0
+		pos := inBufReadPos
+		While ((pos := ++pos & 31) != inBufReadPos)
+		{
+			str := inBufsKey[pos+1], keyTime := inBufsTime[pos+1]
+			If (str)
+			{
+				; 時間を書き出し
+				If (lastKeyTime)
+				{
+					If (pref.testMode != "NONE")
+						diff := round(keyTime - lastKeyTime, 1)
+					Else
+						diff := round(keyTime - lastKeyTime)
+					this.disp.Add("Text", "xm", "(" . diff . "ms) ")
+				}
+				Else
+					this.disp.Add("Text", "xm", "")
+
+				; 修飾キー
+				preStr := ""
+				While (c := SubStr(str, 1, 1))
+				{
+					If (c == "+" || c == "^" || c == "!" || c == "#"
+					|| c == "<" || c == ">")
+					{
+						; 先頭の文字を分離
+						preStr .= c
+						str := SubStr(str, 2)
+					}
+					Else If (c == "*" || c == "~" || c == "$")
+						; 表示させたくない先頭の文字を消去
+						str := SubStr(str, 2)
+					Else
+						Break
+				}
+				; キーの上げ下げを調べる
+				term := SubStr(str, -3)	; term に入力末尾の3文字を入れる
+				If (term = " up")
+				{
+					; キーが離されたとき
+					term := "↑"
+					str := SubStr(str, 1, -3)
+				}
+				Else
+					term := ""
+
+				; 書き出し
+				If (str = "KeyTimer")
+					str := "[KeyTimer]"
+				Else If (str = "vk1A")
+					str := "(Mac)英数"
+				Else If (str = "vk16")
+					str := "(Mac)かな"
+				Else If (SubStr(str, 1, 2) = "sc")
+				{
+					number := "0x" . SubStr(str, 3, 2)
+					temp := scanCodeArray[number]
+					If (temp != "")
+						str := temp
+				}
+				this.disp.Add("Text", "xm+60 yp", preStr . str . term)
+			}
+			; 押した時間を保存
+			lastKeyTime := keyTime
+		}
+		this.disp.Add("Button", "W60 xm+30 y+10 Default", "Close").OnEvent("Click", Cancel)
+		this.disp.OnEvent("Escape", Cancel)
+		this.disp.Show()
+
+		Cancel(*)
+		{
+			this.disp.Destroy()
+		}
+	}
 }

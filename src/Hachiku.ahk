@@ -1,25 +1,42 @@
-﻿; **********************************************************************
+﻿; Copyright (C) 2021-2024  Satoru NAKAYA
+
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+
+; You should have received a copy of the GNU General Public License
+; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+; **********************************************************************
 ; 薙刀式配列
 ;		ローマ字入力モード
 ; **********************************************************************
-version := "1.12.11"	; String型
+#Requires AutoHotkey v2.0.13 64-bit
+version := "2.0-pre.1"	; String型
 
 ; --------〈起動処理〉--------------------------------------------------
-SetWorkingDir %A_ScriptDir%		; スクリプトの作業ディレクトリを変更
-#SingleInstance force			; 既存のプロセスを終了して実行開始
-#Include %A_ScriptDir%/Sub/init.ahk	; 初期設定
+#SingleInstance Force			; 既存のプロセスを終了して実行開始
+#Include "%A_ScriptDir%/Sub/init.ahk"	; 初期設定
 ; --------〈AutoHotkey LIB〉-------------------------------------------
-#Include %A_ScriptDir%/Sub/IME.ahk	; Author: eamat. http://www6.atwiki.jp/eamat/
-#Include %A_ScriptDir%/Sub/Path.ahk	; Author: eamat. http://www6.atwiki.jp/eamat/
+#Include "%A_ScriptDir%/Sub/IMEv2.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
+                                        ; https://github.com/k-ayaki/IMEv2.ahk
+#Include "%A_ScriptDir%/Sub/Path.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
 ; --------〈サブルーチン、関数〉--------------------------------------------------
-#Include %A_ScriptDir%/Sub/function.ahk
+#Include "%A_ScriptDir%/Sub/function.ahk"
 ; ----------------------------------------------------------------------
 
 
 ; **********************************************************************
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
-#Include %A_ScriptDir%/KanaTable/Naginata_v15.ahk	; 薙刀式配列v15fix版
+#Include "%A_ScriptDir%/KanaTable/Naginata_v15.ahk"	; 薙刀式配列v15fix版
 
 
 ; **********************************************************************
