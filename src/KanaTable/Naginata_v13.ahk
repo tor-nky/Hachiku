@@ -667,8 +667,6 @@ kanaGroup := ""	; グループなし
 		USLikeLayout()	; USキーボード風の配列へ
 
 	koyu.Read(pref.koyuNumber)	; 固有名詞ショートカットの読み込み・登録
-
-	Return
 }
 
 ; USキーボード風の配列へ
@@ -737,8 +735,6 @@ kanaGroup := ""	; グループなし
 	SetKana( KC_LBRC | KC_SPC	,"『"	)	; 『
 	SetKana( KC_RBRC | KC_SPC	,"』"	)	; 』
 	SetKana( KC_INT1 | KC_SPC	,"{!}"	)	; ！
-
-	Return
 }
 
 ; 固有名詞ショートカットの登録
@@ -889,8 +885,6 @@ KoyuRegist()	; () -> Void
 		SetKana( KC_E | KC_R | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
 		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
 		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
-
-	Return
 }
 
 ; ----------------------------------------------------------------------

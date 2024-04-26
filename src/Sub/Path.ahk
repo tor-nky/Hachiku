@@ -38,7 +38,7 @@ Path_FileExists(path)   {
 ;---- パス名の最後尾にバックスラッシュをつける -----
 Path_AddBackslash(path) {
     DllCall("SHLWAPI.DLL\PathAddBackslash", "Str", path)
-    return path
+    Return path
 }
 
 ;-----------------------------------------------------------
@@ -59,5 +59,5 @@ Path_RenameExtension(path,ext)  {
 ;---- フルパス名から拡張子のみを除いたパス名を取得する ----
 Path_RemoveExtension(path)  {
     DllCall("SHLWAPI.DLL\PathRemoveExtension", "Str", path)
-    return path
+    Return path
 }

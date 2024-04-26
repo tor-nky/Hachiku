@@ -554,8 +554,6 @@ kanaGroup := ""	; グループなし
 		USLikeLayout()	; USキーボード風の配列へ
 
 	koyu.Read(pref.koyuNumber)	; 固有名詞ショートカットの読み込み・登録
-
-	Return
 }
 
 ; USキーボード風の配列へ
@@ -618,8 +616,6 @@ kanaGroup := ""	; グループなし
 		SetKana( KC_NUHS			,"+{sc0D}"	)	; `
 		SetKana( KC_NUHS | KC_SPC	,"+{sc1A}"	)	; ~
 	}
-
-	Return
 }
 
 ; 固有名詞ショートカットの登録
@@ -779,8 +775,6 @@ KoyuRegist()	; () -> Void
 		SetKana( KC_E | KC_R | KC_3	, 3, "KoyuChange")	; 固有名詞ショートカット３
 		SetKana( KC_E | KC_R | KC_4	, 4, "KoyuChange")	; 固有名詞ショートカット４
 		SetKana( KC_E | KC_R | KC_5	, 5, "KoyuChange")	; 固有名詞ショートカット５
-
-	Return
 }
 
 ; ----------------------------------------------------------------------
@@ -802,14 +796,12 @@ sc79::
 	; 変換 → 変換x9
 	StoreBuf("{sc79 9}", 0, NR)
 	OutBuf()
-	Return
 }
 +sc79::
 {
 	; Shift+変換 → Shift+変換x9
 	StoreBuf("+{sc79 9}", 0, NR)
 	OutBuf()
-	Return
 }
 #HotIf (DetectIME() == "NewMSIME" && kanaMode)
 ^sc35::
@@ -817,14 +809,12 @@ sc79::
 	; Ctrl+Slash → 変換x9
 	StoreBuf("{sc79 9}", 0, NR)
 	OutBuf()
-	Return
 }
 +^sc35::
 {
 	; Shift+Ctrl+Slash → Shift+変換x9
 	StoreBuf("+{sc79 9}", 0, NR)
 	OutBuf()
-	Return
 }
 
 ; 新MS-IME以外用
@@ -853,7 +843,6 @@ sc29::	; (JIS)半角/全角	(US)`
 		SendEachChar("{vkF2}")	; ひらがな
 		kanaMode := 1
 	}
-	Return
 }
 
 ; 106日本語キーボードの場合
@@ -864,7 +853,6 @@ sc3A::	; 英数キー単独で CapsLock をオンオフする
 		SetCapsLockState False
 	Else
 		SetCapsLockState True
-	Return
 }
 
 ; 全キーボード
@@ -874,14 +862,12 @@ vk1A::		; Mac英数
 {
 	SendEachChar("{vkF2}{vkF3}")	; ひらがな→半角/全角キー
 ;	kanaMode := 0
-	Return
 }
 +sc7B::		; Shift + 無変換
 +vk1A::		; Shift + Mac英数
 {
 	SendEachChar("{全英}")
 ;	kanaMode := 0
-	Return
 }
 sc70::		; ひらがな
 vk16::		; Macかな
@@ -891,14 +877,12 @@ vk16::		; Macかな
 	Else
 		SendEachChar("{vkF2}")	; ひらがな
 	kanaMode := 1
-	Return
 }
 +sc70::	; Shift + ひらがな
 +vk16::	; Shift + Macかな
 {
 	SendEachChar("{vkF1}")	; カタカナ
 ;	kanaMode := 1
-	Return
 }
 
 ; ----------------------------------------------------------------------
@@ -912,9 +896,7 @@ NumLock::
 	{
 		Send "="	; 長押しで"="入力
 		KeyWait "NumLock"
-		Return
 	}
-	Return
 }
 NumpadDot::
 {
@@ -924,7 +906,5 @@ NumpadDot::
 	{
 		Send "`,"			; 長押しで","入力
 		KeyWait "NumpadDot"
-		Return
 	}
-	Return
 }

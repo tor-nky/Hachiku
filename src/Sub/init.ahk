@@ -219,7 +219,6 @@ ExitSub(*)
 VerticalMode(*)
 {
 	ChangeVertical(pref.vertical == 0 ? 1 : 0)
-	Return
 }
 
 ; 固有名詞ショートカット登録画面
@@ -256,7 +255,7 @@ class OSInfo
 	{
 		; local var[]	; [Int]型
 
-		If (RegExMatch(A_OSVersion, "\d+\.\d+\.(\d+)", &var))	; 右から数字を検索
+		If (RegExMatch(A_OSVersion, "\d+\.\d+\.(\d+)", &var := 0))	; 右から数字を検索
 			this.build := var[1]	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
 		; キーボードドライバを調べて keyDriver に格納する
 		; 参考: https://ixsvr.dyndns.org/blog/764

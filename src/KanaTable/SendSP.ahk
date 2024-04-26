@@ -42,10 +42,8 @@ SendSP(strIn, ctrlName)	; (strIn: String, ctrlName: String) -> Void
 			MsgBox ("固有名詞セット" . pref.koyuNumber)
 			Return
 		}
-		MsgBox ("固有名詞 セット" . pref.koyuNumber . " → " . strIn)
-		; キャンセル
-		; IfMsgBox, Cancel
-		; 	Return
+		If (MsgBox ("固有名詞 セット" . pref.koyuNumber . " → " . strIn) = "Cancel")
+			Return	; キャンセル
 
 		pref.koyuNumber := strIn
 		; 設定ファイル書き込み

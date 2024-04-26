@@ -28,7 +28,6 @@ KeyTimer()
 		, inBufWritePos := (inBufRest == 31 ? ++inBufWritePos & 31 : inBufWritePos)
 		, (inBufRest == 31 ? inBufRest-- : "")
 	Convert()	; 変換ルーチン
-	Return
 }
 
 ; IME窓検出タイマー
@@ -44,18 +43,17 @@ JudgeHwnd()
 		Else
 			badHwnd := hwnd
 	}
-	Return
 }
 
 RemoveToolTip()
 {
 	SetTimer RemoveToolTip, 0
 	ToolTip
-	Return
 }
 
 ; 時間を読み取る関数 QPC.Read()
 ; 参照: https://www.autohotkey.com/boards/viewtopic.php?t=36016
+; 参照: https://ahkscript.github.io/ja/docs/v2/lib/DllCall.htm#ExQPC
 class QPC
 {
 	static ms_per_count := 0.0	; Double型
@@ -261,7 +259,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 				strSub := ConvTateYoko(strSub)
 
 			If (Ord(strSub) > 127 || RegExMatch(strSub, "i)^\{U\+")
-				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", &code) && code[1] > 127))
+				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", &code := 0) && code[1] > 127))
 			{
 				; ASCIIコード以外の文字に変化したとき
 				If (!kakutei)
@@ -558,7 +556,7 @@ DetectIME()	; () -> String
 			; 参考: https://registry.tomoroh.net/archives/11547
 			value := RegRead("HKEY_CURRENT_USER\Software\Microsoft\input\tsf\tsf3override\{03b5835f-f03c-411b-9ce2-aa23e1171e36}"
 				, "NoTsf3Override2", 0)
-			If (!value || value == "")
+			If (!value)
 				nowIME := "NewMSIME"
 		}
 		If (nowIME != "NewMSIME")
@@ -703,7 +701,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Space}", moveLines := False, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Space\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{Space\s(\d+)\}$", &var := 0))
 	{
 		key := "{Space}", moveLines := False, count := var[1]
 	}
@@ -711,7 +709,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Up}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Up\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{Up\s(\d+)\}$", &var := 0))
 	{
 		key := "{Up}", moveLines := !pref.vertical, count := var[1]
 	}
@@ -719,7 +717,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Down}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Down\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{Down\s(\d+)\}$", &var := 0))
 	{
 		key := "{Down}", moveLines := !pref.vertical, count := var[1]
 	}
@@ -727,7 +725,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Left}", moveLines := pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Left\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{Left\s(\d+)\}$", &var := 0))
 	{
 		key := "{Left}", moveLines := pref.vertical, count := var[1]
 	}
@@ -735,7 +733,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Right}", moveLines := pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Right\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{Right\s(\d+)\}$", &var := 0))
 	{
 		key := "{Right}", moveLines := pref.vertical, count := var[1]
 	}
@@ -743,7 +741,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{PgUp}", moveLines := True, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgUp\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\s(\d+)\}$", &var := 0))
 	{
 		key := "{PgUp}", moveLines := True, count := var[1]
 	}
@@ -751,7 +749,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{PgDn}", moveLines := True, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgDn\s(\d+)\}$", &var))
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\s(\d+)\}$", &var := 0))
 	{
 		key := "{PgDn}", moveLines := True, count := var[1]
 	}
@@ -817,17 +815,16 @@ SendEachChar(str)	; (str: String) -> Void
 ;		, strSub				; String型	細切れにした文字列
 ;		, strSubLength			; Int型 	と、その長さを入れる変数
 ;		, out					; String型
-;		, outSub, outSub1		; String?型
-;		, outSub2				; Int?型
+;		, outSub				; [Any]型
 ;		, i, bracket			; Int型
 ;		, c						; String型
 ;		, noIME					; Bool型	IME入力モードの保存、復元に関するフラグ
 ;		, preDelay, postDelay	; Int型		出力前後のディレイの値
 ;		, lastDelay				; Int型		前回出力時のディレイの値
-;		, clipSaved				; Any?型
+;		, clipSaved				; Any型
 ;		, imeName				; String型
-;		, count, wait			; Int?型
-;		, inShifted				; Bool型
+;		, count					; Int型
+;		, wait					; Int?型
 ;		, imeConvMode			; Int?型	IME 入力モード	IME_GetConvMode()用
 
 	SetTimer JudgeHwnd, 0	; IME窓検出タイマー停止
@@ -1291,7 +1288,7 @@ SendEachChar(str)	; (str: String) -> Void
 					postDelay := delay
 
 				; 文字と回数を分離
-				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", &outSub))
+				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", &outSub := 0))
 				{
 					out := outSub[1] . "}"	; outSub1 に文字が
 					count := outSub[2]		; outSub2 に回数が入る
@@ -1884,6 +1881,7 @@ Convert()	; () -> Void
 			spc := 2	; シフト継続中
 		}
 
+		nowBit := searchBit := 0
 		keyCount := 0	; 何キー同時押しか、を入れる変数
 		term := SubStr(nowKey, -2)	; term に入力末尾の2文字を入れる
 		; キーが離れた時
@@ -1895,6 +1893,11 @@ Convert()	; () -> Void
 				nowBit := "0x" . SubStr(nowKey, -5, 2)
 			Else
 				nowBit := 0
+			; toBuf に "{sc○○ up}" の形式で入れる
+			If (SubStr(nowKey, 1, 1) = "+")
+				toBuf := "+{" . SubStr(nowKey, 2) . "}"
+			Else
+				toBuf := "{" . nowKey . "}"
 		}
 		Else
 		{
@@ -1919,7 +1922,6 @@ Convert()	; () -> Void
 			; sc** 以外で入力
 			Else
 			{
-				nowBit := searchBit := 0
 				toBuf .= "{" . nowKey . "}"
 				keyCount := -1	; かな定義の検索は不要
 			}
@@ -2376,7 +2378,6 @@ sc29::	; (JIS)半角/全角	(US)`
 		trayTipTimeLimit := A_TickCount + 10000
 	}
 */
-	Return
 }
 ; キー押上げ
 #SuspendExempt  ; 以下のホットキーをSuspendから除外
@@ -2510,7 +2511,6 @@ sc29 up::	; (JIS)半角/全角	(US)`
 		, inBufWritePos := (inBufRest ? ++inBufWritePos & 31 : inBufWritePos)
 		, (inBufRest ? inBufRest-- : "")
 	Convert()	; 変換ルーチン
-	Return
 }
 
 #MaxThreadsPerHotkey 1	; 元に戻す
