@@ -36,6 +36,8 @@ JudgeHwnd()
 	; 原理は、変換1回目でIME窓が検出できれば良しというもの
 	SetTimer JudgeHwnd, 0
 	hwnd := WinExist("A")	; hwnd: Int型
+	If (!hwnd)
+		Return
 	If (IME_GET() && (IME_GetConvMode() & 1))
 	{
 		If (IME_GetConverting())
@@ -49,6 +51,14 @@ RemoveToolTip()
 {
 	SetTimer RemoveToolTip, 0
 	ToolTip
+}
+; str をツールチップに表示し、time ミリ秒後に消す(デバッグ用)
+ToolTip2(str, time:=1000)	; (str: String, time: Int) -> Void
+{
+	ToolTip str
+	; str が空でなく、time が0でないとき
+	If (str && time != 0)
+		SetTimer RemoveToolTip, time
 }
 
 ; 時間を読み取る関数 QPC.Read()
@@ -65,15 +75,6 @@ class QPC
 		DllCall("QueryPerformanceCounter", "Int64*", &counter := 0)	; counter: Int64型
 		Return counter * this.ms_per_count
 	}
-}
-
-; str をツールチップに表示し、time ミリ秒後に消す(デバッグ用)
-ToolTip2(str, time:=1000)	; (str: String, time: Int) -> Void
-{
-	ToolTip str
-	; str が空でなく、time が0でないとき
-	If (str && time != 0)
-		SetTimer RemoveToolTip, time
 }
 
 ; 配列定義をすべて消去する
@@ -101,7 +102,7 @@ CountBit(keyComb)	; (keyComb: Int64) -> Int
 ;	local count, i	; Int型
 
 	; スペースキーは数えない
-	keyComb &= KC_SPC ^ (-1)
+	keyComb &= ~KC_SPC
 
 	count := 0
 	i := 0
@@ -259,7 +260,7 @@ Analysis(str, convYoko := False)	; (str: String, convYoko: Bool) -> String
 				strSub := ConvTateYoko(strSub)
 
 			If (Ord(strSub) > 127 || RegExMatch(strSub, "i)^\{U\+")
-				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", &code := 0) && code[1] > 127))
+				|| (RegExMatch(strSub, "i)^\{ASC\s(\d+)\}$", &code) && code[1] > 127))
 			{
 				; ASCIIコード以外の文字に変化したとき
 				If (!kakutei)
@@ -505,7 +506,7 @@ FindCombinableBit(searchBit, kanaMode, keyCount, group:="")	; (searchBit: Int64,
 		}
 		i++
 	}
-;	bit &= searchBit ^ (-1)	; 検索中のキーを削除
+;	bit &= ~searchBit	; 検索中のキーを削除
 
 	Return bit
 }
@@ -575,7 +576,8 @@ DetectIME()	; () -> String
 	If (nowIME != imeName)
 	{
 		imeName := nowIME
-		goodHwnd := badHwnd := 0
+		; IME窓の検出できるか調べなおし
+		goodHwnd := badHwnd := ""
 		; Send から IME_GET() までに Sleep で必要な時間(ミリ秒)
 		imeNeedDelay := (imeName == "Google" || imeName == "ATOK" ? 30 : 70)
 		; Send から IME_GetConverting() までに Sleep で必要な時間(ミリ秒)
@@ -701,7 +703,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Space}", moveLines := False, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Space\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{Space\s(\d+)\}$", &var))
 	{
 		key := "{Space}", moveLines := False, count := var[1]
 	}
@@ -709,7 +711,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Up}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Up\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{Up\s(\d+)\}$", &var))
 	{
 		key := "{Up}", moveLines := !pref.vertical, count := var[1]
 	}
@@ -717,7 +719,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Down}", moveLines := !pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Down\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{Down\s(\d+)\}$", &var))
 	{
 		key := "{Down}", moveLines := !pref.vertical, count := var[1]
 	}
@@ -725,7 +727,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Left}", moveLines := pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Left\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{Left\s(\d+)\}$", &var))
 	{
 		key := "{Left}", moveLines := pref.vertical, count := var[1]
 	}
@@ -733,7 +735,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{Right}", moveLines := pref.vertical, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{Right\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{Right\s(\d+)\}$", &var))
 	{
 		key := "{Right}", moveLines := pref.vertical, count := var[1]
 	}
@@ -741,7 +743,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{PgUp}", moveLines := True, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgUp\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{PgUp\s(\d+)\}$", &var))
 	{
 		key := "{PgUp}", moveLines := True, count := var[1]
 	}
@@ -749,7 +751,7 @@ EmulateKeyDownUp(str, delay:=-2)	; (str: String, delay: Int) -> Void
 	{
 		key := "{PgDn}", moveLines := True, count := 1
 	}
-	Else If (RegExMatch(str, "i)^\+?\{PgDn\s(\d+)\}$", &var := 0))
+	Else If (RegExMatch(str, "i)^\+?\{PgDn\s(\d+)\}$", &var))
 	{
 		key := "{PgDn}", moveLines := True, count := var[1]
 	}
@@ -1243,7 +1245,7 @@ SendEachChar(str)	; (str: String) -> Void
 				Else If (strSub = "{C_Rstr}")
 				{
 					A_Clipboard := clipSaved	; クリップボードの内容を復元
-					clipSaved := ""				; 保存用変数に使ったメモリを開放
+					clipSaved := unset				; 保存用変数に使ったメモリを開放
 				}
 				Else If (Ord(strSub) > 127 || SubStr(strSub, 1, 3) = "{U+"
 					|| (SubStr(strSub, 1, 5) = "{ASC " && SubStr(strSub, 6, -1) > 127))
@@ -1288,7 +1290,7 @@ SendEachChar(str)	; (str: String) -> Void
 					postDelay := delay
 
 				; 文字と回数を分離
-				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", &outSub := 0))
+				If (RegExMatch(out, "i)^([\+\^!#]*\{\S+)\s(\d+)\}$", &outSub))
 				{
 					out := outSub[1] . "}"	; outSub1 に文字が
 					count := outSub[2]		; outSub2 に回数が入る
@@ -1938,7 +1940,7 @@ Convert()	; () -> Void
 		; キーリリース時
 		If (term == "up")
 		{
-			bitMask := nowBit ^ (-1)	; realBit &= ~nowBit では32ビット計算になることがあるので
+			bitMask := ~nowBit
 			realBit &= bitMask
 
 			; 文字キーによるシフトの適用範囲
@@ -2197,7 +2199,7 @@ Convert()	; () -> Void
 			; 出力確定文字か？
 			; 「キーを離せば常に全部出力する」がオンなら、現在押されているキーを除外
 			; オフなら、いま検索したキーを除外
-			combinableBit &= (pref.keyUpToOutputAll ? realBit : lastBit) ^ (-1)
+			combinableBit &= ~(pref.keyUpToOutputAll ? realBit : lastBit)
 
 			; 出力処理
 			If (combinableBit == 0 || (pref.shiftDelay <= 0 && combinableBit == KC_SPC))

@@ -19,24 +19,24 @@
 ;		ローマ字入力モード
 ; **********************************************************************
 #Requires AutoHotkey v2.0.13
-version := "2.0-pre.3"	; String型
+version := "2.0-pre.4"	; String型
 
 ; --------〈起動処理〉--------------------------------------------------
 #SingleInstance Force			; 既存のプロセスを終了して実行開始
-#Include "%A_ScriptDir%/Sub/init.ahk"	; 初期設定
+#Include "%A_ScriptDir%\Sub\init.ahk"	; 初期設定
 ; --------〈AutoHotkey LIB〉-------------------------------------------
-#Include "%A_ScriptDir%/Sub/IMEv2.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
+#Include "%A_ScriptDir%\Sub\IMEv2.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
                                         ; https://github.com/k-ayaki/IMEv2.ahk
-#Include "%A_ScriptDir%/Sub/Path.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
+#Include "%A_ScriptDir%\Sub\Path.ahk"	; Author: eamat. http://www6.atwiki.jp/eamat/
 ; --------〈サブルーチン、関数〉--------------------------------------------------
-#Include "%A_ScriptDir%/Sub/function.ahk"
+#Include "%A_ScriptDir%\Sub\function.ahk"
 ; ----------------------------------------------------------------------
 
 
 ; **********************************************************************
 ; 英数／かな配列の定義ファイル (サポートファイル読み込み含む)
 ; **********************************************************************
-#Include "%A_ScriptDir%/KanaTable/Naginata_v15.ahk"	; 薙刀式配列v15fix版
+#Include "%A_ScriptDir%\KanaTable\Naginata_v15.ahk"	; 薙刀式配列v15fix版
 
 
 ; **********************************************************************

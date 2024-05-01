@@ -341,12 +341,12 @@ IME_GetConverting(WinTitle:="A",ConvCls:="",CandCls:="") {
     	if (WinExist("ahk_class " . CandCls . " ahk_pid " pid))
     	{
 	        ;; atok だと仮定して再度ウィンドウを検出する
-			WinGetPos(&X := 0, &Y := 0, &Width := 0, &Height := 0, "ahk_class " . CandCls . " ahk_pid " pid)
+			WinGetPos(&X, &Y, &Width, &Height, "ahk_class " . CandCls . " ahk_pid " pid)
 		} else 
 		if (WinExist("ahk_class " . CandGCls                 ))
 		{
 	        ;; Google IME だと仮定して再度ウィンドウを検出する
-            WinGetPos(&X := 0, &Y := 0, &Width := 0, &Height := 0, "ahk_class " . CandGCls)
+            WinGetPos(&X, &Y, &Width, &Height,"ahk_class " . CandGCls)
 		}
         X1 := X
         Y1 := Y
@@ -363,7 +363,7 @@ IME_GetConverting(WinTitle:="A",ConvCls:="",CandCls:="") {
                              , 0xF6E8CB  ; MS-IME
                              , 0xFFEAD1] ; Google IME
         for index, ColorID in not_auto_cand_list {
-            elevel := PixelSearch(&OutputVarX := 0, &OutputVarY := 0, X1, Y1, X2, Y2, ColorID)
+            elevel := PixelSearch(&OutputVarX, &OutputVarY, X1, Y1, X2, Y2, ColorID)
             ;;  the color was not found
             if (0 == elevel) {
             	ret := 2

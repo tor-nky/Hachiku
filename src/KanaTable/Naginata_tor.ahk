@@ -14,8 +14,8 @@
 ;	Q+W に横書きモード、Q+A に縦書きモード を割り当て
 ; **********************************************************************
 
-#Include %A_ScriptDir%/KanaTable/StandardLayout.ahk	; キーボード初期配列
-;#Include %A_ScriptDir%/KanaTable/WorkmanLayout.ahk	; Workman配列
+#Include "%A_ScriptDir%\KanaTable\StandardLayout.ahk"	; キーボード初期配列
+;#Include "%A_ScriptDir%\KanaTable\WorkmanLayout.ahk"	; Workman配列
 
 ; ----------------------------------------------------------------------
 ; 英数／かな配列の定義ファイル
@@ -49,9 +49,9 @@
 ; ----------------------------------------------------------------------
 
 ; 薙刀式配列固有名詞ショートカットを実装するためのルーチン
-#Include %A_ScriptDir%/Sub/Naginata-Koyu.ahk
+#Include "%A_ScriptDir%\Sub\Naginata-Koyu.ahk"
 ; 特別出力
-#Include %A_ScriptDir%/KanaTable/SendSP.ahk
+#Include "%A_ScriptDir%\KanaTable\SendSP.ahk"
 
 ; かな配列読み込み
 ReadLayout()	; () -> Void

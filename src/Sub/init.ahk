@@ -126,14 +126,12 @@ defsCombinableBit := []	; [Int64]型
 defBegin := [1, 1, 1]	; [Int]型	定義の始め 1キー, 2キー同時, 3キー同時
 defEnd	:= [1, 1, 1]	; [Int]型	定義の終わり+1 1キー, 2キー同時, 3キー同時
 ; 入力バッファ
-inBufsKey := ["", "", "", "", "",  "", "", "", "", ""
-			, "", "", "", "", "",  "", "", "", "", ""
-			, "", "", "", "", "",  "", "", "", "", ""
-			, "", "", ]		; [String]型
-inBufsTime := [0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
-			 , 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
-			 , 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0
-			 , 0.0, 0.0, ]	; [Double]型	入力の時間
+inBufsKey := []		; [String]型
+inBufsKey.Length := 32
+inBufsKey.Default := ""
+inBufsTime := []	; [Double]型	入力の時間
+inBufsTime.Length := 32
+inBufsTime.Default := 0
 inBufReadPos := 0	; Int型			読み出し位置
 inBufWritePos := 0	; Int型			書き込み位置
 inBufRest := 31		; Int型
@@ -146,7 +144,7 @@ spc		:= 0		; Int型	スペースキー 0: 押していない, 1: 単独押し, 2
 ent		:= 0		; Int型	エンター	 0: 押していない, 1: 単独押し, 2: シフト継続中, 5: リピート中
 repeat_count := 0	; Int型	リピート回数
 
-goodHwnd := badHwnd := 0	;  Int型	IME窓の検出可否
+goodHwnd := badHwnd := ""	;  Int?型	IME窓の検出できるか
 
 ; ----------------------------------------------------------------------
 ; 設定ファイル読み込み
@@ -255,12 +253,12 @@ class OSInfo
 	{
 		; local var[]	; [Int]型
 
-		If (RegExMatch(A_OSVersion, "\d+\.\d+\.(\d+)", &var := 0))	; 右から数字を検索
+		If (RegExMatch(A_OSVersion, "\d+\.\d+\.(\d+)", &var))	; 右から数字を検索
 			this.build := var[1]	; 例えば 10.0.19043 は Windows 10 build 19043 (21H2)
 		; キーボードドライバを調べて keyDriver に格納する
 		; 参考: https://ixsvr.dyndns.org/blog/764
-		static keyDriver := RegRead("HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "LayerDriver JPN")
-		static uskb := (keyDriver = "kbd101.dll" ? True : False)	; Bool型
+		this.keyDriver := RegRead("HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "LayerDriver JPN")
+		this.uskb := (this.keyDriver = "kbd101.dll" ? True : False)	; Bool型
 	}
 }
 
@@ -589,8 +587,8 @@ class Preference
 			; トレイアイコン変更
 			ChangeVertical(this.vertical)
 
-			; IME窓の検出可否をリセット
-			goodHwnd := badHwnd := 0
+			; IME窓の検出できるか調べなおし
+			goodHwnd := badHwnd := ""
 		}
 	}
 }
