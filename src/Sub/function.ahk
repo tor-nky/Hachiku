@@ -1990,6 +1990,7 @@ Convert()	; () -> Void
 			&& (!outStrsLength || lastPushedTime + shiftDelay < keyTime))
 		{
 			OutBuf()
+			reuseBit := 0		; 復活したキービットを消去
 			SendKeyUp()			; 押し下げ出力中のキーを上げる
 			realBit |= KC_SPC
 			repeatFlg := False	; リピート解除
@@ -2005,6 +2006,7 @@ Convert()	; () -> Void
 				If (!outStrsLength)
 					StoreBuf(lastToBuf, 0, ctrlName)
 				OutBuf()
+				reuseBit := 0	; 復活したキービットを消去
 				DispTime(keyTime, "`nリピート " . repeatCount . "回目")	; キー変化からの経過時間を表示
 			}
 		}
@@ -2026,7 +2028,10 @@ Convert()	; () -> Void
 			If (outStrsLength
 			 && (!(combinableBit & nowBit) || (nowBit != KC_SPC && combDelay > 0 && lastPushedTime + combDelay < keyTime
 			 && ((combLimitN && !realBitAndKC_SPC) || (combLimitS && realBitAndKC_SPC) || (combLimitE && !kanaMode)) )))
+			{
 				OutBuf()
+				reuseBit := 0	; 復活したキービットを消去
+			}
 			; 前に押したキーが出力確定していなければ同グループ優先で検索しない
 			If (outStrsLength)
 				lastGroup := ""
@@ -2046,7 +2051,7 @@ Convert()	; () -> Void
 					imax := defEnd[3]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | ((lastBit | last2Bit) ? (lastBit | last2Bit) : reuseBit)
+						searchBit := realBitAndKC_SPC | nowBit | lastBit | last2Bit | reuseBit
 					Else
 						searchBit := realBit
 
@@ -2077,7 +2082,7 @@ Convert()	; () -> Void
 					imax := defEnd[2]
 					; シフトの適用範囲に応じた検索キーを設定
 					If (shiftStyle)
-						searchBit := realBitAndKC_SPC | nowBit | (lastBit ? lastBit : reuseBit)
+						searchBit := realBitAndKC_SPC | nowBit | lastBit | reuseBit
 					Else
 						searchBit := realBit
 
@@ -2129,7 +2134,7 @@ Convert()	; () -> Void
 					Break
 				; 同グループが見つからなければグループなしで再度検索
 				lastGroup := ""
-				reuseBit := last2Bit := lastBit := 0
+				last2Bit := lastBit := 0
 			}
 
 			; スペースを押したが、定義がなかった時
@@ -2179,7 +2184,6 @@ Convert()	; () -> Void
 			lastToBuf := toBuf			; 今回の文字列を保存
 			lastPushedTime := keyTime	; 有効なキーを押した時間を保存
 			lastKeyCount := keyCount	; 何キー同時押しだったかを保存
-			reuseBit := 0				; 復活したキービットを消去
 			; キービットを保存
 			If (keyCount >= 2)
 				; 2、3キー入力のときは今回のを保存
@@ -2211,8 +2215,11 @@ Convert()	; () -> Void
 
 			; 出力処理
 			If (combinableBit == 0 || (shiftDelay <= 0 && combinableBit == KC_SPC))
+			{
 				; 出力確定
 				OutBuf()
+				reuseBit := 0	; 復活したキービットを消去
+			}
 			Else
 			{
 				SendKeyUp()	; 押し下げ出力中のキーを上げる
