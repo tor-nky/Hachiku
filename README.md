@@ -1,25 +1,22 @@
-## 開発中止のおしらせ
-原理上、
-* 4キー以上の同時押しに対応できない
-* ロールオーバーで3キー同時惜しするのに左側のキーから押さなければいけない
-
-のですが、バグではないかと考えるようになりました。
-しかも、
-* DvorakJと比べて別に速くないこと
+## 今後の機能追加はしません
+* 原理上、4キー以上の同時押しに対応できない
+* 判定を変えられる設定が多数あり、変換アルゴリズムの差し替えが困難なこと
+* 新MS-IMEで DF+P にESCキーの連打でなく、IMEキャンセルを実装しようとすると他の機能が壊れた。(そもそも ATOKモードでは使えないが)
 * 開発言語Autohotkeyで起きやすい問題を放置されたままにv2に移行したこと
 * Autohotkey v2に移植してみたところ問題はそのままで、しかも速度が3分の1になり、IMEの状態検知が期待通りに働かない。
-* [薙刀式QMK版](https://github.com/tor-nky/qmk_userspace/tree/main/users/naginata_v15m)でIMEの状態検知以外のすべてが解消できること
+* DvorakJと比べて別に速くないこと
+* [薙刀式QMK版](https://github.com/tor-nky/qmk_userspace/tree/main/users/naginata_v15m) や [keymapper版](https://github.com/tor-nky/KeyLayout/tree/master/Naginata_v16/Win/keymapper%20Layout) でIMEの状態検知以外のすべてが解消できること
 
-ことから開発を中止することにしました。
+ことから、今後の機能追加はしません。
 
 # Hachiku - Windows で薙刀式を使うスクリプト
-2023年7月28日付[【薙刀式】v15fix版、発表](http://oookaworks.seesaa.net/article/500180437.html#gsc.tab=0)
-から、__薙刀式v15fix版__ を Autohotkey に実装しました。
+2025年4月18日付[【薙刀式】v16快速版発表](http://oookaworks.seesaa.net/article/509198141.html#gsc.tab=0)
+から、__薙刀式v16快速版__ を Autohotkey に実装しました。
 
 ---
 パソコンの日本語キーボード、英語キーボードの設定に自動で合わせます。  
 トレイアイコンを右クリックしたところに、縦書き・横書きモード切り替え、設定メニューがあります。  
-レジストリの変更はしません。  
+レジストリの変更はしません。
 
 キーカスタマイズができる IME では「Shift+Ctrl+変換キー」に「全確定」、「Shift+Ctrl+無変換キー」に「全消去」を割り当てると動作を改善できます。
 ## 実行ファイル(薙刀式v15fix版)
@@ -132,14 +129,12 @@ Hachiku を再起動すれば直ります。
 これで先ほどの設定を有効にすると、間違ってゲームモードが起動したときに自動で強制無効になったりしますので、
 こうなったらゲームコントローラでゲームバーを起動するには、自己責任でレジストリのキーを消去することになります。
 # 動作確認
-* Windows 10 Pro version 22H2 64-bit + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
-新旧MS-IME、ATOK 2017、Google 日本語入力  
-* Windows 11 Pro version 23H2 + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
+* Windows 11 Pro version 25H2 + AutoHotkey (v1.1.37.02) U64 Unicode 64-bit.bin  
 新旧MS-IME、Google 日本語入力  
 __AutoHotkey v2以降では使えません__
 
 # 参考
-* [【薙刀式】v15fix版、発表](http://oookaworks.seesaa.net/article/500180437.html#gsc.tab=0)
+* [【薙刀式】v16快速版発表](http://oookaworks.seesaa.net/article/509198141.html#gsc.tab=0)
 ## src¥KanaTable¥*.ahk で使えるキーや記号の書き方
 次の半角文字は書き換えが必要です。
 ```
