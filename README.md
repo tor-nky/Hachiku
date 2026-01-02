@@ -5,7 +5,7 @@
 * 開発言語Autohotkeyで起きやすい問題を放置されたままにv2に移行したこと
 * Autohotkey v2に移植してみたところ問題はそのままで、しかも速度が3分の1になり、IMEの状態検知が期待通りに働かない。
 * DvorakJと比べて別に速くないこと
-* [薙刀式QMK版](https://github.com/tor-nky/qmk_userspace/tree/main/users/naginata_v15m) や [keymapper版](https://github.com/tor-nky/KeyLayout/tree/master/Naginata_v16/Win/keymapper%20Layout) でIMEの状態検知以外のすべてが解消できること
+* [薙刀式QMK版](https://github.com/tor-nky/qmk_userspace/tree/main/users/naginata_v16m) や [keymapper版](https://github.com/tor-nky/KeyLayout/tree/master/Naginata_v16/Win/keymapper%20Layout) でIMEの状態検知以外のすべてが解消できること
 
 ことから、今後の機能追加はしません。
 
